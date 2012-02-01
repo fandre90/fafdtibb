@@ -9,6 +9,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.Text;
 
+import fr.insarennes.fafdti.visitors.QuestionExample;
+
 public class Question implements WritableComparable<Question> {
 
 	@Override
@@ -61,7 +63,7 @@ public class Question implements WritableComparable<Question> {
 		}
 		return true;
 	}
-
+	
 	int col;
 	AttrType type;
 	DoubleWritable doubleValue;
@@ -222,5 +224,12 @@ public class Question implements WritableComparable<Question> {
 
 	public AttrType getType() {
 		return type;
+	}
+	
+	public boolean ask(String value) {
+		//TODO
+		//récupérer le type de la question pour caster la valeur
+		//faire le test et retourner
+		return false;
 	}
 }

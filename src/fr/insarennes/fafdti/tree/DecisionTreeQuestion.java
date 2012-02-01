@@ -1,18 +1,21 @@
 package fr.insarennes.fafdti.tree;
 
+import fr.insarennes.fafdti.Question;
+
 public class DecisionTreeQuestion implements DecisionTree {
 	private DecisionTree _yesTree;
 	private DecisionTree _noTree;
 	private Question _question;
+	private String label;
 	public DecisionTreeQuestion() {
 		_yesTree = new DecisionTreePending();
 		_noTree = new DecisionTreePending();
-		_question = new Question();
 	}
-	public DecisionTreeQuestion(Question q, DecisionTree dtyes, DecisionTree dtno) {
-		_question = q;
+	public DecisionTreeQuestion(Question q, DecisionTree dtyes, DecisionTree dtno, String lbl) {
 		_yesTree = dtyes;
 		_noTree = dtno;
+		_question = q;
+		label = lbl;
 	}
 	@Override
 	public void accept(DecisionTreeVisitor dtv) {
@@ -30,6 +33,18 @@ public class DecisionTreeQuestion implements DecisionTree {
 	}
 	public DecisionNodeSetter noSetter(){
 		return new DecisionNodeSetter(_noTree);
+	}
+	public Question getQuestion() {
+		return _question;
+	}
+	public DecisionTree getYesTree() {
+		return _yesTree;
+	}
+	public DecisionTree getNoTree() {
+		return _noTree;
+	}
+	public String getLabel() {
+		return label;
 	}
 
 }

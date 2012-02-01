@@ -1,10 +1,17 @@
 package fr.insarennes.fafdti.tree;
 
+import fr.insarennes.fafdti.visitors.InvalidCallException;
+
 public class DecisionTreePending implements DecisionTree {
 
 	@Override
 	public void accept(DecisionTreeVisitor dtv) {
-		dtv.visitPending(this);
+		try {
+			dtv.visitPending(this);
+		} catch (InvalidCallException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

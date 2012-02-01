@@ -4,6 +4,15 @@ import fr.insarennes.fafdti.FAFException;
 
 public class CannotOverwriteTreeException extends FAFException {
 
+	public CannotOverwriteTreeException() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public CannotOverwriteTreeException(String message) {
+		super(message);
+		// TODO Auto-generated constructor stub
+	}
+
 	/**
 	 * 
 	 */

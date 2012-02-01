@@ -1,3 +1,6 @@
+/*********************
+Utiliser la classe Question déjà implémentée par fabien !
+*********************/
 //package fr.insarennes.fafdti.tree;
 //
 //import fr.insarennes.fafdti.visitors.QuestionExample;

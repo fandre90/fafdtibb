@@ -1,6 +1,8 @@
 package fr.insarennes.fafdti.tree;
 
-public class CannotOverwriteTreeException extends Exception {
+import fr.insarennes.fafdti.FAFException;
+
+public class CannotOverwriteTreeException extends FAFException {
 
 	/**
 	 * 

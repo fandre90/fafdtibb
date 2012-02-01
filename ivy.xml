@@ -1,0 +1,8 @@
+<ivy-module version="2.0">
+    <info organisation="insa" module="hadoop-wordcount2"/>
+    <dependencies>
+        <dependency org="org.apache.hadoop" name="hadoop-core" rev="0.20.203.0"/>
+        <dependency org="org.codehaus.jackson" name="jackson-core-lgpl" rev="1.8.5"/>
+        <dependency org="org.codehaus.jackson" name="jackson-mapper-lgpl" rev="1.8.5"/>
+    </dependencies>
+</ivy-module>

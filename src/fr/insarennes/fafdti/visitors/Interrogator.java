@@ -1,5 +1,6 @@
 package fr.insarennes.fafdti.visitors;
 
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Question;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreePending;
@@ -18,9 +19,14 @@ public class Interrogator implements DecisionTreeVisitor {
 	@Override
 	public void visitQuestion(DecisionTreeQuestion dtq) {
 		Question q = dtq.getQuestion();
-		if(q.ask(qExample.getValue(dtq.getLabel())))	
-				dtq.getYesTree().accept(this);
-		else	dtq.getNoTree().accept(this);
+		try {
+			if(q.ask(qExample.getValue(q.getCol())))	
+					dtq.getYesTree().accept(this);
+			else	dtq.getNoTree().accept(this);
+		} catch (FAFException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -32,7 +38,8 @@ public class Interrogator implements DecisionTreeVisitor {
 	public void visitPending(DecisionTreePending dtl) throws InvalidCallException{
 		throw new InvalidCallException();
 	}
-	public String getLabel(){
+	public String getLabel() throws FAFException{
+		if(label.equals("__"))	throw new FAFException("Asking result but questionning failed");
 		return label;
 	}
 }

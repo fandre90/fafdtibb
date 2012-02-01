@@ -226,10 +226,16 @@ public class Question implements WritableComparable<Question> {
 		return type;
 	}
 	
-	public boolean ask(String value) {
-		//TODO
-		//récupérer le type de la question pour caster la valeur
-		//faire le test et retourner
-		return false;
+	public boolean ask(String value) throws FAFException {
+		System.out.println(doubleValue.toString());
+		boolean res = false;
+		if(textValue!=null)	res = value.equals(textValue);
+		// value>doubleValue => true
+		else if(doubleValue!=null)	{
+			Double d = doubleValue.get();
+			res = Double.parseDouble(value) > d;
+		}
+		else throw new FAFException("Neither double nor text value to evaluate");
+		return res;
 	}
 }

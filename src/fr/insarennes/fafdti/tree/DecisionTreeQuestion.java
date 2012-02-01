@@ -1,21 +1,25 @@
 package fr.insarennes.fafdti.tree;
 
+import java.util.List;
+import java.util.ArrayList;
+import fr.insarennes.fafdti.AttrType;
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Question;
+import fr.insarennes.fafdti.visitors.Interrogator;
+import fr.insarennes.fafdti.visitors.QuestionExample;
 
 public class DecisionTreeQuestion implements DecisionTree {
 	private DecisionTree _yesTree;
 	private DecisionTree _noTree;
 	private Question _question;
-	private String label;
 	public DecisionTreeQuestion() {
 		_yesTree = new DecisionTreePending();
 		_noTree = new DecisionTreePending();
 	}
-	public DecisionTreeQuestion(Question q, DecisionTree dtyes, DecisionTree dtno, String lbl) {
+	public DecisionTreeQuestion(Question q, DecisionTree dtyes, DecisionTree dtno) {
 		_yesTree = dtyes;
 		_noTree = dtno;
 		_question = q;
-		label = lbl;
 	}
 	@Override
 	public void accept(DecisionTreeVisitor dtv) {
@@ -43,8 +47,22 @@ public class DecisionTreeQuestion implements DecisionTree {
 	public DecisionTree getNoTree() {
 		return _noTree;
 	}
-	public String getLabel() {
-		return label;
-	}
 
+	public static void main(String[] args) {
+		DecisionTree y = new DecisionTreeLeaf("caca");
+		DecisionTree n = new DecisionTreeLeaf("pipi");
+		DecisionTree tree = new DecisionTreeQuestion(new Question(0,AttrType.CONTINUOUS,70), y, n);
+		List<String> ex = new ArrayList<String>();
+		ex.add("10");
+		Interrogator inter = new Interrogator(new QuestionExample(ex));
+		//attention à ça, parceque si on caste et qu'il s'avère que le noeud n'a pas de fils, ça plante dans le visiteur!
+		//vaut mieux appeler avec un DecisionTreeQuestion pour etre sur qu'il a des fils
+		inter.visitQuestion((DecisionTreeQuestion)tree);
+		try {
+			System.out.println(inter.getLabel());
+		} catch (FAFException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

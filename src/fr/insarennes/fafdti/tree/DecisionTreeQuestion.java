@@ -16,7 +16,7 @@ public class DecisionTreeQuestion implements DecisionTree {
 	}
 	@Override
 	public void accept(DecisionTreeVisitor dtv) {
-		// TODO Auto-generated method stub
+		dtv.visitQuestion(this);
 		
 	}
 

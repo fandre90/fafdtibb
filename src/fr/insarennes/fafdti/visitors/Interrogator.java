@@ -6,15 +6,16 @@ import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreePending;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.DecisionTreeVisitor;
+import fr.insarennes.fafdti.tree.LeafLabels;
 
 public class Interrogator implements DecisionTreeVisitor {
 
 	private QuestionExample qExample;
-	private String label;
+	private LeafLabels labels;
 	
 	public Interrogator(QuestionExample qe){
 		qExample = qe;
-		label = new String("__");
+		labels = new LeafLabels();
 	}
 	@Override
 	public void visitQuestion(DecisionTreeQuestion dtq) {
@@ -31,15 +32,14 @@ public class Interrogator implements DecisionTreeVisitor {
 
 	@Override
 	public void visitLeaf(DecisionTreeLeaf dtl) {
-		label = dtl.getLabel();
+		labels = dtl.getLabels();
 	}
 	
 	@Override
 	public void visitPending(DecisionTreePending dtl) throws InvalidCallException{
-		throw new InvalidCallException();
+		throw new InvalidCallException(this.getClass().getName()+" cannot visit a DecisionTreePending");
 	}
-	public String getLabel() throws FAFException{
-		if(label.equals("__"))	throw new FAFException("Asking result but questionning failed");
-		return label;
+	public LeafLabels getResult(){
+		return labels;
 	}
 }

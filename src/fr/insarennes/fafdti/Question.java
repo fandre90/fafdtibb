@@ -9,8 +9,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.Text;
 
-import fr.insarennes.fafdti.visitors.QuestionExample;
-
 public class Question implements WritableComparable<Question> {
 
 	@Override
@@ -227,15 +225,16 @@ public class Question implements WritableComparable<Question> {
 	}
 	
 	public boolean ask(String value) throws FAFException {
-		System.out.println(doubleValue.toString());
+		//System.out.println("Question double value = "+doubleValue.toString());
 		boolean res = false;
-		if(textValue!=null)	res = value.equals(textValue);
-		// value>doubleValue => true
-		else if(doubleValue!=null)	{
+		if(getType().equals(AttrType.TEXT) || getType().equals(AttrType.DISCRETE))	
+			res = value.equals(textValue);
+		// value<=doubleValue => true
+		else if(getType().equals(AttrType.CONTINUOUS))	{
 			Double d = doubleValue.get();
-			res = Double.parseDouble(value) > d;
+			res = Double.parseDouble(value) <= d;
 		}
-		else throw new FAFException("Neither double nor text value to evaluate");
+		else throw new FAFException("No type matching");
 		return res;
 	}
 }

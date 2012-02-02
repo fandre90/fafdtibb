@@ -1,9 +1,9 @@
 package fr.insarennes.fafdti.tree;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import fr.insarennes.fafdti.AttrType;
-import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Question;
 import fr.insarennes.fafdti.visitors.Interrogator;
 import fr.insarennes.fafdti.visitors.QuestionExample;
@@ -48,9 +48,13 @@ public class DecisionTreeQuestion implements DecisionTree {
 		return _noTree;
 	}
 
-	public static void main(String[] args) {
-		DecisionTree y = new DecisionTreeLeaf("caca");
-		DecisionTree n = new DecisionTreeLeaf("pipi");
+	public static void main(String[] args) throws InvalidProbabilityComputationException {
+		HashMap<String,Double> hm1 = new HashMap<String,Double>();
+		hm1.put("caca", 1.0);
+		HashMap<String,Double> hm2 = new HashMap<String,Double>();
+		hm2.put("pipi", 1.0);
+		DecisionTree y = new DecisionTreeLeaf(new LeafLabels(hm1));
+		DecisionTree n = new DecisionTreeLeaf(new LeafLabels(hm2));
 		DecisionTree tree = new DecisionTreeQuestion(new Question(0,AttrType.CONTINUOUS,70), y, n);
 		List<String> ex = new ArrayList<String>();
 		ex.add("10");
@@ -59,8 +63,8 @@ public class DecisionTreeQuestion implements DecisionTree {
 		//vaut mieux appeler avec un DecisionTreeQuestion pour etre sur qu'il a des fils
 		inter.visitQuestion((DecisionTreeQuestion)tree);
 		try {
-			System.out.println(inter.getLabel());
-		} catch (FAFException e) {
+			System.out.println(inter.getResult().toStr());
+		} catch (InvalidProbabilityComputationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

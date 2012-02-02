@@ -2,10 +2,10 @@ package fr.insarennes.fafdti.tree;
 
 public class DecisionTreeLeaf implements DecisionTree {
 	
-	private String label;
+	private LeafLabels labels;
 	
-	DecisionTreeLeaf(String lbl){
-		label = lbl;
+	DecisionTreeLeaf(LeafLabels lbl){
+		labels = lbl;
 	}
 	@Override
 	public void accept(DecisionTreeVisitor dtv) {
@@ -18,5 +18,5 @@ public class DecisionTreeLeaf implements DecisionTree {
 		return false;
 	}
 
-	public String getLabel(){	return label;	}
+	public LeafLabels getLabels(){	return labels;	}
 }

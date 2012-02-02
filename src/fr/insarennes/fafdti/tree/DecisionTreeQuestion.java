@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import fr.insarennes.fafdti.AttrType;
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Question;
 import fr.insarennes.fafdti.visitors.Interrogator;
 import fr.insarennes.fafdti.visitors.QuestionExample;
@@ -48,7 +49,7 @@ public class DecisionTreeQuestion implements DecisionTree {
 		return _noTree;
 	}
 
-	public static void main(String[] args) throws InvalidProbabilityComputationException {
+	public static void main(String[] args) throws FAFException{
 		//Création de 3 feuilles
 		HashMap<String,Double> hm1 = new HashMap<String,Double>();
 		hm1.put("caca", 1.0);
@@ -72,11 +73,6 @@ public class DecisionTreeQuestion implements DecisionTree {
 		 * vaut mieux appeler avec un DecisionTreeQuestion pour etre sur qu'il a des fils */
 		inter.visitQuestion((DecisionTreeQuestion)tree);
 		//On affiche le résultat
-		try {
-			System.out.println(inter.getResult().toStr());
-		} catch (InvalidProbabilityComputationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		System.out.println(inter.getResult().toStr());
 	}
 }

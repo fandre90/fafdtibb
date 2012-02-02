@@ -5,8 +5,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import fr.insarennes.fafdti.FAFException;
+
 public class LeafLabels {
-	private static final double EPSILON_VALIDATION_PROBABILITY_COMPUTATION = 0.1;
+	//si la somme fait moins de 0.9, il y a a priori une erreur de calcul
+	public static final double EPSILON_VALIDATION_PROBABILITY_COMPUTATION = 0.1;
 	/* Map des labels liés à leur probabilité (entre 0 et 1) */
 	private Map<String,Double> labels;
 	
@@ -42,6 +45,17 @@ public class LeafLabels {
 			d+=tmp.doubleValue();
 			//System.out.println(lbl+":"+tmp);
 		}
-		return Math.abs(d - 1.0) < EPSILON_VALIDATION_PROBABILITY_COMPUTATION;
+		return Math.abs(d - 1.0) <= EPSILON_VALIDATION_PROBABILITY_COMPUTATION;
+	}
+	public class InvalidProbabilityComputationException extends FAFException {
+
+		public InvalidProbabilityComputationException(){
+			super("Probabilities sum is too far from (1.0-"+LeafLabels.EPSILON_VALIDATION_PROBABILITY_COMPUTATION+")");
+		}
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 	}
 }

@@ -28,10 +28,28 @@ public class DecisionTreeQuestion implements DecisionTree {
 	}
 	
 	public DecisionNodeSetter yesSetter(){
-		return new DecisionNodeSetter(_yesTree);
+		return new DecisionNodeSetter() {
+			public void set(DecisionTree node) throws CannotOverwriteTreeException{
+				if(_yesTree.canOverwrite()){
+					_yesTree = node;
+				} else {
+					throw new CannotOverwriteTreeException();
+				}
+			}
+			
+		};
 	}
 	public DecisionNodeSetter noSetter(){
-		return new DecisionNodeSetter(_noTree);
+		return new DecisionNodeSetter() {
+			public void set(DecisionTree node) throws CannotOverwriteTreeException{
+				if(_noTree.canOverwrite()){
+					_noTree = node;
+				} else {
+					throw new CannotOverwriteTreeException();
+				}
+			}
+			
+		};
 	}
 	public Question getQuestion() {
 		return _question;

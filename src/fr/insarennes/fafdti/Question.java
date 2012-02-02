@@ -226,9 +226,10 @@ public class Question implements WritableComparable<Question> {
 	
 	public boolean ask(String value) throws FAFException {
 		//System.out.println("Question double value = "+doubleValue.toString());
+		//System.out.println("Question text or discrete value = "+textValue);
 		boolean res = false;
 		if(getType().equals(AttrType.TEXT) || getType().equals(AttrType.DISCRETE))	
-			res = value.equals(textValue);
+			res = value.equals(textValue.toString());
 		// value<=doubleValue => true
 		else if(getType().equals(AttrType.CONTINUOUS))	{
 			Double d = doubleValue.get();

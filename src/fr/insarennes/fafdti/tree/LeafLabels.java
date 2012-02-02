@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class LeafLabels {
-	private static final double EPSILON_VALIDATION_PROBABILITY_COMPUTATION = 0.0001;
+	private static final double EPSILON_VALIDATION_PROBABILITY_COMPUTATION = 0.1;
 	/* Map des labels liés à leur probabilité (entre 0 et 1) */
 	private Map<String,Double> labels;
 	
@@ -28,7 +28,7 @@ public class LeafLabels {
 			String lbl = it.next();
 			Double d = labels.get(lbl);
 			d*=100;
-			res += lbl+" : "+d.toString()+"%";
+			res += lbl+" : "+d.toString()+"%"+"\n";
 		}
 		return res;		
 	}

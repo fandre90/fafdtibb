@@ -8,7 +8,7 @@ import java.util.Set;
 import fr.insarennes.fafdti.FAFException;
 
 public class LeafLabels {
-	//si la somme fait moins de 0.9, il y a a priori une erreur de calcul
+	//si la somme fait moins de 0.9 (90%) , il y a visiblement une erreur de calcul
 	public static final double EPSILON_VALIDATION_PROBABILITY_COMPUTATION = 0.1;
 	/* Map des labels liés à leur probabilité (entre 0 et 1) */
 	private Map<String,Double> labels;

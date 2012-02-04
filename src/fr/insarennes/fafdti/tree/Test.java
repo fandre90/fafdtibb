@@ -12,6 +12,8 @@ import fr.insarennes.fafdti.visitors.*;
 public class Test {
 
 	public static void main(String[] args) throws FAFException{
+		/**********test visitor Interrogator***********/
+		System.out.println("-----Test 1-----");
 		//Création de 3 feuilles
 		HashMap<String,Double> hm1 = new HashMap<String,Double>();
 		hm1.put("caca", 1.0);
@@ -36,9 +38,31 @@ public class Test {
 		inter.visitQuestion((DecisionTreeQuestion)tree);
 		//On affiche le résultat
 		System.out.println(inter.getResult().toStr());
+		System.out.println("------------------------------------");
+		/***********test visitor ToString*****************/
+		System.out.println("-----Test 2-----");
 		//On visite pour afficher l'arbre
 		ToString tostr = new ToString();
 		tostr.visitQuestion((DecisionTreeQuestion)tree);
 		System.out.println(tostr.getStr());
+		System.out.println("------------------------------------");
+		/*************************************************/
+		/*************test de construction d'arbre avec Pending et affichage*********/
+		System.out.println("-----Test 3-----");
+		ToString tostr2 = new ToString();
+		DecisionTreePending dtp1 = new DecisionTreePending();
+		DecisionTreePending dtp2 = new DecisionTreePending();
+		DecisionTreeQuestion root = new DecisionTreeQuestion(new Question(0,AttrType.CONTINUOUS,70), dtp1, dtp2);
+		tostr2.visitQuestion(root);
+		System.out.println(tostr2.getStr());
+		//on continue de construire l'arbre et on le réaffiche
+		tostr2 = new ToString();
+		HashMap<String,Double> hm3b = new HashMap<String,Double>();
+		hm3b.put("tt3", 1.0);
+		DecisionTree ly = new DecisionTreeLeaf(new LeafLabels(hm3b));
+		root.yesSetter().set(ly);
+		tostr2.visitQuestion(root);
+		System.out.println(tostr2.getStr());
+		System.out.println("------------------------------------");
 	}
 }

@@ -7,8 +7,7 @@ import java.util.List;
 import fr.insarennes.fafdti.AttrType;
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Question;
-import fr.insarennes.fafdti.visitors.Interrogator;
-import fr.insarennes.fafdti.visitors.QuestionExample;
+import fr.insarennes.fafdti.visitors.*;
 
 public class Test {
 
@@ -19,7 +18,7 @@ public class Test {
 		HashMap<String,Double> hm2 = new HashMap<String,Double>();
 		hm2.put("pipi", 1.0);
 		HashMap<String,Double> hm3 = new HashMap<String,Double>();
-		hm3.put("vomi", 0.42); hm3.put("ducul", 0.49);
+		hm3.put("vomi", 0.4253); hm3.put("ducul", 0.49);
 		DecisionTree y = new DecisionTreeLeaf(new LeafLabels(hm1));
 		DecisionTree n = new DecisionTreeLeaf(new LeafLabels(hm2));
 		DecisionTree f = new DecisionTreeLeaf(new LeafLabels(hm3));
@@ -37,5 +36,9 @@ public class Test {
 		inter.visitQuestion((DecisionTreeQuestion)tree);
 		//On affiche le résultat
 		System.out.println(inter.getResult().toStr());
+		//On visite pour afficher l'arbre
+		ToString tostr = new ToString();
+		tostr.visitQuestion((DecisionTreeQuestion)tree);
+		System.out.println(tostr.getStr());
 	}
 }

@@ -1,7 +1,6 @@
 package fr.insarennes.fafdti.visitors;
 
 import fr.insarennes.fafdti.tree.*;
-import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
 
 public class ToString implements DecisionTreeVisitor{
 	private String str;
@@ -20,13 +19,7 @@ public class ToString implements DecisionTreeVisitor{
 	}
 
 	public void visitLeaf(DecisionTreeLeaf dtl) {
-		try {
-			str += "Leaf : \n"+dtl.getLabels().toStr();
-		} catch (InvalidProbabilityComputationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		str += "Leaf : \n"+dtl.getLabels().toString();		
 	}
 
 	public void visitPending(DecisionTreePending dtp) {

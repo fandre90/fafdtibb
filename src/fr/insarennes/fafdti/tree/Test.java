@@ -37,7 +37,7 @@ public class Test {
 		 * vaut mieux appeler avec un DecisionTreeQuestion pour etre sur qu'il a des fils */
 		inter.visitQuestion((DecisionTreeQuestion)tree);
 		//On affiche le résultat
-		System.out.println(inter.getResult().toStr());
+		System.out.println(inter.getResult().toString());
 		System.out.println("------------------------------------");
 		/***********test visitor ToString*****************/
 		System.out.println("-----Test 2-----");

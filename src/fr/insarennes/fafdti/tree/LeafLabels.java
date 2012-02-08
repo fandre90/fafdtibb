@@ -1,6 +1,5 @@
 package fr.insarennes.fafdti.tree;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -13,17 +12,12 @@ public class LeafLabels {
 	/* Map des labels liés à leur probabilité (entre 0 et 1) */
 	private Map<String,Double> labels;
 	
-	public LeafLabels(){
-		labels = new HashMap<String,Double>();
-	}
-	
 	public LeafLabels(Map<String,Double> lbls) throws InvalidProbabilityComputationException{
 		labels = lbls;
 		if (!isValid()) throw new InvalidProbabilityComputationException();
 	}
 	
-	public String toStr() throws InvalidProbabilityComputationException{
-		if(!isValid())	throw new InvalidProbabilityComputationException();
+	public String toString(){
 		String res = new String("");
 		Set<String> lbls = labels.keySet();
 		Iterator<String> it = lbls.iterator();

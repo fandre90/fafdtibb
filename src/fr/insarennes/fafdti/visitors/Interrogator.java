@@ -1,5 +1,7 @@
 package fr.insarennes.fafdti.visitors;
 
+import java.util.HashMap;
+
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Question;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
@@ -7,6 +9,7 @@ import fr.insarennes.fafdti.tree.DecisionTreePending;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.DecisionTreeVisitor;
 import fr.insarennes.fafdti.tree.LeafLabels;
+import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
 
 public class Interrogator implements DecisionTreeVisitor {
 
@@ -15,7 +18,14 @@ public class Interrogator implements DecisionTreeVisitor {
 	
 	public Interrogator(QuestionExample qe){
 		qExample = qe;
-		labels = new LeafLabels();
+		HashMap<String,Double> lbls = new HashMap<String,Double>();
+		lbls.put("warning -- unbuild", 1.0);
+		try {
+			labels = new LeafLabels(lbls);
+		} catch (InvalidProbabilityComputationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	@Override
 	public void visitQuestion(DecisionTreeQuestion dtq) {

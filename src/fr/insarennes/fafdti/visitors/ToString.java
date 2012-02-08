@@ -14,7 +14,7 @@ public class ToString implements DecisionTreeVisitor{
 		str += "Question node : "+dtq.getQuestion().toString()+"  {\n";
 		str += "Yes son : ";
 		dtq.getYesTree().accept(this);
-		str += "No son :";
+		str += "No son : ";
 		dtq.getNoTree().accept(this);
 		str += "\n}";		
 	}

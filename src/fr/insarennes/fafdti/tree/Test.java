@@ -75,5 +75,12 @@ public class Test {
 		System.out.println(tostr3.getStr());
 		System.out.println("------------------------------------");		
 		
+		/*****test pour un interrogator qui a pas encore visiter !***********/
+		System.out.println("----Test 5-----");
+		List<String> lex = new ArrayList<String>();
+		lex.add("jjjj");
+		Interrogator in = new Interrogator(new QuestionExample(lex));
+		System.out.println(in.getResult().toString());
+		System.out.println("-----------------------------------");
 	}
 }

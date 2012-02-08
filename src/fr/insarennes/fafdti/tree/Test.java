@@ -16,11 +16,11 @@ public class Test {
 		System.out.println("-----Test 1-----");
 		//Création de 3 feuilles
 		HashMap<String,Double> hm1 = new HashMap<String,Double>();
-		hm1.put("caca", 1.0);
+		hm1.put("class1", 1.0);
 		HashMap<String,Double> hm2 = new HashMap<String,Double>();
-		hm2.put("pipi", 1.0);
+		hm2.put("class2", 1.0);
 		HashMap<String,Double> hm3 = new HashMap<String,Double>();
-		hm3.put("vomi", 0.4253); hm3.put("ducul", 0.49);
+		hm3.put("class3", 0.4253); hm3.put("class4", 0.49);
 		DecisionTree y = new DecisionTreeLeaf(new LeafLabels(hm1));
 		DecisionTree n = new DecisionTreeLeaf(new LeafLabels(hm2));
 		DecisionTree f = new DecisionTreeLeaf(new LeafLabels(hm3));
@@ -58,11 +58,22 @@ public class Test {
 		//on continue de construire l'arbre et on le réaffiche
 		tostr2 = new ToString();
 		HashMap<String,Double> hm3b = new HashMap<String,Double>();
-		hm3b.put("tt3", 1.0);
+		hm3b.put("classtt3", 1.0);
 		DecisionTree ly = new DecisionTreeLeaf(new LeafLabels(hm3b));
 		root.yesSetter().set(ly);
 		tostr2.visitQuestion(root);
 		System.out.println(tostr2.getStr());
 		System.out.println("------------------------------------");
+		/**************************************************/
+		/*******test de construction avec holder et pending****************/
+		System.out.println("-----Test 4-----");
+		DecisionTreeHolder holder = new DecisionTreeHolder();
+		DecisionTreeQuestion root2 = new DecisionTreeQuestion(new Question(0,AttrType.TEXT,"texxxxxxt"));
+		holder.getNodeSetter().set(root2);
+		ToString tostr3 = new ToString();
+		tostr3.visitQuestion((DecisionTreeQuestion)holder.getRoot());
+		System.out.println(tostr3.getStr());
+		System.out.println("------------------------------------");		
+		
 	}
 }

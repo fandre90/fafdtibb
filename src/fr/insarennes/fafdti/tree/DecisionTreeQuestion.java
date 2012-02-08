@@ -7,9 +7,11 @@ public class DecisionTreeQuestion implements DecisionTree {
 	private DecisionTree _yesTree;
 	private DecisionTree _noTree;
 	private Question _question;
-	public DecisionTreeQuestion() {
+
+	public DecisionTreeQuestion(Question q){
 		_yesTree = new DecisionTreePending();
 		_noTree = new DecisionTreePending();
+		_question = q;
 	}
 	public DecisionTreeQuestion(Question q, DecisionTree dtyes, DecisionTree dtno) {
 		_yesTree = dtyes;

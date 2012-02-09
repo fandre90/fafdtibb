@@ -1,5 +1,6 @@
 package fr.insarennes.fafdti.tree;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,52 +36,63 @@ public class Test {
 		//On lance la visite sur la racine
 		/*attention à ça, parceque si on caste et qu'il s'avère que le noeud n'a pas de fils, ça plante dans le visiteur!
 		 * vaut mieux appeler avec un DecisionTreeQuestion pour etre sur qu'il a des fils */
-		inter.visitQuestion((DecisionTreeQuestion)tree);
+		tree.accept(inter);
 		//On affiche le résultat
 		System.out.println(inter.getResult().toString());
 		System.out.println("------------------------------------");
-		/***********test visitor ToString*****************/
-		System.out.println("-----Test 2-----");
-		//On visite pour afficher l'arbre
-		ToString tostr = new ToString();
-		tostr.visitQuestion((DecisionTreeQuestion)tree);
-		System.out.println(tostr.getStr());
-		System.out.println("------------------------------------");
-		/*************************************************/
-		/*************test de construction d'arbre avec Pending et affichage*********/
-		System.out.println("-----Test 3-----");
-		ToString tostr2 = new ToString();
-		DecisionTreePending dtp1 = new DecisionTreePending();
-		DecisionTreePending dtp2 = new DecisionTreePending();
-		DecisionTreeQuestion root = new DecisionTreeQuestion(new Question(0,AttrType.CONTINUOUS,70), dtp1, dtp2);
-		tostr2.visitQuestion(root);
-		System.out.println(tostr2.getStr());
-		//on continue de construire l'arbre et on le réaffiche
-		tostr2 = new ToString();
-		HashMap<String,Double> hm3b = new HashMap<String,Double>();
-		hm3b.put("classtt3", 1.0);
-		DecisionTree ly = new DecisionTreeLeaf(new LeafLabels(hm3b));
-		root.yesSetter().set(ly);
-		tostr2.visitQuestion(root);
-		System.out.println(tostr2.getStr());
-		System.out.println("------------------------------------");
-		/**************************************************/
-		/*******test de construction avec holder et pending****************/
-		System.out.println("-----Test 4-----");
-		DecisionTreeHolder holder = new DecisionTreeHolder();
-		DecisionTreeQuestion root2 = new DecisionTreeQuestion(new Question(0,AttrType.TEXT,"texxxxxxt"));
-		holder.getNodeSetter().set(root2);
-		ToString tostr3 = new ToString();
-		tostr3.visitQuestion((DecisionTreeQuestion)holder.getRoot());
-		System.out.println(tostr3.getStr());
-		System.out.println("------------------------------------");		
+		GraphicExporter graph = new GraphicExporter(tree, "test");
+		graph.launch();
+		try {
+			Runtime.getRuntime().exec("dot -Tpng -otest.png test.dot");
+			Runtime.getRuntime().exec("display test.png");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		/*****test pour un interrogator qui a pas encore visiter !***********/
-		System.out.println("----Test 5-----");
-		List<String> lex = new ArrayList<String>();
-		lex.add("jjjj");
-		Interrogator in = new Interrogator(new QuestionExample(lex));
-		System.out.println(in.getResult().toString());
-		System.out.println("-----------------------------------");
+//		/***********test visitor ToString*****************/
+//		System.out.println("-----Test 2-----");
+//		//On visite pour afficher l'arbre
+//		ToString tostr = new ToString();
+//		tree.accept(tostr);
+//		System.out.println(tostr.getStr());
+//		System.out.println("------------------------------------");
+//		/*************************************************/
+//		/*************test de construction d'arbre avec Pending et affichage*********/
+//		System.out.println("-----Test 3-----");
+//		ToString tostr2 = new ToString();
+//		DecisionTreePending dtp1 = new DecisionTreePending();
+//		DecisionTreePending dtp2 = new DecisionTreePending();
+//		DecisionTreeQuestion root = new DecisionTreeQuestion(new Question(0,AttrType.CONTINUOUS,70), dtp1, dtp2);
+//		root.accept(tostr2);
+//		System.out.println(tostr2.getStr());
+//		//on continue de construire l'arbre et on le réaffiche
+//		tostr2 = new ToString();
+//		HashMap<String,Double> hm3b = new HashMap<String,Double>();
+//		hm3b.put("classtt3", 1.0);
+//		DecisionTree ly = new DecisionTreeLeaf(new LeafLabels(hm3b));
+//		root.yesSetter().set(ly);
+//		root.accept(tostr2);
+//		System.out.println(tostr2.getStr());
+//		System.out.println("------------------------------------");
+//		/**************************************************/
+//		/*******test de construction avec holder et pending****************/
+//		System.out.println("-----Test 4-----");
+//		DecisionTreeHolder holder = new DecisionTreeHolder();
+//		DecisionTreeQuestion root2 = new DecisionTreeQuestion(new Question(0,AttrType.TEXT,"texxxxxxt"));
+//		holder.getNodeSetter().set(root2);
+//		ToString tostr3 = new ToString();
+//		holder.getRoot().accept(tostr3);
+//		System.out.println(tostr3.getStr());
+//		System.out.println("------------------------------------");		
+//		
+//		/*****test pour un interrogator qui a pas encore visiter !***********/
+//		System.out.println("----Test 5-----");
+//		List<String> lex = new ArrayList<String>();
+//		lex.add("jjjj");
+//		Interrogator in = new Interrogator(new QuestionExample(lex));
+//		System.out.println(in.getResult().toString());
+//		System.out.println("-----------------------------------");
+		
 	}
 }

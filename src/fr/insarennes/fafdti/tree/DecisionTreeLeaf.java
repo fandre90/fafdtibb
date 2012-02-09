@@ -4,7 +4,7 @@ public class DecisionTreeLeaf implements DecisionTree {
 	
 	private LeafLabels labels;
 	
-	DecisionTreeLeaf(LeafLabels lbl){
+	public DecisionTreeLeaf(LeafLabels lbl){
 		labels = lbl;
 	}
 	@Override

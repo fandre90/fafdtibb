@@ -29,6 +29,11 @@ public class LeafLabels {
 		}
 		return res;		
 	}
+	
+	public Map<String,Double> getLabels(){
+		return labels;
+	}
+	
 	private boolean isValid(){
 		double d = 0.0;
 		Set<String> lbls = labels.keySet();

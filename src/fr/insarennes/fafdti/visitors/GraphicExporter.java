@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import fr.insarennes.fafdti.AttrType;
 import fr.insarennes.fafdti.Question;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
@@ -22,13 +23,15 @@ public class GraphicExporter implements DecisionTreeVisitor {
 	private String filename;
 	private DecisionTree root;
 	private int iid;
-	boolean pass2;
+	private StringBuilder items;
+	private StringBuilder arcs;
 	
 	public GraphicExporter(DecisionTree dt, String filename){
 		root = dt;
 		this.filename = filename;
 		iid = 0;
-		pass2 = false;
+		items = new StringBuilder();
+		arcs = new StringBuilder();
 		//on ouvre le flux de sortie
 		try {
 			FileWriter fw = new FileWriter(filename+".dot");
@@ -42,12 +45,11 @@ public class GraphicExporter implements DecisionTreeVisitor {
 	public void launch(){
 		//on ajoute l'entete
 		this.writeHead();
-		//on lance la 1ère passe
+		//on lance la visite
 		root.accept(this);
-		iid = 0;
-		pass2 = true;
-		//on lance la 2ème passe
-		root.accept(this);
+		//on écrit le résultat
+		out.println(items.toString());
+		out.println(arcs.toString());
 		//on clot le fichier
 		this.finish();
 	}
@@ -55,17 +57,21 @@ public class GraphicExporter implements DecisionTreeVisitor {
 	public void visitQuestion(DecisionTreeQuestion dtq) {
 		String name = "id"+iid;
 		iid++;
-		if(!pass2){
-			//Texte dans le noeud
-			StringBuilder content = new StringBuilder();
-			Question q = dtq.getQuestion();
-			content.append("Feature_"+q.getCol()+"_Value_"+q.getStringValue());
-			out.println(name+"[shape=diamond, label=\""+content.toString()+"\"];");
-		}
-		else{
-			out.println(name+"->"+"id"+iid+" [label=yes];");
-			out.println(name+"->"+"id"+(iid+1)+" [label=no];");
-		}
+		//item
+		//Texte dans le noeud
+		StringBuilder content = new StringBuilder();
+		Question q = dtq.getQuestion();
+		content.append("Feature "+q.getCol()+" Value "+q.getStringValue());
+		//Couleur du noeud
+		String color = new String();
+		AttrType type = q.getType();
+		if(type==AttrType.CONTINUOUS)	color = "red";
+		else if(type==AttrType.DISCRETE)	color = "green";
+		else if(type==AttrType.TEXT)	color = "blue";
+		items.append(name+"[shape=diamond, label=\""+content.toString()+"\", color="+color+"];\n");
+		//arcs
+		arcs.append(name+"->"+"id"+iid+" [label=yes];\n");
+		arcs.append(name+"->"+"id"+(iid+1)+" [label=no];\n");
 		dtq.getYesTree().accept(this);
 		dtq.getNoTree().accept(this);
 	}
@@ -74,18 +80,16 @@ public class GraphicExporter implements DecisionTreeVisitor {
 	public void visitLeaf(DecisionTreeLeaf dtl) {
 		String name = "id"+iid;
 		iid++;
-		if(!pass2){
-			//Texte dans la feuille
-			StringBuilder content = new StringBuilder();
-			Map<String,Double> map = dtl.getLabels().getLabels();
-			Set<String> lbls = map.keySet();
-			Iterator<String> it = lbls.iterator();
-			while(it.hasNext()){
-				String lb = it.next();
-				content.append(lb+"_"+String.valueOf(map.get(lb))+"_");
-			}
-			out.println(name+"[shape=box, label=\""+content.toString()+"\"];");
+		//Texte dans la feuille
+		StringBuilder content = new StringBuilder();
+		Map<String,Double> map = dtl.getLabels().getLabels();
+		Set<String> lbls = map.keySet();
+		Iterator<String> it = lbls.iterator();
+		while(it.hasNext()){
+			String lb = it.next();
+			content.append(lb+" "+String.valueOf(map.get(lb))+"\\n");
 		}
+		items.append(name+"[shape=box, label=\""+content.toString()+"\"];\n");
 	}
 	
 	@Override
@@ -99,6 +103,7 @@ public class GraphicExporter implements DecisionTreeVisitor {
 		out.println("digraph "+filename+"FAFgraph{");
 		out.println("ratio = \"auto\";");
 		out.println("fontsize = 10;");
+		out.println();
 	}
 
 	private void finish(){

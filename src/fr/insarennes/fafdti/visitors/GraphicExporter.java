@@ -71,8 +71,8 @@ public class GraphicExporter implements DecisionTreeVisitor {
 		items.append(name+"[shape=diamond, label=\""+content.toString()+"\", color="+color+"];\n");
 		//arcs
 		arcs.append(name+"->"+"id"+iid+" [label=yes];\n");
-		arcs.append(name+"->"+"id"+(iid+1)+" [label=no];\n");
 		dtq.getYesTree().accept(this);
+		arcs.append(name+"->"+"id"+iid+" [label=no];\n");
 		dtq.getNoTree().accept(this);
 	}
 

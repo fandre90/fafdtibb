@@ -85,6 +85,7 @@ public class Test {
 //		Interrogator in = new Interrogator(new QuestionExample(lex));
 //		System.out.println(in.getResult().toString());
 //		System.out.println("-----------------------------------");
+		/***********Test du Graph Exporter***************/
 		DecisionTreeQuestion gtree = new DecisionTreeQuestion(new Question(2,AttrType.TEXT,"t1"));
 		DecisionTreeQuestion ys = new DecisionTreeQuestion(new Question(0,AttrType.DISCRETE, "true"));
 		DecisionTreeQuestion ns = new DecisionTreeQuestion(new Question(1,AttrType.CONTINUOUS, 42));
@@ -111,6 +112,18 @@ public class Test {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		/**********Test du checker***********/
+		Checker checker = new Checker();
+		gtree.accept(checker);
+		System.out.println(checker.checkOK());
+		//2ème test
+		DecisionTreeQuestion dtqq = new DecisionTreeQuestion(new Question(1,AttrType.CONTINUOUS, 4.6));
+		Checker ch2 = new Checker();
+		dtqq.accept(ch2);
+		System.out.println(ch2.checkOK());
+		//3ème test
+		Checker ch3 = new Checker(true);
+		dtqq.accept(ch3);
+		System.out.println(ch3.getNbPending());
 	}
 }

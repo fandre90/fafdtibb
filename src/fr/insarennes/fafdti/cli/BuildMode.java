@@ -7,13 +7,15 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import fr.insarennes.fafdti.cli.CLIEntryPoint.CMode;
+
 public class BuildMode implements Mode{
 
 	private Options opts;
 	
 	BuildMode(){
 		opts = new Options();
-		Option o1 = new Option("b", "build", false, "Choose building mode");
+		Option o1 = new Option(CMode.BUILDMODE.substring(2,3), CMode.BUILDMODE.substring(2), false, "Choose building mode");
 		Option o2 = new Option("n", "names", true, "Set .names filename");
 		Option o3 = new Option("d", "data", true, "Set .data filename");
 		Option o4 = new Option("o", "output", true, "Set output filename");

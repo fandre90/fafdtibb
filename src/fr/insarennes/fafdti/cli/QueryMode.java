@@ -11,6 +11,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import fr.insarennes.fafdti.cli.CLIEntryPoint.CMode;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 
 public class QueryMode implements Mode{
@@ -19,9 +20,9 @@ public class QueryMode implements Mode{
 	
 	QueryMode(){
 		opts = new Options();
-		Option o1 = new Option("q", "query", false, "Choose query mode");
+		Option o1 = new Option(CMode.QUERYMODE.substring(2,3) ,CMode.QUERYMODE.substring(2) , false, "Choose query mode");
 		Option o2 = new Option("i", "input", true, "Set .xml filename");
-		Option o3 = new Option("q", "question", true, "Set the question for asking to tree.xml");
+		Option o3 = new Option("a", "ask", true, "Set the question for asking to tree.xml");
 		o2.setRequired(true);
 		o3.setRequired(true);
 		opts.addOption(o1);
@@ -43,10 +44,10 @@ public class QueryMode implements Mode{
 		}
 		
 		System.out.println("xml = "+cmdline.getOptionValue('i'));
-		System.out.println("question = "+cmdline.getOptionValue('q'));
+		System.out.println("question = "+cmdline.getOptionValue('a'));
 		
 		//On construit l'objet QuestionExample nécessaire pour interroger un arbre
-		StringTokenizer tk = new StringTokenizer(cmdline.getOptionValue('q'));
+		StringTokenizer tk = new StringTokenizer(cmdline.getOptionValue('a'));
 		List<String> qList = new ArrayList<String>();
 		while(tk.hasMoreElements())
 			qList.add(tk.nextToken(";"));

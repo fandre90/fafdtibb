@@ -17,6 +17,8 @@ public class BuildMode implements Mode{
 		Option o2 = new Option("n", "names", true, "Set .names filename");
 		Option o3 = new Option("d", "data", true, "Set .data filename");
 		Option o4 = new Option("o", "output", true, "Set output filename");
+		o2.setRequired(true);
+		o3.setRequired(true);
 		opts.addOption(o1);
 		opts.addOption(o2);
 		opts.addOption(o3);
@@ -35,12 +37,8 @@ public class BuildMode implements Mode{
 			CLIEntryPoint.displayHelp();
 			System.exit(0);
 		}
-		if(!cmdline.hasOption('n') || !cmdline.hasOption('d')){
-			CLIEntryPoint.displayHelp();
-			System.exit(0);
-		}
 		
-		String out = new String("");
+		String out = new String(cmdline.getOptionValue('d'));
 		if(cmdline.hasOption('o'))	out = cmdline.getOptionValue('o');
 		
 		System.out.println("names = "+cmdline.getOptionValue('n'));

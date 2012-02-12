@@ -22,6 +22,8 @@ public class QueryMode implements Mode{
 		Option o1 = new Option("q", "query", false, "Choose query mode");
 		Option o2 = new Option("i", "input", true, "Set .xml filename");
 		Option o3 = new Option("q", "question", true, "Set the question for asking to tree.xml");
+		o2.setRequired(true);
+		o3.setRequired(true);
 		opts.addOption(o1);
 		opts.addOption(o2);
 		opts.addOption(o3);
@@ -36,10 +38,6 @@ public class QueryMode implements Mode{
 			e.printStackTrace();
 		}
 		if(cmdline == null)	{
-			CLIEntryPoint.displayHelp();
-			System.exit(0);
-		}
-		if(!cmdline.hasOption('i') || !cmdline.hasOption('q')){
 			CLIEntryPoint.displayHelp();
 			System.exit(0);
 		}

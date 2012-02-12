@@ -1,7 +1,5 @@
 package fr.insarennes.fafdti.cli;
 
-import fr.insarennes.fafdti.cli.CLIEntryPoint.CMode;
-
 public class Test {
 	public static void main(String[] args) {
 		String sline = "--build   -n titi    -d toto -output tutout";

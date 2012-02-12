@@ -14,7 +14,7 @@ import org.apache.commons.cli.ParseException;
 import fr.insarennes.fafdti.cli.CLIEntryPoint.CMode;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 
-public class QueryMode implements Mode{
+public class QueryMode implements IMode{
 
 	private Options opts;
 	
@@ -35,12 +35,9 @@ public class QueryMode implements Mode{
 		try {
 			cmdline = parser.parse(opts, line);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		if(cmdline == null)	{
-			CLIEntryPoint.displayHelp();
-			System.exit(0);
+			this.displayHelp();
+			return;
 		}
 		
 		System.out.println("xml = "+cmdline.getOptionValue('i'));
@@ -59,6 +56,10 @@ public class QueryMode implements Mode{
 		
 		//On visite !
 		
+	}
+	@Override
+	public void displayHelp() {
+		System.out.println("Query mode help");
 	}
 
 }

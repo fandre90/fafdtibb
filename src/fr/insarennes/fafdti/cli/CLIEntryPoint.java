@@ -2,10 +2,6 @@ package fr.insarennes.fafdti.cli;
 
 public class CLIEntryPoint {
 	
-	public static void displayHelp(){
-		System.out.println("display help");
-	}
-	
 	public CLIEntryPoint(String sline) {
 		String[] line = sline.split(" ");
 		String mode = line[0];
@@ -19,11 +15,14 @@ public class CLIEntryPoint {
 			(new QueryMode()).execute(line);
 		}
 		else if(mode.equals(CMode.HELPMODE) || mode.equals(CMode.HELPMODE.substring(1,3))){
-			displayHelp();
+			this.displayHelp();
 		}
 		else{
-			displayHelp();
+			this.displayHelp();
 		}
+	}
+	public void displayHelp(){
+		System.out.println("Main help");
 	}
 	public class CMode{
 		public static final String QUERYMODE = "--query";

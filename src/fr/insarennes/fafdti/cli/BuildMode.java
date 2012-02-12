@@ -9,7 +9,7 @@ import org.apache.commons.cli.ParseException;
 
 import fr.insarennes.fafdti.cli.CLIEntryPoint.CMode;
 
-public class BuildMode implements Mode{
+public class BuildMode implements IMode{
 
 	private Options opts;
 	
@@ -32,12 +32,9 @@ public class BuildMode implements Mode{
 		try {
 			cmdline = parser.parse(opts, line);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		if(cmdline == null)	{
-			CLIEntryPoint.displayHelp();
-			System.exit(0);
+			this.displayHelp();
+			return;
 		}
 		
 		String out = new String(cmdline.getOptionValue('d'));
@@ -46,6 +43,10 @@ public class BuildMode implements Mode{
 		System.out.println("names = "+cmdline.getOptionValue('n'));
 		System.out.println("data = "+cmdline.getOptionValue('d'));
 		System.out.println("output = "+out);
+	}
+	@Override
+	public void displayHelp() {
+		System.out.println("Build mode help");
 	}
 
 }

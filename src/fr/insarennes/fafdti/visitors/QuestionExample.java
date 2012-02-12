@@ -12,5 +12,13 @@ public class QuestionExample {
 	public String getValue(int label) {
 		return qExample.get(label);
 	}
+	
+	public String toString(){
+		String res = "";
+		for(int i=0 ; i<qExample.size() ; i++)
+			res+="Feature "+i+", Value="+qExample.get(i)+"\n";
+		return res;
+		
+	}
 
 }

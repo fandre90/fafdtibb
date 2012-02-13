@@ -7,14 +7,22 @@ public class CLIEntryPoint {
 		String mode = line[0];
 		/* On récupère le mode à la main pour appeler le bon mode avec les bonnes options */
 		//Build mode
-		if(mode.equals(CMode.BUILDMODE) || mode.equals(CMode.BUILDMODE.substring(1,3))){
+		if(checkMode(mode,CMode.BUILDMODE)){
 			(new BuildMode()).execute(line);
 		}
 		//Query mode
-		else if (mode.equals(CMode.QUERYMODE) || mode.equals(CMode.QUERYMODE.substring(1,3))){
+		else if (checkMode(mode,CMode.QUERYMODE)){
 			(new QueryMode()).execute(line);
 		}
-		else if(mode.equals(CMode.HELPMODE) || mode.equals(CMode.HELPMODE.substring(1,3))){
+		//Utils mode
+		else if(checkMode(mode,CMode.UTILSMODEL)){
+			//This mode need an argument for option mode to specify what to do
+			if(line.length<2)
+				UtilsMode.displayHelp();
+			else
+				(new UtilsMode(line[1])).execute(line);
+		}
+		else if(checkMode(mode,CMode.HELPMODE)){
 			displayHelp();
 		}
 		else{
@@ -23,12 +31,20 @@ public class CLIEntryPoint {
 	}
 	public static void displayHelp(){
 		System.out.println("===FAFDTIBB help===");
+		System.out.println("USAGE : --help");
 		BuildMode.displayHelp();
 		QueryMode.displayHelp();
+	}
+	private boolean checkMode(String mode, String withlongMode){
+		return mode.equals(withlongMode) || mode.equals(getShort(withlongMode));
+	}
+	private String getShort(String longOption){
+		return longOption.substring(1,3);
 	}
 	public class CMode{
 		public static final String QUERYMODE = "--query";
 		public static final String BUILDMODE = "--build";
+		public static final String UTILSMODEL = "--utils";
 		public static final String HELPMODE = "--help";
 	}
 }

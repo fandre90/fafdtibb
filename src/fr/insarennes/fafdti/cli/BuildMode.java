@@ -33,7 +33,7 @@ public class BuildMode implements IMode{
 			cmdline = parser.parse(opts, line);
 		} catch (ParseException e) {
 			e.printStackTrace();
-			this.displayHelp();
+			displayHelp();
 			return;
 		}
 		
@@ -44,9 +44,9 @@ public class BuildMode implements IMode{
 		System.out.println("data = "+cmdline.getOptionValue('d'));
 		System.out.println("output = "+out);
 	}
-	@Override
-	public void displayHelp() {
-		System.out.println("Build mode help");
+	public static void displayHelp() {
+		System.out.println("---Build mode help---");
+		System.out.println("USAGE : "+CMode.BUILDMODE+" --names filename --data filename [--output filename]");
 	}
 
 }

@@ -15,14 +15,16 @@ public class CLIEntryPoint {
 			(new QueryMode()).execute(line);
 		}
 		else if(mode.equals(CMode.HELPMODE) || mode.equals(CMode.HELPMODE.substring(1,3))){
-			this.displayHelp();
+			displayHelp();
 		}
 		else{
-			this.displayHelp();
+			displayHelp();
 		}
 	}
-	public void displayHelp(){
-		System.out.println("Main help");
+	public static void displayHelp(){
+		System.out.println("===FAFDTIBB help===");
+		BuildMode.displayHelp();
+		QueryMode.displayHelp();
 	}
 	public class CMode{
 		public static final String QUERYMODE = "--query";

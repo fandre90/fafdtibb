@@ -36,7 +36,7 @@ public class QueryMode implements IMode{
 			cmdline = parser.parse(opts, line);
 		} catch (ParseException e) {
 			e.printStackTrace();
-			this.displayHelp();
+			displayHelp();
 			return;
 		}
 		
@@ -57,9 +57,9 @@ public class QueryMode implements IMode{
 		//On visite !
 		
 	}
-	@Override
-	public void displayHelp() {
-		System.out.println("Query mode help");
+	public static void displayHelp() {
+		System.out.println("---Query mode help---");
+		System.out.println("USAGE : "+CMode.QUERYMODE+" --input filename --ask feature_0;feature_1;...feature_n");
 	}
 
 }

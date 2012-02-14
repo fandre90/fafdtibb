@@ -46,7 +46,7 @@ public class BuildMode implements IMode{
 	}
 	public static void displayHelp() {
 		System.out.println("---Build mode help---");
-		System.out.println("USAGE : "+CMode.BUILDMODE+" --names filename --data filename [--output filename]");
+		System.out.println("USAGE : "+FAFMain.HEAD_USAGE+" "+CMode.BUILDMODE+" --names filename --data filename [--output filename]");
 	}
 
 }

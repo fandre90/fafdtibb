@@ -1,6 +1,12 @@
 package fr.insarennes.fafdti.cli;
 
-public class Test {
+public class FAFMain {
+	
+	public static final String APP_NAME = "faf";
+	public static final int MAJOR_VERSION = 1;
+	public static final int MINOR_VERSION = 0;
+	public static final String HEAD_USAGE = "java -jar "+APP_NAME+MAJOR_VERSION+"."+MINOR_VERSION+".jar";
+	
 	public static void main(String[] args) {
 		String sline = "--build   -n titi    -d toto --output tutout";
 		new CLIEntryPoint(sline);

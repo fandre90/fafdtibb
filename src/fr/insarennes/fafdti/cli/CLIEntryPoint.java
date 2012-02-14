@@ -31,7 +31,7 @@ public class CLIEntryPoint {
 	}
 	public static void displayHelp(){
 		System.out.println("===FAFDTIBB help===");
-		System.out.println("USAGE : --help");
+		System.out.println("USAGE : "+FAFMain.HEAD_USAGE+" --help");
 		BuildMode.displayHelp();
 		QueryMode.displayHelp();
 	}

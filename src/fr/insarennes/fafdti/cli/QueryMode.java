@@ -59,7 +59,7 @@ public class QueryMode implements IMode{
 	}
 	public static void displayHelp() {
 		System.out.println("---Query mode help---");
-		System.out.println("USAGE : "+CMode.QUERYMODE+" --input filename --ask feature_0;feature_1;...feature_n");
+		System.out.println("USAGE : "+FAFMain.HEAD_USAGE+" "+CMode.QUERYMODE+" --input filename --ask feature_0;feature_1;...feature_n");
 	}
 
 }

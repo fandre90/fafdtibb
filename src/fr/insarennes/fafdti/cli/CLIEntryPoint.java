@@ -15,7 +15,7 @@ public class CLIEntryPoint {
 			(new QueryMode()).execute(line);
 		}
 		//Utils mode
-		else if(checkMode(mode,CMode.UTILSMODEL)){
+		else if(checkMode(mode,CMode.UTILSMODE)){
 			//This mode need an argument for option mode to specify what to do
 			if(line.length<2)
 				UtilsMode.displayHelp();
@@ -34,6 +34,7 @@ public class CLIEntryPoint {
 		System.out.println("USAGE : "+FAFMain.HEAD_USAGE+" --help");
 		BuildMode.displayHelp();
 		QueryMode.displayHelp();
+		UtilsMode.displayHelp();
 	}
 	private boolean checkMode(String mode, String withlongMode){
 		return mode.equals(withlongMode) || mode.equals(getShort(withlongMode));
@@ -44,7 +45,7 @@ public class CLIEntryPoint {
 	public class CMode{
 		public static final String QUERYMODE = "--query";
 		public static final String BUILDMODE = "--build";
-		public static final String UTILSMODEL = "--utils";
+		public static final String UTILSMODE = "--utils";
 		public static final String HELPMODE = "--help";
 	}
 }

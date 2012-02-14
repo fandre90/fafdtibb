@@ -14,12 +14,12 @@ import fr.insarennes.fafdti.cli.CLIEntryPoint.CMode;
 public class UtilsMode implements IMode {
 
 	private Options opts;
-	private final String MAKEPNG = "mkpng";
-	private final String MAKEDOT = "mkdot";
+	private static final String MAKEPNG = "mkpng";
+	private static final String MAKEDOT = "mkdot";
 
 	public UtilsMode(String mode){
 		opts = new Options();
-		Option o1 = new Option(CMode.UTILSMODEL.substring(2,3), CMode.UTILSMODEL.substring(2), true, "Choose utils mode and what module used");
+		Option o1 = new Option(CMode.UTILSMODE.substring(2,3), CMode.UTILSMODE.substring(2), true, "Choose utils mode and what module used");
 		opts.addOption(o1);
 		//All others options needed to handle all utils mode
 		//Mode=Make png graph
@@ -67,6 +67,8 @@ public class UtilsMode implements IMode {
 	
 	public static void displayHelp(){
 		System.out.println("---Utils mode help---");
+		System.out.println("USAGE : "+FAFMain.HEAD_USAGE+" "+CMode.UTILSMODE+" \t"+MAKEPNG+" --input filename [--output filename]");
+		System.out.println("\t\t\t\t|\t"+MAKEDOT+" --input filename [--output filename]");
 	}
 	public void makePng(CommandLine cmdline){
 		//construction de l'arbre par import xml

@@ -20,7 +20,7 @@ public class CLIEntryPoint {
 			if(line.length<2)
 				UtilsMode.displayHelp();
 			else
-				(new UtilsMode(line[1])).execute(line);
+				(new UtilsMode(line[1])).execute(line);				
 		}
 		else if(checkMode(mode,CMode.HELPMODE)){
 			displayHelp();

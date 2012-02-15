@@ -14,6 +14,10 @@ public class FAFMain {
 		new CLIEntryPoint(sline2);
 		String sline3 = "-q -i tree --ask 10;true;vrai;sarkozy";
 		new CLIEntryPoint(sline3);
+		String sline4 = "--utils mkpng -i jiji";
+		new CLIEntryPoint(sline4);
+		String sline5 = "-u";
+		new CLIEntryPoint(sline5);
 //		/* futur main/point d'entré de FAFDTIBB ! */
 //		if(args.length < 1)
 //			CLIEntryPoint.displayHelp();

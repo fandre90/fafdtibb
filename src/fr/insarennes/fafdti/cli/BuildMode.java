@@ -32,9 +32,9 @@ public class BuildMode implements IMode{
 		try {
 			cmdline = parser.parse(opts, line);
 		} catch (ParseException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 			displayHelp();
-			return;
+			System.exit(0);
 		}
 		
 		String out = new String(cmdline.getOptionValue('d'));

@@ -23,17 +23,20 @@ public class FAFQueryMode {
 	
 	public static final String IN = "input";
 	public static final String QUESTION = "question";
+	public static final String OUT = "output";
 	
 	public static Options opts;
 	
 	public static void initOptions(){
 		opts = new Options();
 		Option o1 = new Option(IN.substring(0, 1), IN, true, "Set .xml filename");
-		Option o2 = new Option(QUESTION.substring(0, 1), QUESTION, true, "Set the question for asking to tree.xml");
+		Option o2 = new Option(QUESTION.substring(0, 1), QUESTION, true, "Set the question for asking to .xml tree");
+		Option o3 = new Option(OUT.substring(0,1), OUT, true, "Set the .txt filename where write output (default in console)");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
 		opts.addOption(o2);
+		opts.addOption(o3);
 	}
 	
 	public static void displayHelp(){

@@ -14,13 +14,17 @@ public class FAFBuildMode {
 	public static final int MINOR_VERSION = 0;
 	public static final String HEAD_USAGE = "java -jar "+APP_NAME+MAJOR_VERSION+"."+MINOR_VERSION+".jar";
 	
+	public static final String NAMES = "names";
+	public static final String DATA = "data";
+	public static final String OUT = "output";
+	
 	public static Options opts;
 	
 	public static void initOptions(){
 		opts = new Options();
-		Option o1 = new Option("n", "names", true, "Set .names filename");
-		Option o2 = new Option("d", "data", true, "Set .data filename");
-		Option o3 = new Option("o", "output", true, "Set output filename");
+		Option o1 = new Option(NAMES.substring(0, 1), NAMES, true, "Set .names filename");
+		Option o2 = new Option(DATA.substring(0, 1), DATA, true, "Set .data filename");
+		Option o3 = new Option(OUT.substring(0, 1), OUT, true, "Set output filename");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -44,11 +48,11 @@ public class FAFBuildMode {
 			System.exit(0);
 		}
 		
-		String out = cmdline.getOptionValue('o', cmdline.getOptionValue('d'));
+		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(DATA));
 		
 
-		System.out.println("names = "+cmdline.getOptionValue('n'));
-		System.out.println("data = "+cmdline.getOptionValue('d'));
+		System.out.println("names = "+cmdline.getOptionValue(NAMES));
+		System.out.println("data = "+cmdline.getOptionValue(DATA));
 		System.out.println("output = "+out);
 	}
 

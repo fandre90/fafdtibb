@@ -21,12 +21,15 @@ public class FAFQueryMode {
 	public static final int MINOR_VERSION = 0;
 	public static final String HEAD_USAGE = "java -jar "+APP_NAME+MAJOR_VERSION+"."+MINOR_VERSION+".jar";
 	
+	public static final String IN = "input";
+	public static final String QUESTION = "question";
+	
 	public static Options opts;
 	
 	public static void initOptions(){
 		opts = new Options();
-		Option o1 = new Option("i", "input", true, "Set .xml filename");
-		Option o2 = new Option("a", "ask", true, "Set the question for asking to tree.xml");
+		Option o1 = new Option(IN.substring(0, 1), IN, true, "Set .xml filename");
+		Option o2 = new Option(QUESTION.substring(0, 1), QUESTION, true, "Set the question for asking to tree.xml");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -52,7 +55,7 @@ public class FAFQueryMode {
 		}
 		
 		//On construit l'objet QuestionExample nécessaire pour interroger un arbre
-		StringTokenizer tk = new StringTokenizer(cmdline.getOptionValue('a'));
+		StringTokenizer tk = new StringTokenizer(cmdline.getOptionValue(QUESTION));
 		List<String> qList = new ArrayList<String>();
 		while(tk.hasMoreElements())
 			qList.add(tk.nextToken(";"));

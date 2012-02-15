@@ -15,6 +15,11 @@ public class FAFUtilsMode {
 	public static final int MINOR_VERSION = 0;
 	public static final String HEAD_USAGE = "java -jar "+APP_NAME+MAJOR_VERSION+"."+MINOR_VERSION+".jar";
 	
+	public static final String PNG = "png";
+	public static final String DOT = "dot";
+	public static final String IN = "in";
+	public static final String OUT = "out";
+	
 	public static Options opts_mode;
 	public static Options opts_png;
 	public static Options opts_dot;
@@ -25,21 +30,21 @@ public class FAFUtilsMode {
 		opts_dot = new Options();
 		//mode
 		OptionGroup mode = new OptionGroup();
-		Option o1 = new Option("p", "png", false, "Make .png from .xml tree");
-		Option o2 = new Option("d", "dot", false, "Make .dot from .xml tree");
+		Option o1 = new Option(PNG.substring(0,1), PNG, false, "Make .png from .xml tree");
+		Option o2 = new Option(DOT.substring(0,1), DOT, false, "Make .dot from .xml tree");
 		mode.addOption(o1);
 		mode.addOption(o2);
 		mode.setRequired(true);
 		opts_mode.addOptionGroup(mode);
 		//options pour mode png
-		Option png1 = new Option("i", "input", true, "Set .xml filename");
-		Option png2 = new Option("o", "output", true, "Set .png filename");
+		Option png1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
+		Option png2 = new Option(OUT.substring(0,1), OUT, true, "Set .png filename");
 		png1.setRequired(true);
 		opts_png.addOption(png1);
 		opts_png.addOption(png2);
 		//options pour mode dot
-		Option dot1 = new Option("i", "input", true, "Set .xml filename");
-		Option dot2 = new Option("o", "output", true, "Set .dot filename");
+		Option dot1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
+		Option dot2 = new Option(OUT.substring(0,1), OUT, true, "Set .dot filename");
 		dot1.setRequired(true);
 		opts_dot.addOption(dot1);
 		opts_dot.addOption(dot2);
@@ -64,6 +69,7 @@ public class FAFUtilsMode {
 		else{
 			initOptions();
 			
+			//parsing du mode
 			String[] smode = new String[1];
 			smode[0] = args[0];
 			CommandLineParser parsermode = new GnuParser();
@@ -75,15 +81,15 @@ public class FAFUtilsMode {
 				displayHelp();
 				System.exit(0);
 			}
-			
+			//parsing du reste des options suivant le mode choisi
 			String[] sargs = new String[args.length - 1];
 			for(int i=0 ; i<sargs.length ; i++)
 				sargs[i] = args[i+1];
 			
 			Options os = new Options();
-			if(cmdlinemode.hasOption('p'))
+			if(cmdlinemode.hasOption(PNG))
 				os = opts_png;
-			else if(cmdlinemode.hasOption('d'))
+			else if(cmdlinemode.hasOption(DOT))
 				os = opts_dot;
 			
 			CommandLineParser parser = new GnuParser();
@@ -95,10 +101,12 @@ public class FAFUtilsMode {
 				displayHelp();
 				System.exit(0);
 			}
-			if(cmdlinemode.hasOption('p')){
+			
+			//on apelle la bonne fonction suivant le mode avec le reste des options en paramètres
+			if(cmdlinemode.hasOption(PNG)){
 				makePng(cmdline);
 			}
-			else if(cmdlinemode.hasOption('d')){
+			else if(cmdlinemode.hasOption(DOT)){
 				makeDot(cmdline);
 			}
 

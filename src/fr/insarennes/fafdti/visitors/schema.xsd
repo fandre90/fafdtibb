@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+targetNamespace="http://www.w3schools.com"
+xmlns="http://www.w3schools.com"
+elementFormDefault="qualified">
+
+<xs:complexType name="treeType">
+	<xs:choice>
+		<xs:element name="tree" type="treeType" />
+		<xs:element name="leaf" type="leafType" />
+	</xs:choice>
+</xs:complexType>
+
+<xs:complexType name="leafType">
+	
+</xs:complexType>
+
+<xs:element name="trees">
+	<xs:element name="tree" type="treeType" />
+</xs:element>
+
+</xs:schema>

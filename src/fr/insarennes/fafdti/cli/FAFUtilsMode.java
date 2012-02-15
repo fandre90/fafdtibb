@@ -38,13 +38,13 @@ public class FAFUtilsMode {
 		opts_mode.addOptionGroup(mode);
 		//options pour mode png
 		Option png1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
-		Option png2 = new Option(OUT.substring(0,1), OUT, true, "Set .png filename");
+		Option png2 = new Option(OUT.substring(0,1), OUT, true, "Set .png filename (optional)");
 		png1.setRequired(true);
 		opts_png.addOption(png1);
 		opts_png.addOption(png2);
 		//options pour mode dot
 		Option dot1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
-		Option dot2 = new Option(OUT.substring(0,1), OUT, true, "Set .dot filename");
+		Option dot2 = new Option(OUT.substring(0,1), OUT, true, "Set .dot filename (optional)");
 		dot1.setRequired(true);
 		opts_dot.addOption(dot1);
 		opts_dot.addOption(dot2);

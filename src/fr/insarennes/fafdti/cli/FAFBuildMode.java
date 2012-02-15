@@ -28,11 +28,11 @@ public class FAFBuildMode {
 		opts = new Options();
 		Option o1 = new Option(NAMES.substring(0, 1), NAMES, true, "Set .names filename");
 		Option o2 = new Option(DATA.substring(0, 1), DATA, true, "Set .data filename");
-		Option o3 = new Option(OUT.substring(0, 1), OUT, true, "Set output filename");
-		Option o4 = new Option(BAGGING.substring(0,1), BAGGING, true, "Set number of trees buildt for bagging");
-		Option o5 = new Option(CRITERIA.substring(0,1), CRITERIA, true, "Set the criteria used to build the tree");
-		Option o6 = new Option(MAXLEAVES.substring(0,1), MAXLEAVES, true, "Choose the maximum number of leaves for one tree");
-		Option o7 = new Option(MINEXBYLEAF.substring(0,1), MINEXBYLEAF, true, "Choose the minimum number of examples by leaf");
+		Option o3 = new Option(OUT.substring(0, 1), OUT, true, "Set output filename (optional)");
+		Option o4 = new Option(BAGGING.substring(0,1), BAGGING, true, "Set number of trees buildt for bagging (optional)");
+		Option o5 = new Option(CRITERIA.substring(0,1), CRITERIA, true, "Set the criteria used to build the tree (optional)");
+		Option o6 = new Option(MAXLEAVES.substring(0,1), MAXLEAVES, true, "Choose the maximum number of leaves for one tree (optional)");
+		Option o7 = new Option(MINEXBYLEAF.substring(0,1), MINEXBYLEAF, true, "Choose the minimum number of examples by leaf (optional)");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);

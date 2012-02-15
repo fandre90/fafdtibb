@@ -31,7 +31,7 @@ public class FAFQueryMode {
 		opts = new Options();
 		Option o1 = new Option(IN.substring(0, 1), IN, true, "Set .xml filename");
 		Option o2 = new Option(QUESTION.substring(0, 1), QUESTION, true, "Set the question for asking to .xml tree");
-		Option o3 = new Option(OUT.substring(0,1), OUT, true, "Set the .txt filename where write output (default in console)");
+		Option o3 = new Option(OUT.substring(0,1), OUT, true, "Set the .txt filename where write output (default in console) (optional)");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);

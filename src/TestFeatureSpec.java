@@ -11,11 +11,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.insarennes.fafdti.AttrSpec;
-import fr.insarennes.fafdti.AttrType;
-import fr.insarennes.fafdti.FeatureSpec;
-import fr.insarennes.fafdti.ParseException;
-import fr.insarennes.fafdti.TextAttrSpec;
+import fr.insarennes.fafdti.builder.AttrSpec;
+import fr.insarennes.fafdti.builder.AttrType;
+import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.ParseException;
+import fr.insarennes.fafdti.builder.TextAttrSpec;
 
 
 

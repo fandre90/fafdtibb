@@ -10,8 +10,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.insarennes.fafdti.AttrType;
-import fr.insarennes.fafdti.Question;
+import fr.insarennes.fafdti.builder.AttrType;
+import fr.insarennes.fafdti.builder.Question;
 
 
 

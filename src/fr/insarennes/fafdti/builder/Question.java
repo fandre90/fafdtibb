@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.builder;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -8,6 +8,8 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.Text;
+
+import fr.insarennes.fafdti.FAFException;
 
 public class Question implements WritableComparable<Question> {
 

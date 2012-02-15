@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
 
@@ -7,6 +7,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Mapper.Context;
+
+import fr.insarennes.fafdti.builder.AttrType;
+import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.Question;
 
 public class Step1Map extends Mapper<Object, Text, Question, IntWritable>{
 

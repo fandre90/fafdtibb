@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import fr.insarennes.fafdti.AttrType;
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.Question;
+import fr.insarennes.fafdti.builder.AttrType;
+import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.visitors.*;
 
 public class Test {

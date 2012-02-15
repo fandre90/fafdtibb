@@ -10,7 +10,8 @@ public class FAFException extends Exception{
 	public FAFException(){
 		super();
 	}
-	public FAFException(String message){
+
+	public FAFException(String message) {
 		super(message);
 	}
 

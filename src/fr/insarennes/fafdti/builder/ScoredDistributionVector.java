@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.builder;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
+
 
 /**
  * stocke le vecteur statistique et l'entropie associée. 

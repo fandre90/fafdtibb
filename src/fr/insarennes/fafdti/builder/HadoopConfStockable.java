@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.builder;
 
 import org.apache.hadoop.conf.Configuration;
 

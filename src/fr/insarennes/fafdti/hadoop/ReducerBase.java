@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
 
@@ -7,6 +7,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
+
+import fr.insarennes.fafdti.builder.Criterion;
+import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.StockableCriterion;
 
 public abstract class ReducerBase<K1, V1, K2, V2> 
 	extends Reducer<K1, V1, K2, V2> {

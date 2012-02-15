@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +10,11 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
+
+import fr.insarennes.fafdti.builder.AttrType;
+import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
+import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 
 public class Step2Red extends
 		ReducerBase<IntWritable, ContinuousAttrLabelPair, Question, ScoredDistributionVector> {	

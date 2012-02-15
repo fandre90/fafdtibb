@@ -3,7 +3,7 @@ package fr.insarennes.fafdti.visitors;
 import java.util.HashMap;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.Question;
+import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreePending;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;

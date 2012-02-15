@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.builder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,7 +19,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.LineReader;
 
-import fr.insarennes.fafdti.TextAttrSpec.ExpertType;
+import fr.insarennes.fafdti.builder.TextAttrSpec.ExpertType;
 
 
 

@@ -14,10 +14,10 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
 
-import fr.insarennes.fafdti.FeatureSpec;
-import fr.insarennes.fafdti.ScoredDistributionVector;
-import fr.insarennes.fafdti.Step0Map;
-import fr.insarennes.fafdti.Step0Red;
+import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.hadoop.Step0Map;
+import fr.insarennes.fafdti.hadoop.Step0Red;
 
 
 

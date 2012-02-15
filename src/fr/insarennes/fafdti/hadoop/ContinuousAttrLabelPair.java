@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.hadoop;
 
 import java.io.DataInput;
 import java.io.DataOutput;

@@ -7,8 +7,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import fr.insarennes.fafdti.AttrType;
-import fr.insarennes.fafdti.Question;
+import fr.insarennes.fafdti.builder.AttrType;
+import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;

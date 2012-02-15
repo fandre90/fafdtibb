@@ -1,4 +1,5 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.builder;
+
 
 public interface MakeCriterionCommand {
 	public Criterion makeCriterion();

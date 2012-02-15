@@ -1,6 +1,7 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.builder;
 
 import java.util.Map;
+
 
 public class CriterionFactory {
 	private Map<String, MakeCriterionCommand> commandMap;

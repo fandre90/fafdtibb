@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.builder;
 
 public class EntropyCriterion implements Criterion {
 

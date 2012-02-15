@@ -1,6 +1,6 @@
 package fr.insarennes.fafdti.tree;
 
-import fr.insarennes.fafdti.Question;
+import fr.insarennes.fafdti.builder.Question;
 
 
 public class DecisionTreeQuestion implements DecisionTree {

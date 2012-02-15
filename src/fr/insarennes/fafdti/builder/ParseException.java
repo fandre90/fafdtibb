@@ -1,4 +1,6 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.builder;
+
+import fr.insarennes.fafdti.FAFException;
 
 public class ParseException extends FAFException {
 	/**

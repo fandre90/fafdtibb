@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti;
+package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -6,6 +6,8 @@ import java.util.StringTokenizer;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+
+import fr.insarennes.fafdti.builder.FeatureSpec;
 
 /**
  * map de l'étape 0 (calcul de l'entropie et du vecteur statistique)

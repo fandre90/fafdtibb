@@ -68,7 +68,7 @@ public class GraphicExporter implements DecisionTreeVisitor {
 		if(type==AttrType.CONTINUOUS)	color = "red";
 		else if(type==AttrType.DISCRETE)	color = "green";
 		else if(type==AttrType.TEXT)	color = "blue";
-		items.append(name+"[shape=diamond, label=\""+content.toString()+"\", color="+color+"];\n");
+		items.append(name+"[shape=ellipse, label=\""+content.toString()+"\", color="+color+"];\n");
 		//arcs
 		arcs.append(name+"->"+"id"+iid+" [label=yes];\n");
 		dtq.getYesTree().accept(this);

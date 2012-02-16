@@ -1,5 +1,7 @@
 package fr.insarennes.fafdti.cli;
 
+import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -7,6 +9,11 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
+import fr.insarennes.fafdti.builder.*;
 
 public class FAFBuildMode {
 	public static final String APP_NAME = "fafbuild";
@@ -66,6 +73,23 @@ public class FAFBuildMode {
 		System.out.println("names = "+cmdline.getOptionValue(NAMES));
 		System.out.println("data = "+cmdline.getOptionValue(DATA));
 		System.out.println("output = "+out);
+		
+		//logger.log(Level.INFO, "names = "+cmdline.getOptionValue(NAMES));
+		//logger.log(Level.INFO, "data = "+cmdline.getOptionValue(DATA));
+		//logger.log(Level.INFO, "output = "+out);
+		
+		//Construction du FeatureSpec à partir du .names
+		FeatureSpec fs = null;
+		try {
+			fs = new FeatureSpec(new Path(cmdline.getOptionValue(NAMES)+".names"), FileSystem.get(new Configuration()));
+		} catch (fr.insarennes.fafdti.builder.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

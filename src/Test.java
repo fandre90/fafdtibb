@@ -1,7 +1,3 @@
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -13,6 +9,7 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.builder.FeatureSpec;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
@@ -29,9 +26,11 @@ public class Test {
 		FileSystem fs = FileSystem.get(new Configuration());//utilisé pour lire les fichiers
 		FeatureSpec featureSpec = new FeatureSpec(new Path(file+".names"), fs);
 		
-		
+		Logger log = Logger.getLogger(Test.class);
 
 		{//etape 0
+			log.info("debut de l'étape 0");
+			
 			Configuration conf = new Configuration();
 			featureSpec.toConf(conf);
 			

@@ -11,11 +11,16 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.visitors.QuestionExample;
 
 
 public class FAFQueryMode {
+	
+	static Logger log = Logger.getLogger(FAFQueryMode.class);
+	
 	public static final String APP_NAME = "fafquery";
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 0;
@@ -57,6 +62,7 @@ public class FAFQueryMode {
 			System.exit(0);
 		}
 		
+		log.log(Level.INFO, "Parsing done");
 		//On construit l'objet QuestionExample nécessaire pour interroger un arbre
 		StringTokenizer tk = new StringTokenizer(cmdline.getOptionValue(QUESTION));
 		List<String> qList = new ArrayList<String>();

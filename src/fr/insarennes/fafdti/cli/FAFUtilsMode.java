@@ -8,8 +8,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 public class FAFUtilsMode {
+	
+	static Logger log = Logger.getLogger(FAFUtilsMode.class);
+	
 	public static final String APP_NAME = "fafutils";
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 0;
@@ -101,6 +106,8 @@ public class FAFUtilsMode {
 				displayHelp();
 				System.exit(0);
 			}
+			
+			log.log(Level.INFO, "Parsing done");
 			
 			//on apelle la bonne fonction suivant le mode avec le reste des options en paramètres
 			if(cmdlinemode.hasOption(PNG)){

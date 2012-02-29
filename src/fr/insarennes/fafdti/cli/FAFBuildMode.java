@@ -12,10 +12,15 @@ import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.builder.*;
 
 public class FAFBuildMode {
+	
+	static Logger log = Logger.getLogger(FAFBuildMode.class);
+	
 	public static final String APP_NAME = "fafbuild";
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 0;
@@ -55,6 +60,8 @@ public class FAFBuildMode {
 		h.printHelp(HEAD_USAGE, opts);
 	}
 	public static void main(String[] args) {
+		LoggerManager.setupLogger();
+		
 		initOptions();
 		
 		CommandLineParser parser = new GnuParser();
@@ -69,14 +76,10 @@ public class FAFBuildMode {
 		
 		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(DATA));
 		
-
-		System.out.println("names = "+cmdline.getOptionValue(NAMES));
-		System.out.println("data = "+cmdline.getOptionValue(DATA));
-		System.out.println("output = "+out);
-		
-		//logger.log(Level.INFO, "names = "+cmdline.getOptionValue(NAMES));
-		//logger.log(Level.INFO, "data = "+cmdline.getOptionValue(DATA));
-		//logger.log(Level.INFO, "output = "+out);
+		log.log(Level.INFO, "Parsing done");
+		log.log(Level.INFO, "names = "+cmdline.getOptionValue(NAMES));
+		log.log(Level.INFO, "data = "+cmdline.getOptionValue(DATA));
+		log.log(Level.INFO, "output = "+out);
 		
 		//Construction du FeatureSpec à partir du .names
 		FeatureSpec fs = null;

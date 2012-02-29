@@ -114,11 +114,13 @@ public class Question implements WritableComparable<Question> {
 		// D : Discret
 		// C : Continuous
 		// T : Text
+		this.col = in.readInt();
 		char typeChar = in.readChar();
 		switch (typeChar) {
 		case 'C':
 			this.type = AttrType.CONTINUOUS;
-			this.textValue.readFields(in);
+			this.doubleValue.readFields(in);
+			System.out.println("C: " + doubleValue.toString());
 			break;
 		case 'T':
 			this.type = AttrType.TEXT;
@@ -126,7 +128,8 @@ public class Question implements WritableComparable<Question> {
 			break;
 		case 'D':
 			this.type = AttrType.DISCRETE;
-			this.doubleValue.readFields(in);
+			this.textValue.readFields(in);
+			System.out.println("D: " + textValue.toString());
 			break;
 		default:
 			throw new IllegalStateException("Bad type description character "
@@ -166,6 +169,7 @@ public class Question implements WritableComparable<Question> {
 
 	@Override
 	public void write(DataOutput out) throws IOException {
+		out.writeInt(this.col);
 		switch (this.type) {
 		case CONTINUOUS:
 			out.writeChar('C');
@@ -193,6 +197,8 @@ public class Question implements WritableComparable<Question> {
 
 	public String toString() {
 		String outStr = "";
+		outStr += this.col;
+		outStr += Question.DELIMITER;
 		outStr += Question.typeToChar(this.type);
 		outStr += Question.DELIMITER;
 		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT) {
@@ -205,12 +211,13 @@ public class Question implements WritableComparable<Question> {
 
 	public void fromString(String strRepr) {
 		String[] fields = strRepr.split(Question.DELIMITER);
-		this.type = Question.charToType(fields[0].charAt(0));
-		if (this.type == AttrType.DISCRETE 
+		this.col = Integer.parseInt(fields[0]);
+		this.type = Question.charToType(fields[1].charAt(0));
+		if (this.type == AttrType.DISCRETE
 				|| this.type == AttrType.TEXT) {
-			this.textValue.set(fields[1]);
+			this.textValue.set(fields[2]);
 		} else {
-			this.doubleValue.set(Double.parseDouble(fields[1]));
+			this.doubleValue.set(Double.parseDouble(fields[2]));
 		}
 	}
 

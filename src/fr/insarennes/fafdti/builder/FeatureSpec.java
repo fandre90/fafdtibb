@@ -21,23 +21,21 @@ import org.apache.hadoop.util.LineReader;
 
 import fr.insarennes.fafdti.builder.TextAttrSpec.ExpertType;
 
-
-
 /**
  * charge les etiquetes d'un fichier .names
  * 
  * @author Francois LEHERICEY
  */
-public class FeatureSpec extends HadoopConfStockable 
-			implements Serializable {
+public class FeatureSpec extends HadoopConfStockable {
 	private static final long serialVersionUID = -6855907309314569268L;
 	/** clé utilisé pour stocker la valeur serialisé dans la config d'hadoop */
-	private static final String ETIQUETTE_KEY = "faf-etiq";
+	private static final String HADOOP_CONFIGURATION_KEY = "faf-etiq";
 	/** liste des etiquettes */
 	private String[] etiquettes;
 	/** index inversé des etiquettes */
 	private Map<String, Integer> rEtiquettes;
-	private ArrayList<AttrSpec> attributeSpec; 
+	private ArrayList<AttrSpec> attributeSpec;
+	private String[] commentStartChars = { "|", "#" };
 
 	/**
 	 * construit un FeatureSpec en lisant un fichier .names
@@ -48,20 +46,32 @@ public class FeatureSpec extends HadoopConfStockable
 	 *            systeme de fichier dans lequel lire
 	 * @throws IOException
 	 */
-	public FeatureSpec(Path file, FileSystem fs) throws IOException, ParseException {
-		
+	public FeatureSpec(Path file, FileSystem fs) throws IOException,
+			ParseException {
+
 		this.attributeSpec = new ArrayList<AttrSpec>();
 		// FileSystem fs = FileSystem.get(conf);
 		FSDataInputStream in = fs.open(file);
 		LineReader lr = new LineReader(in);
 		Text text = new Text();
-		
+
 		// Skip comments
-		lr.readLine(text);
-		while (text.toString().startsWith("|")) {
+		boolean skipComments = true;
+		while (skipComments) {
+			skipComments = false;
 			lr.readLine(text);
+			for (String startChar : commentStartChars) {
+				if (text.toString().startsWith(startChar)) {
+					// lr.readLine(text);
+					skipComments = true;
+				}
+			}
 		}
-		
+
+		// while (text.toString().startsWith("|")) {
+		// lr.readLine(text);
+		// }
+
 		this.parseLabelLine(text.toString());
 		// index inverse
 		rEtiquettes = new HashMap<String, Integer>();
@@ -70,11 +80,11 @@ public class FeatureSpec extends HadoopConfStockable
 		}
 
 		lr.readLine(text);
-		while(!text.toString().equals("")) {
+		while (!text.toString().equals("")) {
 			this.parseAttributeLine(text.toString());
 			lr.readLine(text);
 		}
-		
+
 		lr.close();
 	}
 
@@ -128,12 +138,12 @@ public class FeatureSpec extends HadoopConfStockable
 			this.attributeSpec.add(new TextAttrSpec(expertType, expertLength,
 					expertLevel));
 		} else
-			throw new ParseException("Bad attribute type : -" + typeStr+"-");
+			throw new ParseException("Bad attribute type : -" + typeStr + "-");
 
 	}
 
 	/**
-	 * rend l'index de l'etiquette e
+	 * rend l'index de l'etiquette e+ "-" + keySuffix
 	 * 
 	 * @param e
 	 *            etiquette
@@ -150,6 +160,7 @@ public class FeatureSpec extends HadoopConfStockable
 	public String[] getLabels() {
 		return this.etiquettes.clone();
 	}
+
 	/**
 	 * rend le nombre d'etiquettes
 	 * 
@@ -167,24 +178,10 @@ public class FeatureSpec extends HadoopConfStockable
 	 * @throws IOException
 	 */
 	@Override
-	public void toConf(Configuration conf, String keySuffix) {
-		ByteArrayOutputStream baot = new ByteArrayOutputStream();
-		ObjectOutputStream oos;
-		String sFeatureSpec = null;
-		try {
-			oos = new ObjectOutputStream(baot);
-			oos.writeObject(this);
-			oos.flush();
-			sFeatureSpec = Base64.encodeBase64String(baot.toByteArray());
-			oos.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		conf.set(FeatureSpec.ETIQUETTE_KEY + "-" + keySuffix, sFeatureSpec);
+	public void toConf(Configuration conf, String keySuffix) throws IOException {
+		String key = FeatureSpec.HADOOP_CONFIGURATION_KEY + "-" + keySuffix;
+		HadoopConfSerializer.serializeToConf(this, conf, key);
 	}
-
 
 	/**
 	 * recupere une FeatureSpec depuis un objet conf
@@ -196,19 +193,18 @@ public class FeatureSpec extends HadoopConfStockable
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static FeatureSpec fromConf(Configuration conf, String keySuffix) 
+	public static FeatureSpec fromConf(Configuration conf, String keySuffix)
 			throws IOException, ClassNotFoundException {
-		ByteArrayInputStream bais = new ByteArrayInputStream(
-				Base64.decodeBase64(conf.get(FeatureSpec.ETIQUETTE_KEY)));
-		ObjectInputStream ois = new ObjectInputStream(bais);
-		return (FeatureSpec) ois.readObject();
+		String key = FeatureSpec.HADOOP_CONFIGURATION_KEY + "-" + keySuffix;
+		return (FeatureSpec) HadoopConfSerializer
+				.deserializeFromConf(conf, key);
 	}
 
-	public static FeatureSpec fromConf(Configuration conf) 
-			throws IOException, ClassNotFoundException {
+	public static FeatureSpec fromConf(Configuration conf) throws IOException,
+			ClassNotFoundException {
 		return fromConf(conf, "");
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -244,6 +240,5 @@ public class FeatureSpec extends HadoopConfStockable
 			return false;
 		return true;
 	}
-
 
 }

@@ -1,6 +1,6 @@
 package fr.insarennes.fafdti.builder;
 
-public class EntropyCriterion implements Criterion {
+public class EntropyCriterion extends Criterion {
 
 	@Override
 	public boolean better(double value1, double value2) {
@@ -16,8 +16,10 @@ public class EntropyCriterion implements Criterion {
 			N += distributionVector[i];
 		//calcul de l'entropie avec en base e
 		for (int i = 0; i < distributionVector.length; i++) {
-			float pi = distributionVector[i]/N;
-			criterionValue += pi*Math.log(pi);
+			if(distributionVector[i] != 0) {
+				float pi = distributionVector[i]/N;
+				criterionValue += pi*Math.log(pi);
+			}
 		}
 		//pour tout mettre en base 2
 		criterionValue /= -Math.log(2);

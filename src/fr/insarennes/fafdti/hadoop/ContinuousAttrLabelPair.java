@@ -18,7 +18,7 @@ public class ContinuousAttrLabelPair implements WritableComparable<ContinuousAtt
 	}
 
 	public ContinuousAttrLabelPair(int labelIndex, double continuousValue) {
-		super();
+		this();
 		this.labelIndex.set(labelIndex);
 		this.continuousValue.set(continuousValue);
 	}
@@ -52,6 +52,10 @@ public class ContinuousAttrLabelPair implements WritableComparable<ContinuousAtt
 			return -1;
 		return 0;
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "ContinuousAttrLabelPair [labelIndex=" + labelIndex
+				+ ", continuousValue=" + continuousValue + "]";
+	}
 }

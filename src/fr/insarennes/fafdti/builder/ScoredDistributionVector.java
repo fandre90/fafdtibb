@@ -113,10 +113,11 @@ public class ScoredDistributionVector extends HadoopConfStockable
 
 	@Override
 	public String toString() {
-		String out = score + SEPARATEUR;
-		for (int i = 0; i < distributionVector.length; i++) {
-			out += distributionVector[i] + SEPARATEUR;
+		String out = score + "";
+		for (int i = 0; i < distributionVector.length - 1; i++) {
+			out +=  SEPARATEUR + distributionVector[i];
 		}
+		
 		return out;
 	}
 

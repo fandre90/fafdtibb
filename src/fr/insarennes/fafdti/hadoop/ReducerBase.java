@@ -10,7 +10,6 @@ import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.FeatureSpec;
-import fr.insarennes.fafdti.builder.StockableCriterion;
 
 public abstract class ReducerBase<K1, V1, K2, V2> 
 	extends Reducer<K1, V1, K2, V2> {
@@ -23,7 +22,7 @@ public abstract class ReducerBase<K1, V1, K2, V2>
 		Configuration conf = context.getConfiguration();
 		try {
 			fs = FeatureSpec.fromConf(conf);
-			criterion = StockableCriterion.fromConf(conf);
+			criterion = Criterion.fromConf(conf);
 		} catch (ClassNotFoundException e) {
 			// FIXME Auto-generated catch block
 			e.printStackTrace();

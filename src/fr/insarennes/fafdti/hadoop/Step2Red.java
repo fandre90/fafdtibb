@@ -2,6 +2,7 @@ package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Collections;
@@ -90,6 +91,8 @@ public class Step2Red extends
 			double curValue = valuesUniqueIt.next();
 			candidates.add((curValue+prevValue)/2);
 		}
+		System.out.println("threshold candidates : " +
+				candidates);
 		return candidates;
 	}
 	private ScoreLeftDistribution computeEntropyForThreshold(

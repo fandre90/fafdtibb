@@ -1,5 +1,8 @@
 package fr.insarennes.fafdti.builder;
 
+import java.io.IOException;
+import java.io.Serializable;
+
 import org.apache.hadoop.conf.Configuration;
 
 // Static Java Interface
@@ -12,17 +15,18 @@ import org.apache.hadoop.conf.Configuration;
 // Static + Generics
 // http://stackoverflow.com/questions/936377/static-method-in-a-generic-class
 
-public abstract class HadoopConfStockable {
-	
-	//public static <T> T fromConf(Configuration conf, String keySuffix);
+public abstract class HadoopConfStockable implements Serializable {
 
-	public abstract void toConf(Configuration conf, String keySuffix);
-	
-	//public static <T> T fromConf(Configuration conf) {
-	//	return fromConf(conf, "");
-	//}
+	// public static <T> T fromConf(Configuration conf, String keySuffix);
 
-	public void toConf(Configuration conf) {
+	public abstract void toConf(Configuration conf, String keySuffix)
+			throws IOException;
+
+	// public static <T> T fromConf(Configuration conf) {
+	// return fromConf(conf, "");
+	// }
+
+	public void toConf(Configuration conf) throws IOException {
 		toConf(conf, "");
 	}
 }

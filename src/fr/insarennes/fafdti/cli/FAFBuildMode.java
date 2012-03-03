@@ -1,6 +1,9 @@
 package fr.insarennes.fafdti.cli;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,6 +17,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 
 import fr.insarennes.fafdti.builder.*;
 
@@ -55,10 +59,15 @@ public class FAFBuildMode {
 		opts.addOption(o6);
 		opts.addOption(o7);
 	}
+	
 	public static void displayHelp(){
 		HelpFormatter h = new HelpFormatter();
-		h.printHelp(HEAD_USAGE, opts);
+		Writer w = new StringWriter();
+		PrintWriter pw = new PrintWriter(w, true);
+		h.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, HEAD_USAGE, "", opts, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, "");
+		log.log(Level.INFO, w.toString());
 	}
+	
 	public static void main(String[] args) {
 		LoggerManager.setupLogger();
 		
@@ -69,7 +78,7 @@ public class FAFBuildMode {
 		try {
 			cmdline = parser.parse(opts, args);
 		} catch (ParseException e) {
-			System.out.println(e.getMessage());
+			log.log(Level.INFO, e.getMessage());
 			displayHelp();
 			System.exit(0);
 		}
@@ -87,12 +96,17 @@ public class FAFBuildMode {
 			fs = new FeatureSpec(new Path(cmdline.getOptionValue(NAMES)+".names"), FileSystem.get(new Configuration()));
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.out.println(e.getMessage());
+			Writer w = new StringWriter();
+			PrintWriter pw = new PrintWriter(w);
+			e.printStackTrace(pw);
+			log.log(Level.INFO, w.toString());
+			log.log(Level.INFO, e.getMessage());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Writer w = new StringWriter();
+			PrintWriter pw = new PrintWriter(w);
+			e.printStackTrace(pw);
+			log.log(Level.INFO, w.toString());
 		}
 	}
-
 }

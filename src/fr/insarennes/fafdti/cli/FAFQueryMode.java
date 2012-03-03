@@ -1,5 +1,8 @@
 package fr.insarennes.fafdti.cli;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -46,7 +49,10 @@ public class FAFQueryMode {
 	
 	public static void displayHelp(){
 		HelpFormatter h = new HelpFormatter();
-		h.printHelp(HEAD_USAGE, opts);
+		Writer w = new StringWriter();
+		PrintWriter pw = new PrintWriter(w, true);
+		h.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, HEAD_USAGE, "", opts, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, "");
+		log.log(Level.INFO, w.toString());
 	}
 	
 	public static void main(String[] args) {
@@ -57,7 +63,7 @@ public class FAFQueryMode {
 		try {
 			cmdline = parser.parse(opts, args);
 		} catch (ParseException e) {
-			System.out.println(e.getMessage());
+			log.log(Level.INFO, e.getMessage());
 			displayHelp();
 			System.exit(0);
 		}
@@ -70,7 +76,7 @@ public class FAFQueryMode {
 			qList.add(tk.nextToken(";"));
 		
 		QuestionExample qExample = new QuestionExample(qList);
-		System.out.println(qExample.toString());
+		log.log(Level.INFO, qExample.toString());
 		
 		//On construit l'arbre à partir du fichier d'entrée
 		

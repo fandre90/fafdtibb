@@ -1,6 +1,9 @@
 package fr.insarennes.fafdti.visitors;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,11 +22,14 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.cli.FAFUtilsMode;
 import fr.insarennes.fafdti.tree.CannotOverwriteTreeException;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
@@ -34,12 +40,14 @@ import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
 
 public class XmlExporter implements DecisionTreeVisitor {
+	Logger log;
 	DecisionTree tree;
 	Document doc;
 	String filename;
 	Stack<Element> stack;
 	
 	public XmlExporter(DecisionTree dt, String filenam){
+		log = Logger.getLogger(XmlExporter.class);
 		// creation document
 		 DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
          DocumentBuilder docBuilder;
@@ -111,7 +119,7 @@ public class XmlExporter implements DecisionTreeVisitor {
 	
 	public void finish(){
 		// export dans un fichier
-		System.out.println("Creation du fichier");
+		log.log(Level.INFO, "Xml file creation");
         File file = new File(filename+".xml");
         Result res = new StreamResult(file);
 
@@ -121,19 +129,15 @@ public class XmlExporter implements DecisionTreeVisitor {
 		try {
 			xformer = TransformerFactory.newInstance().newTransformer();
 			xformer.transform(source, res);
-			System.out.println("transformation reussie");
+			log.log(Level.INFO, "Xml generation done");
 			
-		} catch (TransformerConfigurationException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TransformerFactoryConfigurationError e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Writer w = new StringWriter();
+			PrintWriter pw = new PrintWriter(w);
+			e.printStackTrace(pw);
+			log.log(Level.INFO, w.toString());    
 		}
-        
 	}
 	
 	public static void main(String[] args) throws CannotOverwriteTreeException, InvalidProbabilityComputationException {

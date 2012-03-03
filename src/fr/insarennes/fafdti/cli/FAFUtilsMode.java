@@ -1,5 +1,9 @@
 package fr.insarennes.fafdti.cli;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -57,15 +61,28 @@ public class FAFUtilsMode {
 	
 	public static void displayHelp(){
 		HelpFormatter h = new HelpFormatter();
-		h.printHelp(HEAD_USAGE, opts_mode);
-		h.printHelp("png mode", opts_png);
-		h.printHelp("dot mode", opts_dot);
+		
+		Writer w = new StringWriter();
+		PrintWriter pw = new PrintWriter(w, true);
+		h.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, HEAD_USAGE, "", opts_mode, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, "");
+		
+		Writer wpng = new StringWriter();
+		PrintWriter pwpng = new PrintWriter(wpng, true);
+		h.printHelp(pwpng, HelpFormatter.DEFAULT_WIDTH, "png mode", "", opts_png, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, "");
+		
+		Writer wdot = new StringWriter();
+		PrintWriter pwdot = new PrintWriter(wdot, true);
+		h.printHelp(pwdot, HelpFormatter.DEFAULT_WIDTH, "dot mode", "", opts_dot, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, "");
+		
+		log.log(Level.INFO, w.toString());
+		log.log(Level.INFO, wpng.toString());
+		log.log(Level.INFO, wdot.toString());
 	}
 	public static void makePng(CommandLine cmdline){
-		System.out.println("makepng");
+		log.log(Level.INFO, "makepng");
 	}
 	public static void makeDot(CommandLine cmdline){
-		System.out.println("makedot");
+		log.log(Level.INFO, "makedot");
 	}
 	public static void main(String[] args) {
 		
@@ -82,7 +99,7 @@ public class FAFUtilsMode {
 			try {
 				cmdlinemode = parsermode.parse(opts_mode, smode);
 			} catch (ParseException e) {
-				System.out.println(e.getMessage());
+				log.log(Level.INFO, e.getMessage());
 				displayHelp();
 				System.exit(0);
 			}
@@ -102,7 +119,7 @@ public class FAFUtilsMode {
 			try {
 				cmdline = parser.parse(os, sargs);
 			} catch (ParseException e) {
-				System.out.println(e.getMessage());
+				log.log(Level.INFO, e.getMessage());
 				displayHelp();
 				System.exit(0);
 			}
@@ -116,7 +133,6 @@ public class FAFUtilsMode {
 			else if(cmdlinemode.hasOption(DOT)){
 				makeDot(cmdline);
 			}
-
 		}
 	}
 }

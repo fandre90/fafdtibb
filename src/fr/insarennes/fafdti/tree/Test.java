@@ -105,13 +105,20 @@ public class Test {
 		ns.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m4)));
 		GraphicExporter graph = new GraphicExporter(gtree, "test");
 		graph.launch();
-		try {
-			Runtime.getRuntime().exec("dot -Tpng -otest.png test.dot");
-			Runtime.getRuntime().exec("display test.png");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
+			try {
+				Runtime.getRuntime().exec("dot -Tpng -otest.png test.dot");
+				Runtime.getRuntime().exec("display test.png");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println("png export needs ImageMagick library installed");
+			}
 		}
+		else{
+			System.out.println("png export only available under Linux !");
+		}
+		
 		/**********Test du checker***********/
 		Checker checker = new Checker();
 		gtree.accept(checker);

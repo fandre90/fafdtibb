@@ -26,6 +26,9 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	public static final String SEPARATEUR = ":";
 	public static final String HADOOP_CONFIGURATION_KEY = "faf-dist";
 
+	public ScoredDistributionVector() {
+		this(1);
+	}
 	/**
 	 * construit un vecteur vide avec une entropie nulle
 	 * @param size taille du vecteur statistique
@@ -33,8 +36,8 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	public ScoredDistributionVector(int size) {
 		score = 0;
 		distributionVector = new int[size];
-		for (int i = 0; i < distributionVector.length; i++)
-			distributionVector[i] = 0;
+		//for (int i = 0; i < distributionVector.length; i++)
+		//	distributionVector[i] = 0;
 	}
 	
 	/**
@@ -57,7 +60,10 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	 * +1 dans le vecteur stats a l'indice i, l'entropie n'est pas mise a jour.
 	 * @param e l'indice du vecteur a modifier
 	 */
-	public void incrStat(int e){distributionVector[e]++;}
+	public void incrStat(int e) {
+		distributionVector[e]++;
+		total++;
+	}
 
 	/**
 	 * rend l'entropie, attention si updateEntropie n'a pas été appelé la valeur sera fausse.
@@ -96,7 +102,10 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	public void readFields(DataInput in) throws IOException {
 		score = in.readDouble();
 		int size = in.readInt();
-		if(size != distributionVector.length) throw new IOException("taille des vecteurs incompatibles");
+		System.out.println("Read: " + score + "," + size);
+		if(size != distributionVector.length) {
+			distributionVector = new int[size];
+		}
 		for (int i = 0; i < size; i++) {
 			distributionVector[i] = in.readInt();
 		}
@@ -106,6 +115,7 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	public void write(DataOutput out) throws IOException {
 		out.writeDouble(score);
 		out.writeInt(distributionVector.length);
+		System.out.println("Write: " + score + "," + distributionVector.length);
 		for (int i = 0; i < distributionVector.length; i++) {
 			out.writeInt(distributionVector[i]);
 		}
@@ -114,7 +124,7 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	@Override
 	public String toString() {
 		String out = score + "";
-		for (int i = 0; i < distributionVector.length - 1; i++) {
+		for (int i = 0; i < distributionVector.length; i++) {
 			out +=  SEPARATEUR + distributionVector[i];
 		}
 		
@@ -130,8 +140,10 @@ public class ScoredDistributionVector extends HadoopConfStockable
 		int OFFSET = 1;
 		String splited[] = s.split(SEPARATEUR);
 		score = Float.parseFloat(splited[0]);
-		if(splited.length-OFFSET != distributionVector.length)
-			throw new Exception("taille des vecteur incompatibles");
+		int size = splited.length-OFFSET;
+		if(size != distributionVector.length) {
+			distributionVector = new int[size];
+		}
 		for (int i = OFFSET; i < splited.length; i++) {
 			distributionVector[i-OFFSET] = Integer.parseInt(splited[i]);
 		}
@@ -139,10 +151,7 @@ public class ScoredDistributionVector extends HadoopConfStockable
 
 	public static ScoredDistributionVector fromConf(Configuration conf,
 			String keySuffix) {
-		int OFFSET = 1;
 		String strRepr = conf.get(HADOOP_CONFIGURATION_KEY + "-" + keySuffix);
-		String splited[] = strRepr.split(SEPARATEUR);
-		int vectorLen = splited.length - OFFSET;
 		ScoredDistributionVector dist = new ScoredDistributionVector(strRepr);
 		return dist;
 	}

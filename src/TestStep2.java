@@ -30,7 +30,7 @@ public class TestStep2 {
 
 		String file = "/home/fabien/Bureau/Hadoop/data_test/in/test1";
 		Formatter format = new Formatter();
-		String outputDir0 = "/home/fabien/Bureau/Hadoop/data_test/out" + 
+		String outputDir0 = "/home/fabien/Bureau/Hadoop/data_test/step2-" + 
 				format.format("%1$tY-%1$tm-%1$td %1$tHh%1$tM", new Date());
 
 		FileSystem fs = FileSystem.get(new Configuration());//utilisé pour lire les fichiers

@@ -8,7 +8,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.WritableComparable;
 
-public class ContinuousAttrLabelPair implements WritableComparable<ContinuousAttrLabelPair> {
+public class ContinuousAttrLabelPair implements Cloneable, WritableComparable<ContinuousAttrLabelPair> {
 	private IntWritable labelIndex;
 	private DoubleWritable continuousValue;
 
@@ -57,5 +57,20 @@ public class ContinuousAttrLabelPair implements WritableComparable<ContinuousAtt
 	public String toString() {
 		return "ContinuousAttrLabelPair [labelIndex=" + labelIndex
 				+ ", continuousValue=" + continuousValue + "]";
+	}
+	
+	public Object clone() {
+		ContinuousAttrLabelPair vlPair = new ContinuousAttrLabelPair(getLabelIndex(),getContinuousValue());
+	    /*try {
+	      	vlPair = (ContinuousAttrLabelPair) super.clone();
+	    } catch(CloneNotSupportedException cnse) {
+	      	// Ne devrait jamais arriver car nous implémentons 
+	      	// l'interface Cloneable
+	      	cnse.printStackTrace(System.err);
+	    }*/
+	    
+	    /*vlPair.labelIndex = this.labelIndex;
+	    vlPair.continuousValue = this.continuousValue;*/
+	    return vlPair;
 	}
 }

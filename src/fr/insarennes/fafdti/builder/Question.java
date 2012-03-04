@@ -3,16 +3,22 @@ package fr.insarennes.fafdti.builder;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.Text;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.visitors.QuestionExample;
 
-public class Question implements WritableComparable<Question> {
+public class Question extends HadoopConfStockable implements
+		WritableComparable<Question> {
 
+	public static final String HADOOP_CONFIGURATION_KEY = "faf-question";
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -22,11 +28,11 @@ public class Question implements WritableComparable<Question> {
 		// Only use textValue or doubleValue according to
 		// type to generate hash code
 		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT) {
-		result = prime * result
-				+ ((doubleValue == null) ? 0 : doubleValue.hashCode());
+			result = prime * result
+					+ ((doubleValue == null) ? 0 : doubleValue.hashCode());
 		} else {
 			result = prime * result
-				+ ((textValue == null) ? 0 : textValue.hashCode());
+					+ ((textValue == null) ? 0 : textValue.hashCode());
 		}
 		return result;
 	}
@@ -63,7 +69,7 @@ public class Question implements WritableComparable<Question> {
 		}
 		return true;
 	}
-	
+
 	int col;
 	AttrType type;
 	DoubleWritable doubleValue;
@@ -108,6 +114,11 @@ public class Question implements WritableComparable<Question> {
 		this.textValue.set(value);
 	}
 
+	public Question(String strRepr) {
+		this();
+		fromString(strRepr);
+	}
+
 	@Override
 	public void readFields(DataInput in) throws IOException {
 		// Char representing type of AttrValue :
@@ -120,7 +131,7 @@ public class Question implements WritableComparable<Question> {
 		case 'C':
 			this.type = AttrType.CONTINUOUS;
 			this.doubleValue.readFields(in);
-			System.out.println("C: " + doubleValue.toString());
+			// System.out.println("C: " + doubleValue.toString());
 			break;
 		case 'T':
 			this.type = AttrType.TEXT;
@@ -129,7 +140,7 @@ public class Question implements WritableComparable<Question> {
 		case 'D':
 			this.type = AttrType.DISCRETE;
 			this.textValue.readFields(in);
-			System.out.println("D: " + textValue.toString());
+			// System.out.println("D: " + textValue.toString());
 			break;
 		default:
 			throw new IllegalStateException("Bad type description character "
@@ -185,14 +196,22 @@ public class Question implements WritableComparable<Question> {
 
 	@Override
 	public int compareTo(Question other) {
-		if(this.col != other.col)
+		System.out.println(this.col + "," + this.type + " VS " + other.col
+				+ "," + other.type);
+		if (this.col > other.col)
+			return 1;
+		if (this.col < other.col)
 			return -1;
-		if (this.type != other.type)
-			return -1;
+		int comparison = this.type.compareTo(other.type);
+		if (comparison != 0)
+			return comparison;
 		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT)
 			return this.textValue.compareTo(other.textValue);
-		else
-			return 0;
+		if (this.type == AttrType.CONTINUOUS) {
+			return this.doubleValue.compareTo(other.doubleValue);
+		}
+		System.out.println("CompareTo returns true !!");
+		return 0;
 	}
 
 	public String toString() {
@@ -213,8 +232,8 @@ public class Question implements WritableComparable<Question> {
 		String[] fields = strRepr.split(Question.DELIMITER);
 		this.col = Integer.parseInt(fields[0]);
 		this.type = Question.charToType(fields[1].charAt(0));
-		if (this.type == AttrType.DISCRETE
-				|| this.type == AttrType.TEXT) {
+		System.out.println(Arrays.toString(fields));
+		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT) {
 			this.textValue.set(fields[2]);
 		} else {
 			this.doubleValue.set(Double.parseDouble(fields[2]));
@@ -232,24 +251,46 @@ public class Question implements WritableComparable<Question> {
 	public AttrType getType() {
 		return type;
 	}
-	
-	public String getStringValue(){
-		if(type==AttrType.CONTINUOUS)	return doubleValue.toString();
-		else return textValue.toString();
+
+	public String getStringValue() {
+		if (type == AttrType.CONTINUOUS)
+			return doubleValue.toString();
+		else
+			return textValue.toString();
 	}
-	
+
+	public boolean ask(QuestionExample example) throws FAFException {
+		return this.ask(example.getValue(col));
+	}
+
 	public boolean ask(String value) throws FAFException {
-		//System.out.println("Question double value = "+doubleValue.toString());
-		//System.out.println("Question text or discrete value = "+textValue);
+		// System.out.println("Question double value = "+doubleValue.toString());
+		// System.out.println("Question text or discrete value = "+textValue);
 		boolean res = false;
-		if(getType().equals(AttrType.TEXT) || getType().equals(AttrType.DISCRETE))	
+		if (getType().equals(AttrType.TEXT)
+				|| getType().equals(AttrType.DISCRETE))
 			res = value.equals(textValue.toString());
 		// value<=doubleValue => true
-		else if(getType().equals(AttrType.CONTINUOUS))	{
+		else if (getType().equals(AttrType.CONTINUOUS)) {
 			Double d = doubleValue.get();
 			res = Double.parseDouble(value) <= d;
-		}
-		else throw new FAFException("No type matching");
+		} else
+			throw new FAFException("No type matching");
 		return res;
+	}
+
+	@Override
+	public void toConf(Configuration conf, String keySuffix) throws IOException {
+		String strRepr = this.toString();
+		conf.set(HADOOP_CONFIGURATION_KEY + "-" + keySuffix, strRepr);
+	}
+	
+	public static Question fromConf(Configuration conf, String keySuffix) {
+		String strRepr = conf.get(HADOOP_CONFIGURATION_KEY + "-" + keySuffix);
+		return new Question(strRepr);
+	}
+	
+	public static Question fromConf(Configuration conf) {
+		return fromConf(conf, "");
 	}
 }

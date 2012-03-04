@@ -17,6 +17,7 @@ public class Step1Red extends
 			Context context) throws IOException, InterruptedException {
 		ScoredDistributionVector out = new ScoredDistributionVector(
 				fs.nbEtiquettes());
+		System.out.println("Got: " + q + " " + q.hashCode());
 		for (IntWritable i : labelIndexes) {
 			out.incrStat(i.get());
 		}

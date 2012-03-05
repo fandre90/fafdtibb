@@ -6,6 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 
@@ -15,7 +16,8 @@ import fr.insarennes.fafdti.builder.ScoredDistributionVector;
  */
 public class Step0Red extends ReducerBase<Text, IntWritable, Text, ScoredDistributionVector>{
 	/** feature spec récupéré dans la config du job */
-
+	private Logger log = Logger.getLogger(Step0Red.class);
+	
 	@Override
 	protected void reduce(Text t, Iterable<IntWritable> etiquettes, Context context) 
 	throws IOException ,InterruptedException {
@@ -27,5 +29,6 @@ public class Step0Red extends ReducerBase<Text, IntWritable, Text, ScoredDistrib
 		
 		out.rate(criterion);
 		context.write(new Text(""), out);
+		log.info("step 0 finished");
 	}
 }

@@ -11,28 +11,35 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
 import org.apache.log4j.Logger;
 
+import fr.insarennes.fafdti.builder.Criterion;
+import fr.insarennes.fafdti.builder.EntropyCriterion;
 import fr.insarennes.fafdti.builder.FeatureSpec;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.cli.LoggerManager;
 import fr.insarennes.fafdti.hadoop.Step0Map;
 import fr.insarennes.fafdti.hadoop.Step0Red;
 
 
 
-public class Test {
+public class TestStep0 {
 	public static void main(String[] args) throws Exception {
-		String file = "letter-recognition";
-		String outputDir0 = "output-step0";
+		String file = "/letter-recognition";
+		String outputDir0 = "/output-step0";
+		LoggerManager.setupLogger();
 		
 		FileSystem fs = FileSystem.get(new Configuration());//utilisé pour lire les fichiers
 		FeatureSpec featureSpec = new FeatureSpec(new Path(file+".names"), fs);
 		
-		Logger log = Logger.getLogger(Test.class);
+		Criterion criterion = new EntropyCriterion();
+		
+		Logger log = Logger.getLogger(TestStep0.class);
 
 		{//etape 0
 			log.info("debut de l'étape 0");
 			
 			Configuration conf = new Configuration();
 			featureSpec.toConf(conf);
+			criterion.toConf(conf);
 			
 			Job job = new Job(conf, "Calcul de l'entropie associée l'ensemble d'exemples courant");
 	

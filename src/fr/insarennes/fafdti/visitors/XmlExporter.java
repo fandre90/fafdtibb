@@ -115,7 +115,7 @@ public class XmlExporter implements DecisionTreeVisitor {
 		finish();
 	}
 	
-	public void finish(){
+	private void finish(){
 		log.log(Level.DEBUG, "final stack size="+stack.size());
 		// export dans un fichier
 		log.log(Level.INFO, "Xml file creation");

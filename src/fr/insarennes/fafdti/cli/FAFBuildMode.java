@@ -20,6 +20,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 
 import fr.insarennes.fafdti.builder.*;
+import fr.insarennes.fafdti.tree.*;
+import fr.insarennes.fafdti.visitors.XmlExporter;
 
 public class FAFBuildMode {
 	
@@ -83,12 +85,14 @@ public class FAFBuildMode {
 			System.exit(0);
 		}
 		
+		//si pas de sortie précisée, même nom que le .data par défaut
 		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(DATA));
 		
 		log.log(Level.INFO, "Parsing done");
 		log.log(Level.INFO, "names = "+cmdline.getOptionValue(NAMES));
 		log.log(Level.INFO, "data = "+cmdline.getOptionValue(DATA));
 		log.log(Level.INFO, "output = "+out);
+		
 		
 		//Construction du FeatureSpec à partir du .names
 		FeatureSpec fs = null;
@@ -108,5 +112,15 @@ public class FAFBuildMode {
 			e.printStackTrace(pw);
 			log.log(Level.INFO, w.toString());
 		}
+		
+		//Lancement de la construction de l'arbre
+		DecisionTree root = null;
+		//*****************//
+		
+		
+		//*****************//
+		//Export du résultat
+		XmlExporter xmlexp = new XmlExporter(root, out);
+		xmlexp.launch();
 	}
 }

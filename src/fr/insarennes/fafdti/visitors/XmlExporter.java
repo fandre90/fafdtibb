@@ -76,6 +76,8 @@ public class XmlExporter implements DecisionTreeVisitor {
         stack.push(treeY);
         dtq.getYesTree().accept(this);
         
+        stack.pop();
+        
         Element treeN = doc.createElement("tree");
         treeN.setAttribute("answer", "no");
         child.appendChild(treeN);
@@ -161,10 +163,9 @@ public class XmlExporter implements DecisionTreeVisitor {
 		ns2.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m3)));
 		ns2.yesSetter().set(new DecisionTreeLeaf(new LeafLabels(n2)));
 		
-		
-		
 		XmlExporter xml = new XmlExporter(gtree, "monxml");
 		xml.launch();
+		System.out.println("final stack size="+xml.stack.size());
 	}
 	
 }

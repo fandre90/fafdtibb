@@ -116,6 +116,7 @@ public class XmlExporter implements DecisionTreeVisitor {
 	}
 	
 	public void finish(){
+		log.log(Level.DEBUG, "final stack size="+stack.size());
 		// export dans un fichier
 		log.log(Level.INFO, "Xml file creation");
         File file = new File(filename+".xml");
@@ -165,7 +166,6 @@ public class XmlExporter implements DecisionTreeVisitor {
 		
 		XmlExporter xml = new XmlExporter(gtree, "monxml");
 		xml.launch();
-		System.out.println("final stack size="+xml.stack.size());
 	}
 	
 }

@@ -56,9 +56,10 @@ public class XmlExporter implements DecisionTreeVisitor {
 		filename = filenam;
 		tree = dt;
 		stack = new Stack<Element>();
-		
+		Element trees = doc.createElement("trees");
+		doc.appendChild(trees);
 		Element root = doc.createElement("tree");
-        doc.appendChild(root);
+        trees.appendChild(root);
         stack.push(root);
 	}
 	
@@ -67,6 +68,7 @@ public class XmlExporter implements DecisionTreeVisitor {
 		Question q = dtq.getQuestion();
 		Element child = doc.createElement("question");
         child.setAttribute("feature", String.valueOf(q.getCol()));
+        child.setAttribute("type", String.valueOf(q.getType()));
         child.setAttribute("test", q.getStringValue());
         stack.peek().appendChild(child);
         

@@ -68,7 +68,7 @@ public class FAFQueryMode {
 		try {
 			cmdline = parser.parse(opts, args);
 		} catch (ParseException e) {
-			log.log(Level.INFO, e.getMessage());
+			log.log(Level.ERROR, e.getMessage());
 			displayHelp();
 			System.exit(0);
 		}

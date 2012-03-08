@@ -96,7 +96,7 @@ public class FAFUtilsMode {
 		if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
 			try {
 				Runtime.getRuntime().exec("dot -Tpng -o"+out+".png "+out+".dot");
-				log.log(Level.ERROR, "png export done");
+				log.log(Level.INFO, "png export done");
 				//on affiche si demandé
 				if(cmdline.hasOption(DISPLAY))
 					Runtime.getRuntime().exec("display "+out+".png");
@@ -121,7 +121,7 @@ public class FAFUtilsMode {
 			log.log(Level.ERROR, "Xml import failed");
 			System.exit(0);
 		}
-		log.log(Level.ERROR, "Xml import done");
+		log.log(Level.INFO, "Xml import done");
 		
 		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(IN));
 		//on fait le dot		
@@ -164,7 +164,7 @@ public class FAFUtilsMode {
 			try {
 				cmdline = parser.parse(os, sargs);
 			} catch (ParseException e) {
-				log.log(Level.INFO, e.getMessage());
+				log.log(Level.ERROR, e.getMessage());
 				displayHelp();
 				System.exit(0);
 			}

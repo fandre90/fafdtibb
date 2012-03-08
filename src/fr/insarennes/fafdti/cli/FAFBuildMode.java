@@ -103,15 +103,15 @@ public class FAFBuildMode {
 			Writer w = new StringWriter();
 			PrintWriter pw = new PrintWriter(w);
 			e.printStackTrace(pw);
-			log.log(Level.INFO, w.toString());
-			log.log(Level.INFO, e.getMessage());
+			log.log(Level.ERROR, w.toString());
+			log.log(Level.ERROR, e.getMessage());
 			System.exit(0);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			Writer w = new StringWriter();
 			PrintWriter pw = new PrintWriter(w);
 			e.printStackTrace(pw);
-			log.log(Level.INFO, w.toString());
+			log.log(Level.ERROR, w.toString());
 			System.exit(0);
 		}
 		

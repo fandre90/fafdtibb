@@ -134,7 +134,7 @@ public class ImportXML {
 		return res;
 	}
 	
-	DecisionTree getResult(){
+	public DecisionTree getResult(){
 		return listTree.get(0);
 	}
 	

@@ -1,5 +1,6 @@
 package fr.insarennes.fafdti.cli;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -15,6 +16,10 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.tree.ImportXML;
+import fr.insarennes.fafdti.visitors.GraphicExporter;
+
 public class FAFUtilsMode {
 	
 	static Logger log = Logger.getLogger(FAFUtilsMode.class);
@@ -28,6 +33,7 @@ public class FAFUtilsMode {
 	public static final String DOT = "dot";
 	public static final String IN = "in";
 	public static final String OUT = "out";
+	public static final String DISPLAY = "display";
 	
 	public static Options opts_mode;
 	public static Options opts_png;
@@ -48,9 +54,11 @@ public class FAFUtilsMode {
 		//options pour mode png
 		Option png1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
 		Option png2 = new Option(OUT.substring(0,1), OUT, true, "Set .png filename (optional)");
+		Option png3 = new Option(DISPLAY.substring(0,1).toUpperCase(), DISPLAY, false, "Display image when generation done if checked (optional)");
 		png1.setRequired(true);
 		opts_png.addOption(png1);
 		opts_png.addOption(png2);
+		opts_png.addOption(png3);
 		//options pour mode dot
 		Option dot1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
 		Option dot2 = new Option(OUT.substring(0,1), OUT, true, "Set .dot filename (optional)");
@@ -79,10 +87,47 @@ public class FAFUtilsMode {
 		log.log(Level.INFO, wdot.toString());
 	}
 	public static void makePng(CommandLine cmdline){
-		log.log(Level.INFO, "makepng");
+		log.log(Level.INFO, "Starting makepng");
+		//on fait le dot
+		makeDot(cmdline);
+		
+		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(IN));
+		//on fait le png à partir du dot
+		if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
+			try {
+				Runtime.getRuntime().exec("dot -Tpng -o"+out+".png "+out+".dot");
+				log.log(Level.ERROR, "png export done");
+				//on affiche si demandé
+				if(cmdline.hasOption(DISPLAY))
+					Runtime.getRuntime().exec("display "+out+".png");
+			} catch (IOException e) {
+				log.log(Level.ERROR, "png export needs ImageMagick library installed");
+				System.exit(0);
+			}
+		}
+		else{
+			log.log(Level.ERROR, "png export only available under Linux !");
+			System.exit(0);
+		}
+		log.log(Level.INFO, "makepng done");
 	}
 	public static void makeDot(CommandLine cmdline){
-		log.log(Level.INFO, "makedot");
+		log.log(Level.INFO, "Starting makedot");
+		
+		ImportXML importer = new ImportXML(cmdline.getOptionValue(IN));
+		try {
+			importer.launch();
+		} catch (FAFException e1) {
+			log.log(Level.ERROR, "Xml import failed");
+			System.exit(0);
+		}
+		log.log(Level.ERROR, "Xml import done");
+		
+		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(IN));
+		//on fait le dot		
+		GraphicExporter graph = new GraphicExporter(importer.getResult(), out);
+		graph.launch();
+		log.log(Level.INFO, "makedot done");
 	}
 	public static void main(String[] args) {
 		

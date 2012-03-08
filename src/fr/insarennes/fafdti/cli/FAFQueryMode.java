@@ -1,5 +1,7 @@
 package fr.insarennes.fafdti.cli;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -17,6 +19,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.tree.ImportXML;
+import fr.insarennes.fafdti.visitors.Interrogator;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 
 
@@ -79,7 +84,40 @@ public class FAFQueryMode {
 		log.log(Level.INFO, qExample.toString());
 		
 		//On construit l'arbre à partir du fichier d'entrée
-		
+		ImportXML importer = new ImportXML(cmdline.getOptionValue(IN));
+		try {
+			importer.launch();
+		} catch (FAFException e) {
+			// TODO Auto-generated catch block
+			log.log(Level.ERROR, "Xml import failed");
+			System.exit(0);
+		}
+		log.log(Level.INFO, "Xml import done");
 		//On visite !
+		Interrogator query = new Interrogator(qExample);
+		importer.getResult().accept(query);
+		log.log(Level.INFO, "Query process done");
+		log.log(Level.INFO, "Here is the answer");
+		log.log(Level.INFO, query.getResult().toString());
+		
+		//si OUT précisé, on écrit à la fin du fichier OUT la réponse
+		if(cmdline.hasOption(OUT)){
+			Writer w = null;
+			try {
+				w = new FileWriter(cmdline.getOptionValue(OUT), true);
+			} catch (IOException e) {
+				log.log(Level.ERROR, "Unable to open file '"+cmdline.getOptionValue(OUT)+ "' when trying to write answer in it");
+				System.exit(0);
+			}
+			PrintWriter pw = new PrintWriter(w);
+			pw.println("###Query on "+cmdline.getOptionValue(IN)+".xml tree###");
+			pw.println("##With question :");
+			pw.print(qExample.toString());
+			pw.println("#Answer is :");
+			pw.println(query.getResult().toString());
+			pw.flush();
+			pw.close();
+			log.log(Level.INFO, "Answer output writing done");
+		}
 	}
 }

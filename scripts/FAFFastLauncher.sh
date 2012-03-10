@@ -41,7 +41,7 @@ exit -1
 fi
 
 #build mode
-if [ ${1} == "--build" ] ; then
+if [ $1 == "--build" ] ; then
 
 if [ $ARGC -ne 3 ] ; then
 echo "[usage] :$BUILD_USAGE"
@@ -55,7 +55,7 @@ exit 0
 fi
 
 #query mode
-if [ ${1} == "--query" ] ; then
+if [ $1 == "--query" ] ; then
 
 if [ $ARGC -ne 3 ] ; then
 echo "[usage] :$QUERY_USAGE"
@@ -69,7 +69,7 @@ exit 0
 fi
 
 #utils png mode
-if [ ${1} == "--utilspng" ] ; then
+if [ $1 == "--utilspng" ] ; then
 
 if [ $ARGC -ne 2 ] ; then
 echo "[usage] :$UTILSPNG_USAGE"
@@ -83,7 +83,7 @@ exit 0
 fi
 
 #utils dot mode
-if [ ${1} == "--utilsdot" ] ; then
+if [ $1 == "--utilsdot" ] ; then
 
 if [ $ARGC -ne 2 ] ; then
 echo "[usage] :$UTILSDOT_USAGE"

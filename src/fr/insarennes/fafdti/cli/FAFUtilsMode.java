@@ -95,19 +95,28 @@ public class FAFUtilsMode {
 		//on fait le png à partir du dot
 		if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
 			try {
-				Runtime.getRuntime().exec("dot -Tpng -o"+out+".png "+out+".dot");
+				String cmd = "dot -Tpng -o"+out+".png "+out+".dot";
+				Process p = Runtime.getRuntime().exec(cmd);
+				log.log(Level.DEBUG, cmd);
+				try {
+					log.log(Level.DEBUG, "return="+p.waitFor());
+				} catch (InterruptedException e) {
+					log.log(Level.ERROR, "dot command failed");
+					return;
+				}
 				log.log(Level.INFO, "png export done");
 				//on affiche si demandé
 				if(cmdline.hasOption(DISPLAY))
 					Runtime.getRuntime().exec("display "+out+".png");
+					log.log(Level.DEBUG, "display png done");
 			} catch (IOException e) {
 				log.log(Level.ERROR, "png export needs ImageMagick library installed");
-				System.exit(0);
+				return;
 			}
 		}
 		else{
 			log.log(Level.ERROR, "png export only available under Linux !");
-			System.exit(0);
+			return;
 		}
 		log.log(Level.INFO, "makepng done");
 	}
@@ -119,7 +128,7 @@ public class FAFUtilsMode {
 			importer.launch();
 		} catch (FAFException e1) {
 			log.log(Level.ERROR, "Xml import failed");
-			System.exit(0);
+			return;
 		}
 		log.log(Level.INFO, "Xml import done");
 		
@@ -130,6 +139,7 @@ public class FAFUtilsMode {
 		log.log(Level.INFO, "makedot done");
 	}
 	public static void main(String[] args) {
+		LoggerManager.setupLogger();
 		
 		if(args.length<1)
 			displayHelp();

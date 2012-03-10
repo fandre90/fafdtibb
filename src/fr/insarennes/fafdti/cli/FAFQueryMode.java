@@ -61,6 +61,8 @@ public class FAFQueryMode {
 	}
 	
 	public static void main(String[] args) {
+		LoggerManager.setupLogger();
+		
 		initOptions();
 		
 		CommandLineParser parser = new GnuParser();

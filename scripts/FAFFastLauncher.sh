@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#to run me, you first need to export .jar from Eclipse and put them in $JAR_DIR
+#to run me, first you need to export .jar from Eclipse and put them in $JAR_DIR
 
 HEAD="java -jar "
-#répertoires
+#directories
 JAR_DIR="../jar/"
 NAMES_DIR="../names/"
 DATA_DIR="../data/"
@@ -24,7 +24,7 @@ QUERY_USAGE=$QUERY_OPT" <filename of .xml> <\"question\">"
 UTILSPNG_USAGE=$UTILSPNG_OPT" <filename of .png>"
 UTILSDOT_USAGE=$UTILSDOT_OPT" <filename of .dot>"
 
-#creation des répertoires de sortie s'ils n'existent pas encore
+#output directories creation if they don't exist already
 if [ ! -d $OUTPUT_DIR ] ; then
 mkdir $OUTPUT_DIR
 echo $OUTPUT_DIR" created"
@@ -35,16 +35,22 @@ mkdir $XML_DIR
 echo $XML_DIR" created"
 fi
 
-#fonction d'affichage de l'aide (puis sort du script)
+#display help function, then exit script
 display_help(){
+	echo "## FAFFastLauncher :: use it to customize your configurations and processing preferences ##
+## for Fast And Furious Decision Tree Induction : Bagging Begins Command Line Interface ##
+	"
 	echo "[usage] :$BUILD_USAGE
 	|$QUERY_USAGE
 	|$UTILSPNG_USAGE
 	|$UTILSDOT_USAGE"
+	echo "Infos :
+	- Always use <filename> without extension
+	- In <\"question\">, features must be in order and seperated by ';'"
 	exit -1
 }
-#fonction de test du nbre de param
-#si pas égal, affichage de l'aide (et donc sorti du script)
+#check number of parameters function
+#if not equal, display help, so exit script
 check_nb_param(){
 	if [ $ARGC -ne $1 ] ; then
 	display_help
@@ -52,7 +58,7 @@ check_nb_param(){
 }
 
 ARGC=$#
-#vérification qu'on a au moins une option (pour le mode)
+#check there is at least 1 argument (for mode)
 if [ $ARGC -eq 0 ] ; then
 display_help
 fi

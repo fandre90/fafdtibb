@@ -7,21 +7,22 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 
-
 /**
- * stocke le vecteur statistique et l'entropie associée. 
- * attention: l'entropie n'est pas calculée automatiquement. 
- * le seul separateur utilisé dans la conversion en string est SEPARATEUR
+ * stocke le vecteur statistique et l'entropie associée. attention: l'entropie
+ * n'est pas calculée automatiquement. le seul separateur utilisé dans la
+ * conversion en string est SEPARATEUR
+ * 
  * @author Francois LEHERICEY
  */
 
-public class ScoredDistributionVector extends HadoopConfStockable 
-		implements Writable {
+public class ScoredDistributionVector extends HadoopConfStockable implements
+		Writable, Cloneable {
 	/** entropie */
 	private double score;
 	/** vecteur statistique */
 	private int[] distributionVector;
 	private int total;
+	private boolean hasMoreThanOneNonEmptyLabel = false;
 	/** sétarateur utilisé dans toString et fromString */
 	public static final String SEPARATEUR = ":";
 	public static final String HADOOP_CONFIGURATION_KEY = "faf-dist";
@@ -29,25 +30,28 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	public ScoredDistributionVector() {
 		this(1);
 	}
+
 	/**
 	 * construit un vecteur vide avec une entropie nulle
-	 * @param size taille du vecteur statistique
+	 * 
+	 * @param size
+	 *            taille du vecteur statistique
 	 */
 	public ScoredDistributionVector(int size) {
 		score = 0;
 		distributionVector = new int[size];
-		//for (int i = 0; i < distributionVector.length; i++)
-		//	distributionVector[i] = 0;
+		hasMoreThanOneNonEmptyLabel = false;
 	}
-	
+
 	/**
-	 * construit un vecteur statistique et son entropie associée a partir d'un string
-	 * (issu d'un toString), l'entropie n'est pas calculé mais récupérée.
+	 * construit un vecteur statistique et son entropie associée a partir d'un
+	 * string (issu d'un toString), l'entropie n'est pas calculé mais récupérée.
+	 * 
 	 * @param s
 	 */
 	public ScoredDistributionVector(String s) {
 		String splited[] = s.split(SEPARATEUR);
-		distributionVector = new int[splited.length-1];
+		distributionVector = new int[splited.length - 1];
 		try {
 			fromString(s);
 		} catch (Exception e) {
@@ -55,28 +59,37 @@ public class ScoredDistributionVector extends HadoopConfStockable
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * +1 dans le vecteur stats a l'indice i, l'entropie n'est pas mise a jour.
-	 * @param e l'indice du vecteur a modifier
+	 * 
+	 * @param e
+	 *            l'indice du vecteur a modifier
 	 */
-	public void incrStat(int e) {
-		distributionVector[e]++;
+	public void incrStat(int i) {
+		distributionVector[i]++;
 		total++;
+		hasMoreThanOneNonEmptyLabel = (total != distributionVector[i]);
 	}
 
 	/**
-	 * rend l'entropie, attention si updateEntropie n'a pas été appelé la valeur sera fausse.
+	 * rend l'entropie, attention si updateEntropie n'a pas été appelé la valeur
+	 * sera fausse.
+	 * 
 	 * @return
 	 */
 	public double getScore() {
 		return score;
 	}
-	
+
 	public int getTotal() {
 		return total;
 	}
-	
+
+	public boolean hasMoreThanOneNonEmptyLabel() {
+		return hasMoreThanOneNonEmptyLabel;
+	}
+
 	public int[] getDistributionVector() {
 		return this.distributionVector;
 	}
@@ -88,14 +101,17 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	public ScoredDistributionVector computeRightDistribution(
 			ScoredDistributionVector leftDistribution) {
 		int vectLen = this.distributionVector.length;
-		ScoredDistributionVector rightDistribution = 
-			new ScoredDistributionVector(vectLen);
-		for(int i=0; i< vectLen; i++) {
-			rightDistribution.distributionVector[i] =
-					this.distributionVector[i] - 
-					leftDistribution.distributionVector[i];
+		ScoredDistributionVector rightDist = new ScoredDistributionVector(
+				vectLen);
+		for (int i = 0; i < vectLen; i++) {
+			int n = this.distributionVector[i]
+					- leftDistribution.distributionVector[i];
+			rightDist.distributionVector[i] = n;
+			rightDist.total += n;
+			rightDist.hasMoreThanOneNonEmptyLabel = (rightDist.total != n)
+					&& (n != 0);
 		}
-		return rightDistribution;
+		return rightDist;
 	}
 
 	@Override
@@ -103,11 +119,16 @@ public class ScoredDistributionVector extends HadoopConfStockable
 		score = in.readDouble();
 		int size = in.readInt();
 		System.out.println("Read: " + score + "," + size);
-		if(size != distributionVector.length) {
+		if (size != distributionVector.length) {
 			distributionVector = new int[size];
 		}
+		total = 0;
+		hasMoreThanOneNonEmptyLabel = false;
 		for (int i = 0; i < size; i++) {
 			distributionVector[i] = in.readInt();
+			total += distributionVector[i];
+			hasMoreThanOneNonEmptyLabel = (total != distributionVector[i])
+					&& (distributionVector[i] != 0);
 		}
 	}
 
@@ -122,30 +143,49 @@ public class ScoredDistributionVector extends HadoopConfStockable
 	}
 
 	@Override
+	public Object clone() {
+		ScoredDistributionVector scoredDistVect = null;
+		try {
+			scoredDistVect = (ScoredDistributionVector) super.clone();
+		} catch (CloneNotSupportedException cnse) {
+			cnse.printStackTrace();
+		}
+		scoredDistVect.distributionVector = this.distributionVector.clone();
+		return scoredDistVect;
+	}
+
+	@Override
 	public String toString() {
 		String out = score + "";
 		for (int i = 0; i < distributionVector.length; i++) {
-			out +=  SEPARATEUR + distributionVector[i];
+			out += SEPARATEUR + distributionVector[i];
 		}
-		
+
 		return out;
 	}
 
 	/**
 	 * charge dans l'instance courante le contenu de s (issue d'un toString).
-	 * @param s valeur a charger
-	 * @throws Exception 
+	 * 
+	 * @param s
+	 *            valeur a charger
+	 * @throws Exception
 	 */
-	public void fromString(String s) throws Exception {
+	public void fromString(String s) {
 		int OFFSET = 1;
 		String splited[] = s.split(SEPARATEUR);
 		score = Float.parseFloat(splited[0]);
-		int size = splited.length-OFFSET;
-		if(size != distributionVector.length) {
+		int size = splited.length - OFFSET;
+		if (size != distributionVector.length) {
 			distributionVector = new int[size];
 		}
+		total = 0;
+		hasMoreThanOneNonEmptyLabel = false;
 		for (int i = OFFSET; i < splited.length; i++) {
-			distributionVector[i-OFFSET] = Integer.parseInt(splited[i]);
+			int n = Integer.parseInt(splited[i]);
+			distributionVector[i - OFFSET] = n;
+			total += n;
+			hasMoreThanOneNonEmptyLabel = (total != n) && (n != 0);
 		}
 	}
 

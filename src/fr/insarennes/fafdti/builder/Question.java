@@ -15,7 +15,7 @@ import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 
 public class Question extends HadoopConfStockable implements
-		WritableComparable<Question> {
+		WritableComparable<Question>, Cloneable {
 
 	public static final String HADOOP_CONFIGURATION_KEY = "faf-question";
 	
@@ -196,8 +196,8 @@ public class Question extends HadoopConfStockable implements
 
 	@Override
 	public int compareTo(Question other) {
-		System.out.println(this.col + "," + this.type + " VS " + other.col
-				+ "," + other.type);
+		//System.out.println(this.col + "," + this.type + " VS " + other.col
+		//		+ "," + other.type);
 		if (this.col > other.col)
 			return 1;
 		if (this.col < other.col)
@@ -210,7 +210,7 @@ public class Question extends HadoopConfStockable implements
 		if (this.type == AttrType.CONTINUOUS) {
 			return this.doubleValue.compareTo(other.doubleValue);
 		}
-		System.out.println("CompareTo returns true !!");
+		//System.out.println("CompareTo returns true !!");
 		return 0;
 	}
 
@@ -277,6 +277,19 @@ public class Question extends HadoopConfStockable implements
 		} else
 			throw new FAFException("No type matching");
 		return res;
+	}
+
+	@Override
+	public Object clone() {
+	    Question question = null;
+	    try {
+	    	question = (Question) super.clone();
+	    } catch(CloneNotSupportedException cnse) {
+	      	cnse.printStackTrace(System.err);
+	    }
+	    question.doubleValue = new DoubleWritable(this.doubleValue.get());
+	    question.textValue = new Text(this.textValue);
+	    return question;
 	}
 
 	@Override

@@ -16,11 +16,14 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
 
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
-import fr.insarennes.fafdti.hadoop.QuestionDistVectorPair;
+import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
+import fr.insarennes.fafdti.hadoop.Step0Map;
+import fr.insarennes.fafdti.hadoop.Step0Red;
 import fr.insarennes.fafdti.hadoop.Step1Map;
 import fr.insarennes.fafdti.hadoop.Step1Red;
 import fr.insarennes.fafdti.hadoop.Step2Map;
@@ -28,6 +31,7 @@ import fr.insarennes.fafdti.hadoop.Step2Red;
 import fr.insarennes.fafdti.hadoop.Step3Map;
 import fr.insarennes.fafdti.hadoop.Step3Red;
 import fr.insarennes.fafdti.hadoop.Step4Map;
+import fr.insarennes.fafdti.hadoop.Step4Red;
 
 public class NodeBuilder implements Runnable {
 
@@ -38,6 +42,7 @@ public class NodeBuilder implements Runnable {
 	protected FeatureSpec featureSpec;
 	protected Criterion criterion;
 
+	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
 	private final String job2outDir = "continuous-questions";
 	private final String job3outDir = "best-question";
@@ -59,13 +64,18 @@ public class NodeBuilder implements Runnable {
 		try {
 			fileSystem = FileSystem.get(conf);
 			featureSpec = new FeatureSpec(inputNamesPath, fileSystem);
-			Job job1 = setupJob1();
+			Job job0 = setupJob0();
+			job0.waitForCompletion(false);
+			ScoredDistributionVector parentDistribution = readParentDistribution();
+			Job job1 = setupJob1(parentDistribution);
 			job1.submit();
 			Job job2 = setupJob2();
 			job2.waitForCompletion(false);
 			Job job3 = setupJob3();
 			job3.waitForCompletion(false);
-			
+			QuestionScoreLeftDistribution qDVPair = readBestQuestion();
+			Job job4 = setupJob4(qDVPair.getQuestion());
+			job4.waitForCompletion(false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
@@ -77,10 +87,31 @@ public class NodeBuilder implements Runnable {
 		}
 	}
 
-	private Job setupJob1() throws IOException {
+	private Job setupJob0() throws IOException {
 		Configuration conf = new Configuration();
 		featureSpec.toConf(conf);
 		criterion.toConf(conf);
+		Job job = new Job(conf, "Initial entropy calculation");
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(ScoredDistributionVector.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		job.setMapperClass(Step0Map.class);
+		job.setReducerClass(Step0Red.class);
+
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		FileInputFormat.addInputPath(job, inputDataPath);
+		Path outputDir = new Path(workingDir, job0outDir);
+		FileOutputFormat.setOutputPath(job, outputDir);
+		return job;
+	}
+
+	private Job setupJob1(ScoredDistributionVector parentDistribution)
+			throws IOException {
+		Configuration conf = new Configuration();
+		featureSpec.toConf(conf);
+		criterion.toConf(conf);
+		parentDistribution.toConf(conf);
 		Job job = new Job(conf, "Discrete and text questions generation");
 		job.setOutputKeyClass(Question.class);
 		job.setOutputValueClass(IntWritable.class);
@@ -123,7 +154,7 @@ public class NodeBuilder implements Runnable {
 		Job job = new Job(conf, "Best question selection");
 
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(QuestionDistVectorPair.class);
+		job.setOutputValueClass(QuestionScoreLeftDistribution.class);
 
 		job.setMapperClass(Step3Map.class);
 		job.setCombinerClass(Step3Red.class);
@@ -132,25 +163,39 @@ public class NodeBuilder implements Runnable {
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 
-		Path inputDir = new Path(workingDir, job2outDir);
-		FileInputFormat.addInputPath(job, inputDir);
+		Path inputDir1 = new Path(workingDir, job1outDir);
+		FileInputFormat.addInputPath(job, inputDir1);
+		Path inputDir2 = new Path(workingDir, job2outDir);
+		FileInputFormat.addInputPath(job, inputDir2);
 		Path outputDir = new Path(workingDir, job3outDir);
 		FileOutputFormat.setOutputPath(job, outputDir);
 		return job;
 	}
 
-	private QuestionDistVectorPair readBestQuestion() throws IOException {
+	private String readFileFirstLine(Path inputDir) throws IOException {
 		Configuration conf = new Configuration();
 		FileSystem fileSystem;
 		fileSystem = FileSystem.get(conf);
-		Path inputDir = new Path(workingDir, job3outDir);
 		FileStatus[] files = fileSystem.listStatus(inputDir);
 		Path inputFile = files[0].getPath();
 		FSDataInputStream in = fileSystem.open(inputFile);
 		LineReader lr = new LineReader(in);
 		Text line = new Text();
 		lr.readLine(line);
-		return new QuestionDistVectorPair(line.toString());
+		return line.toString();
+	}
+
+	private QuestionScoreLeftDistribution readBestQuestion() throws IOException {
+		String line = readFileFirstLine(new Path(workingDir, job3outDir));
+		String tokens[] = line.split("\\s+", 2);
+		return new QuestionScoreLeftDistribution(tokens[1]);
+	}
+
+	private ScoredDistributionVector readParentDistribution()
+			throws IOException {
+		String line = readFileFirstLine(new Path(workingDir, job0outDir));
+		String tokens[] = line.split("\\s+");
+		return new ScoredDistributionVector(tokens[tokens.length - 1]);
 	}
 
 	private Job setupJob4(Question bestQuestion) throws IOException {
@@ -162,10 +207,12 @@ public class NodeBuilder implements Runnable {
 		job.setOutputValueClass(LabeledExample.class);
 
 		job.setMapperClass(Step4Map.class);
-
+		job.setReducerClass(Step4Red.class);
 		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
-		
+		// job.setOutputFormatClass(TextOutputFormat.class);
+		MultipleOutputs.addNamedOutput(job, "text", TextOutputFormat.class,
+				NullWritable.class, LabeledExample.class);
+
 		FileInputFormat.addInputPath(job, inputDataPath);
 		Path outputDir = new Path(workingDir, job4outDir);
 		FileOutputFormat.setOutputPath(job, outputDir);

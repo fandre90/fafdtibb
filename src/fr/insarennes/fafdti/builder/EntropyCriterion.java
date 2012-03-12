@@ -11,13 +11,13 @@ public class EntropyCriterion extends Criterion {
 	public double compute(int[] distributionVector) {
 		double criterionValue = 0;
 		//calcul de la somme des ni
-		float N = 0;
+		double N = 0;
 		for (int i = 0; i < distributionVector.length; i++)
 			N += distributionVector[i];
 		//calcul de l'entropie avec en base e
 		for (int i = 0; i < distributionVector.length; i++) {
 			if(distributionVector[i] != 0) {
-				float pi = distributionVector[i]/N;
+				double pi = distributionVector[i]/N;
 				criterionValue += pi*Math.log(pi);
 			}
 		}

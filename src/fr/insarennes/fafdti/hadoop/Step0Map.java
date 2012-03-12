@@ -33,16 +33,16 @@ public class Step0Map extends Mapper<Object, Text, Text, IntWritable>{
 	throws IOException, InterruptedException {
 		
 		// on récupère l'étiquette
-		String etiquette = "";
+		String label = "";
 		StringTokenizer st = new StringTokenizer(value.toString(), ",");
 		while(st.hasMoreTokens()){
-			etiquette = st.nextToken();
+			label = st.nextToken();
 		}
 		
 		// Enlever le point final.
-		etiquette = etiquette.substring(0, etiquette.length() - 1);
-		int index = fs.indexOfLabel(etiquette);
+		label = label.substring(0, label.length() - 1);
+		int index = fs.indexOfLabel(label);
 		
-		context.write(new Text(""), new IntWritable(index));
+		context.write(new Text("labels"), new IntWritable(index));
 	}
 }

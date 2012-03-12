@@ -39,7 +39,7 @@ public class QuestionExample implements Iterable<String>, Writable{
 	@Override
 	public void readFields(DataInput in) throws IOException {
 		int size = in.readInt();
-		List<String> qExample = new ArrayList<String>();
+		this.qExample = new ArrayList<String>();
 		for(int i=0; i<size; i++) {
 			qExample.add(in.readUTF());
 		}
@@ -47,7 +47,7 @@ public class QuestionExample implements Iterable<String>, Writable{
 
 	@Override
 	public void write(DataOutput out) throws IOException {
-		out.write(qExample.size());
+		out.writeInt(qExample.size());
 		for(String value : qExample) {
 			out.writeUTF(value);
 		}

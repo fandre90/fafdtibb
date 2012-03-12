@@ -22,7 +22,7 @@ import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 // [0,3 : (1, 1) ]
 public class Step2Red
 		extends
-		ReducerBase<IntWritable, ContinuousAttrLabelPair, Question, ScoredDistributionVector> {
+		ReducerBase<IntWritable, ContinuousAttrLabelPair, Question, ScoreLeftDistribution> {
 
 	public static double EPSILON = 10e-9;
 
@@ -35,32 +35,30 @@ public class Step2Red
 		while (vlPairIt.hasNext()) {
 			ContinuousAttrLabelPair vlPair = (ContinuousAttrLabelPair) vlPairIt.next().clone();
 			valueLabelPairsList.add(vlPair);
-			System.out.println(valueLabelPairsList);
-			System.out.println(vlPair);
+			//System.out.println(valueLabelPairsList);
+			//System.out.println(vlPair);
 		}
-		System.out.println("vlpl: " + valueLabelPairsList);
+		//System.out.println("vlpl: " + valueLabelPairsList);
 		List<Double> candidates = 
 				computeThresholdCandidates(valueLabelPairsList);
 
 		double bestScore = 0;
 		double bestThreshold = 0;
-		ScoredDistributionVector outDistributon = null;
+		ScoreLeftDistribution bestScoreLeftDist = null;
 		for (int i = 0; i < candidates.size(); i++) {
 			double threshold = candidates.get(i);
 			ScoreLeftDistribution scoreLeftDist = computeEntropyForThreshold(
 					valueLabelPairsList, threshold);
 			double score = scoreLeftDist.getScore();
-			// FIXME is score1 better then score2
-			// if score1 > score2 or if score1 < score2
-			if (outDistributon == null || score < bestScore) {
+			if (bestScoreLeftDist == null || score < bestScore) {
 				bestScore = score;
 				bestThreshold = threshold;
-				outDistributon = scoreLeftDist.getDistribution();
+				bestScoreLeftDist = (ScoreLeftDistribution) scoreLeftDist.clone();
 			}
 		}
 		Question question = new Question(col.get(), AttrType.CONTINUOUS,
 				bestThreshold);
-		context.write(question, outDistributon);
+		context.write(question, bestScoreLeftDist);
 	}
 
 	private static List<Double> computeThresholdCandidates(
@@ -68,7 +66,7 @@ public class Step2Red
 		List<Double> values = new ArrayList<Double>();
 		List<Double> valuesUnique = new ArrayList<Double>();
 		List<Double> candidates = new ArrayList<Double>();
-		System.out.println("vl: " + valueLabelPairs);
+		//System.out.println("vl: " + valueLabelPairs);
 		// 1. Build the ArrayList containing all possible
 		// values for the current attribute (transmitted as Hadoop key)
 		// from the list of (continuous value, label) pairs
@@ -78,7 +76,7 @@ public class Step2Red
 		}
 		// 2. Sort the ArrayList containing all values O(n log2 n)
 		Collections.sort(values);
-		System.out.println(values);
+		//System.out.println(values);
 		// 3. Remove duplicates from the ArrayList O(n)
 		// Important note : Two values are considered identical
 		// if their difference is less than THRESHOLD
@@ -109,14 +107,14 @@ public class Step2Red
 			candidates.add((curValue + prevValue) / 2);
 			prevValue = curValue;
 		}
-		System.out.println("threshold candidates : " + candidates);
+		//System.out.println("threshold candidates : " + candidates);
 		return candidates;
 	}
 
 	private ScoreLeftDistribution computeEntropyForThreshold(
 			List<ContinuousAttrLabelPair> valueLabelPairs, double threshold) {
-		System.out.println("Compute ent for thresh: " + threshold);
-		System.out.println("NbEtiq: " + fs.nbEtiquettes());
+		//System.out.println("Compute ent for thresh: " + threshold);
+		//System.out.println("NbEtiq: " + fs.nbEtiquettes());
 		ScoredDistributionVector leftDist = new ScoredDistributionVector(
 				fs.nbEtiquettes());
 		ScoredDistributionVector rightDist = new ScoredDistributionVector(
@@ -124,7 +122,7 @@ public class Step2Red
 		for (ContinuousAttrLabelPair vlPair : valueLabelPairs) {
 			int labelIndex = vlPair.getLabelIndex();
 			double contValue = vlPair.getContinuousValue();
-			System.out.println("lbIdx, v: " + labelIndex + "," + contValue);
+			//System.out.println("lbIdx, v: " + labelIndex + "," + contValue);
 			if (contValue - threshold > EPSILON) {
 				leftDist.incrStat(labelIndex);
 			} else {
@@ -133,17 +131,6 @@ public class Step2Red
 		}
 		leftDist.rate(criterion);
 		rightDist.rate(criterion);
-		System.out.println(leftDist);
-		System.out.println(rightDist);
-
-		// FIXME : Toujours la même manière d'agréger l'entropie ?
-		int nl = leftDist.getTotal();
-		int nr = rightDist.getTotal();
-		int N = nl + nr;
-		System.out.println(nl + "," + nr);
-		double score = (nl * leftDist.getScore() + nr * rightDist.getScore())
-				/ N;
-		System.out.println(score);
-		return new ScoreLeftDistribution(score, leftDist);
+		return new ScoreLeftDistribution(leftDist, rightDist);
 	}
 }

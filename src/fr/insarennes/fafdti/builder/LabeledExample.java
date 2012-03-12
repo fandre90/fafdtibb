@@ -17,7 +17,13 @@ public class LabeledExample implements Writable {
 	QuestionExample example;
 	Text label;
 
+	public LabeledExample() {
+		this.label = new Text();
+		this.example = new QuestionExample(new ArrayList<String>());
+	}
+
 	public LabeledExample(String strRepr) {
+		this.label = new Text();
 		fromString(strRepr);
 	}
 
@@ -25,12 +31,14 @@ public class LabeledExample implements Writable {
 	public void readFields(DataInput in) throws IOException {
 		this.example.readFields(in);
 		this.label.readFields(in);
+		System.out.println("Got example " + this.example);
 	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
 		this.example.write(out);
 		this.label.write(out);
+		//System.out.println("Got example " + );
 	}
 
 	public String getLabel() {

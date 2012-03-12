@@ -26,6 +26,6 @@ public class Step0Red extends ReducerBase<Text, IntWritable, Text, ScoredDistrib
 		}
 		
 		out.rate(criterion);
-		context.write(new Text(""), out);
+		context.write(new Text("scored disctribution vector"), out);
 	}
 }

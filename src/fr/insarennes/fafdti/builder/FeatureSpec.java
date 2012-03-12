@@ -89,12 +89,16 @@ public class FeatureSpec extends HadoopConfStockable {
 	}
 
 	private void parseLabelLine(String labelLine) throws ParseException {
+		labelLine = labelLine.trim();
 		int len = labelLine.length();
 		// Remove the dot a the end of the line
 		if (labelLine.charAt(len - 1) != '.')
 			throw new ParseException("Labels line must end with a dot");
 		labelLine = labelLine.substring(0, len - 1);
 		this.etiquettes = labelLine.split(",");
+		for(int i=0; i<etiquettes.length; ++i) {
+			this.etiquettes[i] = this.etiquettes[i].trim();
+		}
 	}
 
 	// FIXME FIXME FIXME Parsing du cutoff

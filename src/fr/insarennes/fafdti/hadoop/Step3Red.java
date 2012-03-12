@@ -2,26 +2,28 @@ package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer.Context;
+
+import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 
 public class Step3Red extends
-		ReducerBase<Text, QuestionDistVectorPair, Text, QuestionDistVectorPair> {
+		ReducerBase<Text, QuestionScoreLeftDistribution, Text, QuestionScoreLeftDistribution> {
 
 	protected void reduce(Text text,
-			Iterable<QuestionDistVectorPair> questionDistVectorPairs,
+			Iterable<QuestionScoreLeftDistribution> questionScoreLeftDists,
 			Context context) throws IOException, InterruptedException {
-		QuestionDistVectorPair bestQDVPair = null;
+		QuestionScoreLeftDistribution bestSLDist = null;
 		double bestCriterionValue = 0;
-		for (QuestionDistVectorPair qDVPair : questionDistVectorPairs) {
-			double curCriterionValue = qDVPair.getDistributionVector().getScore();
-			if(bestQDVPair == null | curCriterionValue < bestCriterionValue) {
+		for (QuestionScoreLeftDistribution sLDist : questionScoreLeftDists) {
+			ScoreLeftDistribution scoreLeftDist = sLDist.getScoreLeftDistribution();
+			double curCriterionValue = scoreLeftDist.getScore();
+			if(bestSLDist == null || curCriterionValue < bestCriterionValue) {
+				System.out.println("Current= " + curCriterionValue + "; Best= " + bestCriterionValue);
 				bestCriterionValue = curCriterionValue;
-				// FIXME We WILL have a clone problem here
-				bestQDVPair = qDVPair;
+				bestSLDist = (QuestionScoreLeftDistribution) sLDist.clone();
 			}
 		}
-		context.write(new Text("best"), bestQDVPair);
+		context.write(new Text("best"), bestSLDist);
 	}
 }

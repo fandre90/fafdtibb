@@ -15,7 +15,7 @@ import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
 import fr.insarennes.fafdti.builder.FeatureSpec;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
-import fr.insarennes.fafdti.hadoop.QuestionDistVectorPair;
+import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 import fr.insarennes.fafdti.hadoop.Step3Map;
 import fr.insarennes.fafdti.hadoop.Step3Red;
 
@@ -41,7 +41,7 @@ public class TestStep3 {
 				"Génération des questions discrètes et textuelles");
 
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(QuestionDistVectorPair.class);
+		job.setOutputValueClass(QuestionScoreLeftDistribution.class);
 
 		job.setMapperClass(Step3Map.class);
 		job.setCombinerClass(Step3Red.class);

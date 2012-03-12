@@ -7,6 +7,8 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 
+import fr.insarennes.fafdti.FAFException;
+
 /**
  * stocke le vecteur statistique et l'entropie associée. attention: l'entropie
  * n'est pas calculée automatiquement. le seul separateur utilisé dans la
@@ -96,6 +98,16 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 
 	public void rate(Criterion criterion) {
 		this.score = criterion.compute(distributionVector);
+	}
+
+	public void add(ScoredDistributionVector otherSDV) throws FAFException {
+		if(otherSDV.distributionVector.length != this.distributionVector.length) {
+			throw new FAFException("Distribution vectors must have the same length");
+		}
+		for(int i=0; i<this.distributionVector.length; i++) {
+			this.distributionVector[i] += otherSDV.distributionVector[i];
+		}
+		this.total += otherSDV.total;
 	}
 
 	public ScoredDistributionVector computeRightDistribution(

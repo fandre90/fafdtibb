@@ -42,6 +42,7 @@ public class QuestionScoreLeftDistribution implements
 	}
 
 	public QuestionScoreLeftDistribution(String strRepr) {
+		this();
 		fromString(strRepr);
 	}
 

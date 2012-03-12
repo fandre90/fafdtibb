@@ -69,7 +69,7 @@ public class NodeBuilder implements Runnable {
 			ScoredDistributionVector parentDistribution = readParentDistribution();
 			Job job1 = setupJob1(parentDistribution);
 			job1.submit();
-			Job job2 = setupJob2();
+			Job job2 = setupJob2(parentDistribution);
 			job2.waitForCompletion(false);
 			Job job3 = setupJob3();
 			job3.waitForCompletion(false);
@@ -127,10 +127,11 @@ public class NodeBuilder implements Runnable {
 		return job;
 	}
 
-	private Job setupJob2() throws IOException {
+	private Job setupJob2(ScoredDistributionVector parentDistribution) throws IOException {
 		Configuration conf = new Configuration();
 		featureSpec.toConf(conf);
 		criterion.toConf(conf);
+		parentDistribution.toConf(conf);
 		Job job = new Job(conf, "Continuous questions generation");
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(ContinuousAttrLabelPair.class);

@@ -6,7 +6,7 @@ import fr.insarennes.fafdti.builder.NodeBuilder;
 
 public class TestNodeBuilder {
 	public static void main(String[] args) {
-		String input = "/home/fabien/Bureau/Hadoop/data_test/in/yeast";
+		String input = "/home/fabien/Bureau/Hadoop/data_test/in/test1";
 		String inputNames = input + ".names";
 		String inputData = input + ".data";
 		Formatter format = new Formatter();

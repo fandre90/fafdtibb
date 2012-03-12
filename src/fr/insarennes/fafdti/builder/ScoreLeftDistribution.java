@@ -28,14 +28,19 @@ public class ScoreLeftDistribution implements Writable, Cloneable {
 		fromString(strRepr);
 	}
 
-	public ScoreLeftDistribution(ScoredDistributionVector leftDist,
+	public static double computeCombinedEntropy(ScoredDistributionVector leftDist,
 			ScoredDistributionVector rightDist) {
 		int nl = leftDist.getTotal();
 		int nr = rightDist.getTotal();
 		int N = nl + nr;
 		//System.out.println(nl + "," + nr);
-		double scoreValue = (nl * leftDist.getScore() + nr * rightDist.getScore())
+		return (nl * leftDist.getScore() + nr * rightDist.getScore())
 				/ N;
+	}
+
+	public ScoreLeftDistribution(ScoredDistributionVector leftDist,
+			ScoredDistributionVector rightDist) {
+		double scoreValue = computeCombinedEntropy(leftDist, rightDist);
 		this.score = new DoubleWritable(scoreValue);
 		this.distribution = (ScoredDistributionVector) leftDist.clone();
 	}

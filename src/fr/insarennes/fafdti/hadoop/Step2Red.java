@@ -2,58 +2,106 @@ package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Collections;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 
-// FIXME FIXME FIXME Optimisation à faire :
-// Stocker dans une Map (Attention elle doit être triée :
-// [0,3 : (1, 1) ]
 public class Step2Red
 		extends
 		ReducerBase<IntWritable, ContinuousAttrLabelPair, Question, ScoreLeftDistribution> {
 
+	protected ScoredDistributionVector parentDistribution;
 	public static double EPSILON = 10e-9;
+
+	@Override
+	protected void setup(Context context) throws IOException,
+			InterruptedException {
+		super.setup(context);
+		Configuration conf = context.getConfiguration();
+		this.parentDistribution = ScoredDistributionVector.fromConf(conf);
+
+	}
 
 	protected void reduce(IntWritable col,
 			Iterable<ContinuousAttrLabelPair> valueLabelPairs, Context context)
 			throws IOException, InterruptedException {
-		List<ContinuousAttrLabelPair> valueLabelPairsList = 
-				new ArrayList<ContinuousAttrLabelPair>();
+		SortedMap<Double, ScoredDistributionVector> valueDistMap = new TreeMap<Double, ScoredDistributionVector>();
 		Iterator<ContinuousAttrLabelPair> vlPairIt = valueLabelPairs.iterator();
+		// 1 Iterate over all values/label pairs and create distribution
+		// vectors for each normalized (ie rounded, see normalizeValue) value
 		while (vlPairIt.hasNext()) {
-			ContinuousAttrLabelPair vlPair = (ContinuousAttrLabelPair) vlPairIt.next().clone();
-			valueLabelPairsList.add(vlPair);
-			//System.out.println(valueLabelPairsList);
-			//System.out.println(vlPair);
+			ContinuousAttrLabelPair vlPair = vlPairIt.next();
+			double normalizedValue = normalizeValue(
+					vlPair.getContinuousValue(), EPSILON);
+			ScoredDistributionVector curDist = null;
+			// 1.1 Get the distribution vector for this value
+			// for the map or create a new one if it was not yet
+			// added to it.
+			if (valueDistMap.containsKey(normalizedValue)) {
+				curDist = valueDistMap.get(normalizedValue);
+			} else {
+				curDist = new ScoredDistributionVector(fs.nbEtiquettes());
+				valueDistMap.put(normalizedValue, curDist);
+			}
+			// 1.2 Increment value in the distribution vector for
+			// current label
+			curDist.incrStat(vlPair.getLabelIndex());
 		}
-		//System.out.println("vlpl: " + valueLabelPairsList);
-		List<Double> candidates = 
-				computeThresholdCandidates(valueLabelPairsList);
-
-		double bestScore = 0;
+		// 2. Find the best threshold
+		Set<Map.Entry<Double, ScoredDistributionVector>> valueDistPairs = valueDistMap
+				.entrySet();
+		// Return imediately : It is impossible to generate a threshold
+		if (valueDistMap.size() < 2) {
+			return;
+		}
+		// Get an iterator over the set of value/label pairs
+		Iterator<Map.Entry<Double, ScoredDistributionVector>> valDistIt = valueDistPairs
+				.iterator();
+		Map.Entry<Double, ScoredDistributionVector> curValDistPair = valDistIt
+				.next();
+		double prevValue = curValDistPair.getKey();
+		ScoredDistributionVector curDistVect = new ScoredDistributionVector(
+				fs.nbEtiquettes());
+		try {
+			curDistVect.add(curValDistPair.getValue());
+		} catch (FAFException e) {
+			e.printStackTrace();
+		}
 		double bestThreshold = 0;
 		ScoreLeftDistribution bestScoreLeftDist = null;
-		for (int i = 0; i < candidates.size(); i++) {
-			double threshold = candidates.get(i);
-			ScoreLeftDistribution scoreLeftDist = computeEntropyForThreshold(
-					valueLabelPairsList, threshold);
-			double score = scoreLeftDist.getScore();
-			if (bestScoreLeftDist == null || score < bestScore) {
-				bestScore = score;
+		while (valDistIt.hasNext()) {
+			curValDistPair = valDistIt.next();
+			double threshold = (prevValue + curValDistPair.getKey()) / 2;
+			prevValue = curValDistPair.getKey();
+			curDistVect.rate(criterion);
+			ScoredDistributionVector rightDist = parentDistribution
+					.computeRightDistribution(curDistVect);
+			rightDist.rate(criterion);
+			double curScore = ScoreLeftDistribution.computeCombinedEntropy(
+					curDistVect, rightDist);
+			if (bestScoreLeftDist == null
+					|| curScore < bestScoreLeftDist.getScore()) {
+				bestScoreLeftDist = new ScoreLeftDistribution(curScore,
+						(ScoredDistributionVector) curDistVect.clone());
 				bestThreshold = threshold;
-				bestScoreLeftDist = (ScoreLeftDistribution) scoreLeftDist.clone();
+			}
+			try {
+				curDistVect.add(curValDistPair.getValue());
+			} catch (FAFException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		Question question = new Question(col.get(), AttrType.CONTINUOUS,
@@ -61,76 +109,8 @@ public class Step2Red
 		context.write(question, bestScoreLeftDist);
 	}
 
-	private static List<Double> computeThresholdCandidates(
-			List<ContinuousAttrLabelPair> valueLabelPairs) {
-		List<Double> values = new ArrayList<Double>();
-		List<Double> valuesUnique = new ArrayList<Double>();
-		List<Double> candidates = new ArrayList<Double>();
-		//System.out.println("vl: " + valueLabelPairs);
-		// 1. Build the ArrayList containing all possible
-		// values for the current attribute (transmitted as Hadoop key)
-		// from the list of (continuous value, label) pairs
-		// (transmitted as Hadoop list of values).
-		for (ContinuousAttrLabelPair vlPair : valueLabelPairs) {
-			values.add(vlPair.getContinuousValue());
-		}
-		// 2. Sort the ArrayList containing all values O(n log2 n)
-		Collections.sort(values);
-		//System.out.println(values);
-		// 3. Remove duplicates from the ArrayList O(n)
-		// Important note : Two values are considered identical
-		// if their difference is less than THRESHOLD
-		Iterator<Double> valuesIt = values.iterator();
-		// Return empty candidates list if there are no values
-		// (this should never happen)
-		if (!valuesIt.hasNext()) {
-			return candidates;
-		}
-		double prevValue = valuesIt.next();
-		valuesUnique.add(prevValue);
-		while (valuesIt.hasNext()) {
-			double curValue = valuesIt.next();
-			if (curValue - prevValue > EPSILON) {
-				valuesUnique.add(curValue);
-			}
-			prevValue = curValue;
-		}
-		// Build threshold candidates list
-		// Median of the elements two at a time
-		Iterator<Double> valuesUniqueIt = valuesUnique.iterator();
-		if (!valuesUniqueIt.hasNext()) {
-			return candidates;
-		}
-		prevValue = valuesUniqueIt.next();
-		while (valuesUniqueIt.hasNext()) {
-			double curValue = valuesUniqueIt.next();
-			candidates.add((curValue + prevValue) / 2);
-			prevValue = curValue;
-		}
-		//System.out.println("threshold candidates : " + candidates);
-		return candidates;
-	}
-
-	private ScoreLeftDistribution computeEntropyForThreshold(
-			List<ContinuousAttrLabelPair> valueLabelPairs, double threshold) {
-		//System.out.println("Compute ent for thresh: " + threshold);
-		//System.out.println("NbEtiq: " + fs.nbEtiquettes());
-		ScoredDistributionVector leftDist = new ScoredDistributionVector(
-				fs.nbEtiquettes());
-		ScoredDistributionVector rightDist = new ScoredDistributionVector(
-				fs.nbEtiquettes());
-		for (ContinuousAttrLabelPair vlPair : valueLabelPairs) {
-			int labelIndex = vlPair.getLabelIndex();
-			double contValue = vlPair.getContinuousValue();
-			//System.out.println("lbIdx, v: " + labelIndex + "," + contValue);
-			if (contValue - threshold > EPSILON) {
-				leftDist.incrStat(labelIndex);
-			} else {
-				rightDist.incrStat(labelIndex);
-			}
-		}
-		leftDist.rate(criterion);
-		rightDist.rate(criterion);
-		return new ScoreLeftDistribution(leftDist, rightDist);
+	public static double normalizeValue(double value, double threshold) {
+		double a = 1.0 / threshold;
+		return Math.floor(value * a) / a;
 	}
 }

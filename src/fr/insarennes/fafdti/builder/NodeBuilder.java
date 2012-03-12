@@ -12,16 +12,19 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
 
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
+import fr.insarennes.fafdti.hadoop.SplitExampleMultipleOutputFormat;
 import fr.insarennes.fafdti.hadoop.Step0Map;
 import fr.insarennes.fafdti.hadoop.Step0Red;
 import fr.insarennes.fafdti.hadoop.Step1Map;
@@ -74,8 +77,9 @@ public class NodeBuilder implements Runnable {
 			Job job3 = setupJob3();
 			job3.waitForCompletion(false);
 			QuestionScoreLeftDistribution qDVPair = readBestQuestion();
-			Job job4 = setupJob4(qDVPair.getQuestion());
-			job4.waitForCompletion(false);
+			// Old API
+			JobConf job4Conf = setupJob4(qDVPair.getQuestion());
+			JobClient.runJob(job4Conf);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
@@ -127,7 +131,8 @@ public class NodeBuilder implements Runnable {
 		return job;
 	}
 
-	private Job setupJob2(ScoredDistributionVector parentDistribution) throws IOException {
+	private Job setupJob2(ScoredDistributionVector parentDistribution)
+			throws IOException {
 		Configuration conf = new Configuration();
 		featureSpec.toConf(conf);
 		criterion.toConf(conf);
@@ -199,24 +204,42 @@ public class NodeBuilder implements Runnable {
 		return new ScoredDistributionVector(tokens[tokens.length - 1]);
 	}
 
-	private Job setupJob4(Question bestQuestion) throws IOException {
-		Configuration conf = new Configuration();
-		bestQuestion.toConf(conf);
-		Job job = new Job(conf, "Positive and negative examples separation");
-
-		job.setOutputKeyClass(NullWritable.class);
-		job.setOutputValueClass(LabeledExample.class);
-
-		job.setMapperClass(Step4Map.class);
-		job.setReducerClass(Step4Red.class);
-		job.setInputFormatClass(TextInputFormat.class);
-		// job.setOutputFormatClass(TextOutputFormat.class);
-		MultipleOutputs.addNamedOutput(job, "text", TextOutputFormat.class,
-				NullWritable.class, LabeledExample.class);
-
-		FileInputFormat.addInputPath(job, inputDataPath);
+	/*
+	 * private Job setupJob4(Question bestQuestion) throws IOException {
+	 * Configuration conf = new Configuration(); bestQuestion.toConf(conf); Job
+	 * job = new Job(conf, "Positive and negative examples separation");
+	 * 
+	 * job.setOutputKeyClass(NullWritable.class);
+	 * job.setOutputValueClass(LabeledExample.class);
+	 * 
+	 * job.setMapperClass(Step4Map.class);
+	 * //job.setReducerClass(Step4Red.class);
+	 * job.setInputFormatClass(TextInputFormat.class);
+	 * job.setOutputFormatClass(NullOutputFormat.class);
+	 * //MultipleOutputs.addNamedOutput(job, "text", TextOutputFormat.class, //
+	 * NullWritable.class, LabeledExample.class);
+	 * 
+	 * FileInputFormat.addInputPath(job, inputDataPath); Path outputDir = new
+	 * Path(workingDir, job4outDir); FileOutputFormat.setOutputPath(job,
+	 * outputDir); return job; }
+	 */
+	
+	@SuppressWarnings("deprecation")
+	private JobConf setupJob4(Question bestQuestion) throws IOException {
+		JobConf jobConf = new JobConf(NodeBuilder.class);
+		bestQuestion.toConf(jobConf);
+		jobConf.setOutputKeyClass(Text.class);
+		jobConf.setOutputValueClass(LabeledExample.class);
+		jobConf.setMapperClass(Step4Map.class);
+		jobConf.setReducerClass(Step4Red.class);
+		jobConf.setInputFormat(org.apache.hadoop.mapred.TextInputFormat.class);
+		org.apache.hadoop.mapred.FileInputFormat.setInputPaths(jobConf,
+				inputDataPath);
+		jobConf.setOutputFormat(SplitExampleMultipleOutputFormat.class);
 		Path outputDir = new Path(workingDir, job4outDir);
-		FileOutputFormat.setOutputPath(job, outputDir);
-		return job;
+		org.apache.hadoop.mapred.FileOutputFormat.setOutputPath(jobConf,
+				outputDir);
+		return jobConf;
 	}
+
 }

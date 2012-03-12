@@ -55,8 +55,8 @@ public class LabeledExample implements Writable {
 		String labelStr = lineTokens[lineTokens.length-1];
 		label.set(labelStr);
 		List<String> values = new ArrayList<String>();
-		for(String token : lineTokens) {
-			values.add(token);
+		for(int i=0; i<lineTokens.length -1; i++) {
+			values.add(lineTokens[i]);
 		}
 		this.example = new QuestionExample(values);
 	}

@@ -1,17 +1,35 @@
 package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
+import java.util.Iterator;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper.Context;
-import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.MapReduceBase;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Reducer;
+import org.apache.hadoop.mapred.Reporter;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.LabeledExample;
 import fr.insarennes.fafdti.builder.Question;
 
+@SuppressWarnings("deprecation")
+public class Step4Red extends MapReduceBase implements
+	Reducer<Text, LabeledExample, Text, LabeledExample> {
+
+	@Override
+	public void reduce(Text key, Iterator<LabeledExample> values,
+			OutputCollector<Text, LabeledExample> output, Reporter reporter)
+			throws IOException {
+		while(values.hasNext()) {
+			output.collect(key, values.next());
+		}
+	}
+}
+
+/*
 public class Step4Red extends
 		ReducerBase<NullWritable, LabeledExample, NullWritable, LabeledExample> {
 
@@ -48,3 +66,4 @@ public class Step4Red extends
 		}
 	}
 }
+*/

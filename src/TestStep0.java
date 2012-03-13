@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
-import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.cli.LoggerManager;
 import fr.insarennes.fafdti.hadoop.Step0Map;
@@ -28,7 +28,7 @@ public class TestStep0 {
 		LoggerManager.setupLogger();
 		
 		FileSystem fs = FileSystem.get(new Configuration());//utilisé pour lire les fichiers
-		FeatureSpec featureSpec = new FeatureSpec(new Path(file+".names"), fs);
+		DotNamesInfo featureSpec = new DotNamesInfo(new Path(file+".names"), fs);
 		
 		Criterion criterion = new EntropyCriterion();
 		

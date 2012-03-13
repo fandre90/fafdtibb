@@ -26,14 +26,14 @@ import fr.insarennes.fafdti.builder.TextAttrSpec.ExpertType;
  * 
  * @author Francois LEHERICEY
  */
-public class FeatureSpec extends HadoopConfStockable {
+public class DotNamesInfo extends HadoopConfStockable {
 	private static final long serialVersionUID = -6855907309314569268L;
 	/** clé utilisé pour stocker la valeur serialisé dans la config d'hadoop */
 	private static final String HADOOP_CONFIGURATION_KEY = "faf-etiq";
 	/** liste des etiquettes */
-	private String[] etiquettes;
+	private String[] labelsArray;
 	/** index inversé des etiquettes */
-	private Map<String, Integer> rEtiquettes;
+	private Map<String, Integer> reverseLabelMap;
 	private ArrayList<AttrSpec> attributeSpec;
 	private String[] commentStartChars = { "|", "#" };
 
@@ -46,7 +46,7 @@ public class FeatureSpec extends HadoopConfStockable {
 	 *            systeme de fichier dans lequel lire
 	 * @throws IOException
 	 */
-	public FeatureSpec(Path file, FileSystem fs) throws IOException,
+	public DotNamesInfo(Path file, FileSystem fs) throws IOException,
 			ParseException {
 
 		this.attributeSpec = new ArrayList<AttrSpec>();
@@ -74,9 +74,9 @@ public class FeatureSpec extends HadoopConfStockable {
 
 		this.parseLabelLine(text.toString());
 		// index inverse
-		rEtiquettes = new HashMap<String, Integer>();
-		for (int i = 0; i < etiquettes.length; i++) {
-			rEtiquettes.put(etiquettes[i], i);
+		reverseLabelMap = new HashMap<String, Integer>();
+		for (int i = 0; i < labelsArray.length; i++) {
+			reverseLabelMap.put(labelsArray[i], i);
 		}
 
 		lr.readLine(text);
@@ -95,9 +95,9 @@ public class FeatureSpec extends HadoopConfStockable {
 		if (labelLine.charAt(len - 1) != '.')
 			throw new ParseException("Labels line must end with a dot");
 		labelLine = labelLine.substring(0, len - 1);
-		this.etiquettes = labelLine.split(",");
-		for(int i=0; i<etiquettes.length; ++i) {
-			this.etiquettes[i] = this.etiquettes[i].trim();
+		this.labelsArray = labelLine.split(",");
+		for(int i=0; i<labelsArray.length; ++i) {
+			this.labelsArray[i] = this.labelsArray[i].trim();
 		}
 	}
 
@@ -154,7 +154,7 @@ public class FeatureSpec extends HadoopConfStockable {
 	 * @return index
 	 */
 	public int indexOfLabel(String e) {
-		return rEtiquettes.get(e);
+		return reverseLabelMap.get(e);
 	}
 
 	public AttrSpec getAttrSpec(int col) {
@@ -162,7 +162,7 @@ public class FeatureSpec extends HadoopConfStockable {
 	}
 
 	public String[] getLabels() {
-		return this.etiquettes.clone();
+		return this.labelsArray.clone();
 	}
 
 	/**
@@ -170,8 +170,8 @@ public class FeatureSpec extends HadoopConfStockable {
 	 * 
 	 * @return le nombre d'etiquettes
 	 */
-	public int nbEtiquettes() {
-		return etiquettes.length;
+	public int numOfLabel() {
+		return labelsArray.length;
 	}
 
 	/**
@@ -183,7 +183,7 @@ public class FeatureSpec extends HadoopConfStockable {
 	 */
 	@Override
 	public void toConf(Configuration conf, String keySuffix) throws IOException {
-		String key = FeatureSpec.HADOOP_CONFIGURATION_KEY + "-" + keySuffix;
+		String key = DotNamesInfo.HADOOP_CONFIGURATION_KEY + "-" + keySuffix;
 		HadoopConfSerializer.serializeToConf(this, conf, key);
 	}
 
@@ -197,14 +197,14 @@ public class FeatureSpec extends HadoopConfStockable {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static FeatureSpec fromConf(Configuration conf, String keySuffix)
+	public static DotNamesInfo fromConf(Configuration conf, String keySuffix)
 			throws IOException, ClassNotFoundException {
-		String key = FeatureSpec.HADOOP_CONFIGURATION_KEY + "-" + keySuffix;
-		return (FeatureSpec) HadoopConfSerializer
+		String key = DotNamesInfo.HADOOP_CONFIGURATION_KEY + "-" + keySuffix;
+		return (DotNamesInfo) HadoopConfSerializer
 				.deserializeFromConf(conf, key);
 	}
 
-	public static FeatureSpec fromConf(Configuration conf) throws IOException,
+	public static DotNamesInfo fromConf(Configuration conf) throws IOException,
 			ClassNotFoundException {
 		return fromConf(conf, "");
 	}
@@ -215,9 +215,9 @@ public class FeatureSpec extends HadoopConfStockable {
 		int result = 1;
 		result = prime * result
 				+ ((attributeSpec == null) ? 0 : attributeSpec.hashCode());
-		result = prime * result + Arrays.hashCode(etiquettes);
+		result = prime * result + Arrays.hashCode(labelsArray);
 		result = prime * result
-				+ ((rEtiquettes == null) ? 0 : rEtiquettes.hashCode());
+				+ ((reverseLabelMap == null) ? 0 : reverseLabelMap.hashCode());
 		return result;
 	}
 
@@ -229,18 +229,18 @@ public class FeatureSpec extends HadoopConfStockable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		FeatureSpec other = (FeatureSpec) obj;
+		DotNamesInfo other = (DotNamesInfo) obj;
 		if (attributeSpec == null) {
 			if (other.attributeSpec != null)
 				return false;
 		} else if (!attributeSpec.equals(other.attributeSpec))
 			return false;
-		if (!Arrays.equals(etiquettes, other.etiquettes))
+		if (!Arrays.equals(labelsArray, other.labelsArray))
 			return false;
-		if (rEtiquettes == null) {
-			if (other.rEtiquettes != null)
+		if (reverseLabelMap == null) {
+			if (other.reverseLabelMap != null)
 				return false;
-		} else if (!rEtiquettes.equals(other.rEtiquettes))
+		} else if (!reverseLabelMap.equals(other.reverseLabelMap))
 			return false;
 		return true;
 	}

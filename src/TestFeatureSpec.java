@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import fr.insarennes.fafdti.builder.AttrSpec;
 import fr.insarennes.fafdti.builder.AttrType;
-import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.ParseException;
 import fr.insarennes.fafdti.builder.TextAttrSpec;
 
@@ -36,7 +36,7 @@ public class TestFeatureSpec {
 	@Test
 	public void testFeatureSpec() throws IOException, ParseException {
 		// ester.names
-		FeatureSpec featureSpec = new FeatureSpec(
+		DotNamesInfo featureSpec = new DotNamesInfo(
 				new Path(resDir + "ester.names"), fs);
 		assertEquals(featureSpec.getLabels()[5], "loc-I");
 		assertEquals(featureSpec.getLabels()[0], "amount-B");
@@ -48,7 +48,7 @@ public class TestFeatureSpec {
 		AttrSpec attrSpec = featureSpec.getAttrSpec(1);
 		assertEquals(attrSpec.getType(), AttrType.CONTINUOUS);
 		// horse-colic.names
-		featureSpec = new FeatureSpec(
+		featureSpec = new DotNamesInfo(
 				new Path(resDir + "horse-colic.names"), fs);
 		assertEquals(featureSpec.getLabels()[0], "1");
 		assertEquals(featureSpec.getLabels()[1], "2");
@@ -57,7 +57,7 @@ public class TestFeatureSpec {
 		attrSpec = featureSpec.getAttrSpec(5);
 		assertEquals(attrSpec.getType(), AttrType.CONTINUOUS);
 		// petits-textes.names
-		featureSpec = new FeatureSpec(
+		featureSpec = new DotNamesInfo(
 				new Path(resDir + "petits-textes.names"), fs);
 		assertEquals(featureSpec.getLabels()[0], "politique");
 		assertEquals(featureSpec.getLabels()[1], "sport");

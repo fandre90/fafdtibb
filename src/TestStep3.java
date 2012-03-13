@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
-import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 import fr.insarennes.fafdti.hadoop.Step3Map;
@@ -30,7 +30,7 @@ public class TestStep3 {
 				format.format("%1$tY-%1$tm-%1$td %1$tHh%1$tM", new Date());
 
 		FileSystem fs = FileSystem.get(new Configuration());//utilisé pour lire les fichiers
-		FeatureSpec featureSpec = new FeatureSpec(new Path(file+".names"), fs);
+		DotNamesInfo featureSpec = new DotNamesInfo(new Path(file+".names"), fs);
 		Criterion criterion = new EntropyCriterion();
 		// Étape 1
 		Configuration conf = new Configuration();

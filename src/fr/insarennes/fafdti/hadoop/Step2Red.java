@@ -52,7 +52,7 @@ public class Step2Red
 			if (valueDistMap.containsKey(normalizedValue)) {
 				curDist = valueDistMap.get(normalizedValue);
 			} else {
-				curDist = new ScoredDistributionVector(fs.nbEtiquettes());
+				curDist = new ScoredDistributionVector(fs.numOfLabel());
 				valueDistMap.put(normalizedValue, curDist);
 			}
 			// 1.2 Increment value in the distribution vector for
@@ -73,7 +73,7 @@ public class Step2Red
 				.next();
 		double prevValue = curValDistPair.getKey();
 		ScoredDistributionVector curDistVect = new ScoredDistributionVector(
-				fs.nbEtiquettes());
+				fs.numOfLabel());
 		try {
 			curDistVect.add(curValDistPair.getValue());
 		} catch (FAFException e) {

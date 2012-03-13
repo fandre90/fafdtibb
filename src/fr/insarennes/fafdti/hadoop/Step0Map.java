@@ -7,7 +7,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 
 /**
  * map de l'étape 0 (calcul de l'entropie et du vecteur statistique)
@@ -15,12 +15,12 @@ import fr.insarennes.fafdti.builder.FeatureSpec;
  */
 public class Step0Map extends Mapper<Object, Text, Text, IntWritable>{
 	/** feature spec récupéré dans la config du job */
-	private FeatureSpec fs;
+	private DotNamesInfo fs;
 	
 	@Override
 	protected void setup(Context context) throws IOException, InterruptedException {
 		try {
-			fs = FeatureSpec.fromConf(context.getConfiguration());
+			fs = DotNamesInfo.fromConf(context.getConfiguration());
 		} catch (ClassNotFoundException e) {
 			// FIXME Auto-generated catch block
 			// LOG ERROR MESSAGE HERE

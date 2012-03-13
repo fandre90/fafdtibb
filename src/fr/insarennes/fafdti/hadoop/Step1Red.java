@@ -9,7 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import fr.insarennes.fafdti.builder.Criterion;
-import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
@@ -32,7 +32,7 @@ public class Step1Red extends
 	protected void reduce(Question q, Iterable<IntWritable> labelIndexes,
 			Context context) throws IOException, InterruptedException {
 		ScoredDistributionVector leftDist = new ScoredDistributionVector(
-				fs.nbEtiquettes());
+				fs.numOfLabel());
 		System.out.println("Got: " + q + " " + q.hashCode());
 		for (IntWritable i : labelIndexes) {
 			leftDist.incrStat(i.get());

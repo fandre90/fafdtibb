@@ -42,7 +42,7 @@ public class NodeBuilder implements Runnable {
 	protected Path inputDataPath;
 	protected Path workingDir;
 	protected UUID nodeUUID;
-	protected FeatureSpec featureSpec;
+	protected DotNamesInfo featureSpec;
 	protected Criterion criterion;
 
 	private final String job0outDir = "initial-entropy";
@@ -66,7 +66,7 @@ public class NodeBuilder implements Runnable {
 		FileSystem fileSystem;
 		try {
 			fileSystem = FileSystem.get(conf);
-			featureSpec = new FeatureSpec(inputNamesPath, fileSystem);
+			featureSpec = new DotNamesInfo(inputNamesPath, fileSystem);
 			Job job0 = setupJob0();
 			job0.waitForCompletion(false);
 			ScoredDistributionVector parentDistribution = readParentDistribution();

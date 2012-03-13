@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.Mapper.Context;
 
 import fr.insarennes.fafdti.builder.AttrSpec;
 import fr.insarennes.fafdti.builder.AttrType;
-import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.Question;
 
 public class Step1Map extends MapperBase<Object, Text, Question, IntWritable>{

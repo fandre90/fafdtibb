@@ -95,9 +95,9 @@ public class FAFBuildMode {
 		
 		
 		//Construction du FeatureSpec à partir du .names
-		FeatureSpec fs = null;
+		DotNamesInfo fs = null;
 		try {
-			fs = new FeatureSpec(new Path(cmdline.getOptionValue(NAMES)+".names"), FileSystem.get(new Configuration()));
+			fs = new DotNamesInfo(new Path(cmdline.getOptionValue(NAMES)+".names"), FileSystem.get(new Configuration()));
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			// TODO Auto-generated catch block
 			Writer w = new StringWriter();

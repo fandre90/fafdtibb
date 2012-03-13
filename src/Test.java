@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
 import org.apache.log4j.Logger;
 
-import fr.insarennes.fafdti.builder.FeatureSpec;
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.hadoop.Step0Map;
 import fr.insarennes.fafdti.hadoop.Step0Red;
@@ -24,7 +24,7 @@ public class Test {
 		String outputDir0 = "output-step0";
 		
 		FileSystem fs = FileSystem.get(new Configuration());//utilisé pour lire les fichiers
-		FeatureSpec featureSpec = new FeatureSpec(new Path(file+".names"), fs);
+		DotNamesInfo featureSpec = new DotNamesInfo(new Path(file+".names"), fs);
 		
 		Logger log = Logger.getLogger(Test.class);
 

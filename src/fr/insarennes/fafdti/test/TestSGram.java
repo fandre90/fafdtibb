@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import fr.insarennes.fafdti.builder.NGram;
+import fr.insarennes.fafdti.builder.FGram;
 import fr.insarennes.fafdti.builder.SGram;
 
 
@@ -27,7 +27,7 @@ public class TestSGram {
 				buffer.toByteArray()));
 		sGram.readFields(dataIn);
 		assertTrue(sGram.query("ddd aaa ccc bbb yyy"));
-		assertFalse(sGram.query("aaa bbb"));
+		assertTrue(sGram.query("aaa bbb"));
 		assertFalse(sGram.query("bbb aaa ccc aaa"));
 	}
 
@@ -35,11 +35,12 @@ public class TestSGram {
 	public void testQuery() {
 		SGram sGram1 = new SGram("aaa", "bbb", 3);
 		assertTrue(sGram1.query("aaa ccc ddd eee bbb"));
-		assertTrue(sGram1.query("ccc aaa bbb aaa ccc ddd eee bbb"));
-		assertTrue(sGram1.query("aaa ttt yyy iii ooo ccc aaa bbb aaa ccc ddd eee bbb uuu"));
-		assertFalse(sGram1.query("aaa ccc ddd bbb"));
-		assertFalse(sGram1.query("aaa ccc bbb"));
-		assertFalse(sGram1.query("aaa bbb"));
+		assertTrue(sGram1.query("aaa ccc ddd bbb"));
+		assertTrue(sGram1.query("aaa ccc bbb"));
+		assertTrue(sGram1.query("aaa bbb"));
+		assertTrue(sGram1.query("ccc aaa aaa ccc ddd eee bbb"));
+		assertTrue(sGram1.query(
+				"aaa ttt yyy iii ooo ccc aaa bbb aaa ccc ddd eee bbb uuu"));
 		assertFalse(sGram1.query("ccc ddd"));
 	}
 

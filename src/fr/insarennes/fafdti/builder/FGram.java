@@ -6,14 +6,14 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
 
-public class NGram implements WritableAskable {
+public class FGram implements WritableAskable {
 
 	Text[] words;
 
-	public NGram() {
+	public FGram() {
 	}
 
-	public NGram(String[] words) {
+	public FGram(String[] words) {
 		this.words = new Text[words.length];
 		for (int i = 0; i < words.length; ++i) {
 			this.words[i] = new Text(words[i]);

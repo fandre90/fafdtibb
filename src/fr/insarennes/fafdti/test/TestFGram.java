@@ -13,13 +13,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.insarennes.fafdti.builder.NGram;
+import fr.insarennes.fafdti.builder.FGram;
 
-public class TestNGram {
+public class TestFGram {
 
 	@Test
 	public void testWrite() throws IOException {
-		NGram nGram = new NGram(new String[] { "aaa", "bbb" });
+		FGram nGram = new FGram(new String[] { "aaa", "bbb" });
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		DataOutput dataOut = new DataOutputStream(buffer);
 		nGram.write(dataOut);
@@ -33,7 +33,7 @@ public class TestNGram {
 
 	@Test
 	public void testQuery() {
-		NGram nGram1 = new NGram(new String[] { "aaa", "bbb" });
+		FGram nGram1 = new FGram(new String[] { "aaa", "bbb" });
 		assertTrue(nGram1.query("aaa bbb"));
 		assertTrue(nGram1.query("fff ddd ccc aaa bbb"));
 		assertFalse(nGram1.query("bbb aaa ccc aaa"));

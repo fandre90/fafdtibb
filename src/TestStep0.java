@@ -58,7 +58,7 @@ public class TestStep0 {
 			job.waitForCompletion(false);
 		}
 		
-		ScoredDistributionVector stats;
+		/*ScoredDistributionVector stats;
 		{//on recupère le vecteur stats
 			FSDataInputStream in = fs.open(new Path(outputDir0+"/part-r-00000"));
 			LineReader lr = new LineReader(in);
@@ -70,7 +70,7 @@ public class TestStep0 {
 			stats = new ScoredDistributionVector(stext);
 		}
 		
-		System.out.println(stats+"");
+		System.out.println(stats+"");*/
 		
 		{//etape 1
 			

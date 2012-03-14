@@ -6,6 +6,7 @@ import java.util.StringTokenizer;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.builder.DotNamesInfo;
 
@@ -16,6 +17,7 @@ import fr.insarennes.fafdti.builder.DotNamesInfo;
 public class Step0Map extends Mapper<Object, Text, Text, IntWritable>{
 	/** feature spec récupéré dans la config du job */
 	private DotNamesInfo fs;
+	Logger log = Logger.getLogger(Step0Map.class);
 	
 	@Override
 	protected void setup(Context context) throws IOException, InterruptedException {
@@ -26,6 +28,7 @@ public class Step0Map extends Mapper<Object, Text, Text, IntWritable>{
 			// LOG ERROR MESSAGE HERE
 			e.printStackTrace();
 		}
+		log.info("setup Step0Map");
 	}
 
 	@Override

@@ -1,7 +1,15 @@
 package fr.insarennes.fafdti.builder;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.LineNumberReader;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.hadoop.conf.Configuration;
@@ -21,6 +29,10 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.tools.ant.input.InputRequest;
+import org.apache.tools.ant.util.ReaderInputStream;
 
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
@@ -35,8 +47,16 @@ import fr.insarennes.fafdti.hadoop.Step3Map;
 import fr.insarennes.fafdti.hadoop.Step3Red;
 import fr.insarennes.fafdti.hadoop.Step4Map;
 import fr.insarennes.fafdti.hadoop.Step4Red;
+import fr.insarennes.fafdti.tree.CannotOverwriteTreeException;
+import fr.insarennes.fafdti.tree.DecisionNodeSetter;
+import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
+import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
+import fr.insarennes.fafdti.tree.LeafLabels;
+import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
 
-public class NodeBuilder implements Runnable {
+public class NodeBuilder implements Runnable, StopCriterionUtils {
+	
+	protected static Logger log = Logger.getLogger(NodeBuilder.class);
 
 	protected Path inputNamesPath;
 	protected Path inputDataPath;
@@ -44,7 +64,12 @@ public class NodeBuilder implements Runnable {
 	protected UUID nodeUUID;
 	protected DotNamesInfo featureSpec;
 	protected Criterion criterion;
-
+	protected DecisionNodeSetter nodeSetter;
+	protected List<StoppingCriterion> stopping;
+	protected ScoredDistributionVector parentDistribution;
+	protected QuestionScoreLeftDistribution leftDistribution;
+	protected ParentInfos parentInfos;
+	
 	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
 	private final String job2outDir = "continuous-questions";
@@ -52,24 +77,45 @@ public class NodeBuilder implements Runnable {
 	private final String job4outDir = "split";
 
 	public NodeBuilder(String inputNamesPath, String inputDataPath,
-			String workingDir, Criterion criterion) {
+			String workingDir, Criterion criterion, 
+			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping) {
 		this.inputNamesPath = new Path(inputNamesPath);
 		this.inputDataPath = new Path(inputDataPath);
 		this.nodeUUID = UUID.randomUUID();
 		this.workingDir = new Path(workingDir, nodeUUID.toString());
 		this.criterion = criterion;
+		this.nodeSetter = nodeSetter;
+		this.stopping = stopping;
+		this.parentInfos = new ParentInfos(1.0, 0);
 	}
-
+	
+	public NodeBuilder(DotNamesInfo featureSpec, String inputDataPath,
+			String workingDir, Criterion criterion, 
+			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
+			ParentInfos parentInfos) {
+		this.featureSpec = featureSpec;
+		this.inputDataPath = new Path(inputDataPath);
+		this.nodeUUID = UUID.randomUUID();
+		this.workingDir = new Path(workingDir, nodeUUID.toString());
+		this.criterion = criterion;
+		this.nodeSetter = nodeSetter;
+		this.stopping = stopping;
+		this.parentInfos = parentInfos;
+	}
+	
 	@Override
 	public void run() {
 		Configuration conf = new Configuration();
 		FileSystem fileSystem;
 		try {
-			fileSystem = FileSystem.get(conf);
-			featureSpec = new DotNamesInfo(inputNamesPath, fileSystem);
-			Job job0 = setupJob0();
-			job0.waitForCompletion(false);
+			if(featureSpec==null){
+				fileSystem = FileSystem.get(conf);
+				featureSpec = new DotNamesInfo(inputNamesPath, fileSystem);
+				Job job0 = setupJob0();
+				job0.waitForCompletion(false);
+			}
 			ScoredDistributionVector parentDistribution = readParentDistribution();
+			this.parentDistribution = parentDistribution;
 			Job job1 = setupJob1(parentDistribution);
 			job1.submit();
 			Job job2 = setupJob2(parentDistribution);
@@ -77,9 +123,13 @@ public class NodeBuilder implements Runnable {
 			Job job3 = setupJob3();
 			job3.waitForCompletion(false);
 			QuestionScoreLeftDistribution qDVPair = readBestQuestion();
+			this.leftDistribution = qDVPair;
 			// Old API
 			JobConf job4Conf = setupJob4(qDVPair.getQuestion());
 			JobClient.runJob(job4Conf);
+			
+			this.constructThenRecursiveCall();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
@@ -90,7 +140,73 @@ public class NodeBuilder implements Runnable {
 			e.printStackTrace();
 		}
 	}
-
+	private void constructThenRecursiveCall(){
+		//si on ne s'arrête pas, c'est une question
+		if(!this.mustStop()){
+			log.log(Level.INFO, "Making a question node...");
+			Question question = leftDistribution.getQuestion();
+			DecisionTreeQuestion dtq = new DecisionTreeQuestion(question);
+			try {
+				nodeSetter.set(dtq);
+			} catch (CannotOverwriteTreeException e) {
+				log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Question node");
+				log.log(Level.ERROR, e.getMessage());
+			}
+			//on lance la construction du fils droit et gauche
+			Path dataRes = new Path(this.workingDir,this.job4outDir);
+			Path yesnames = new Path(dataRes, "left");
+			Path nonames = new Path(dataRes, "right");
+			ParentInfos pInfos = new ParentInfos(parentDistribution.getScore(), parentInfos.getDepth() + 1);
+			NodeBuilder yesSon = new NodeBuilder(this.featureSpec, yesnames.toString(), 
+					this.workingDir.getParent().toString(), this.criterion, dtq.yesSetter(), 
+					this.stopping, pInfos);
+			NodeBuilder noSon = new NodeBuilder(this.featureSpec, nonames.toString(), 
+					this.workingDir.getParent().toString(), this.criterion, dtq.noSetter(), 
+					this.stopping, pInfos);
+			
+			Scheduler scheduler = Scheduler.INSTANCE;
+			scheduler.execute(yesSon);
+			scheduler.execute(noSon);
+			
+			//on indique qu'on a fini
+			scheduler.done(this);
+		}
+		
+		//sinon fils
+		else{
+			log.log(Level.INFO, "Making a distribution leaf...");
+			int[] distr = parentDistribution.getDistributionVector();
+			int sum = parentDistribution.getTotal();
+			log.log(Level.DEBUG, "sum="+sum);
+			Map<String, Double> map = new HashMap<String, Double>();
+			for(int i=0 ; i<distr.length ; i++){
+				log.log(Level.DEBUG, "ditr[i]="+distr[i]);
+				Double distri = new Double((double)distr[i]/(double)sum);
+				if(distri.doubleValue()>0.0){
+					String label = featureSpec.getLabels()[i];
+					map.put(label, distri);
+				}
+			}
+			DecisionTreeLeaf dtl = null;
+			try {
+				dtl = new DecisionTreeLeaf(new LeafLabels(map), sum);
+			} catch (InvalidProbabilityComputationException e) {
+				log.log(Level.ERROR, e.getMessage());
+			}
+			try {
+				nodeSetter.set(dtl);
+			} catch (CannotOverwriteTreeException e) {
+				log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Distribution leaf");
+			}
+			
+			Scheduler scheduler = Scheduler.INSTANCE;
+			//on indique qu'on a fini
+			scheduler.done(this);
+			//on arrête le scheduler si on est la dernière feuille
+			if(scheduler.everythingIsDone())
+				scheduler.stopMe();
+		}
+	}
 	private Job setupJob0() throws IOException {
 		Configuration conf = new Configuration();
 		featureSpec.toConf(conf);
@@ -183,7 +299,17 @@ public class NodeBuilder implements Runnable {
 		FileSystem fileSystem;
 		fileSystem = FileSystem.get(conf);
 		FileStatus[] files = fileSystem.listStatus(inputDir);
-		Path inputFile = files[0].getPath();
+		//for(int i=0; i<files.length; i++)	
+		//	System.out.println(files[i].getPath().toString());
+		Path inputFile = null;
+		for(int i=0 ; i<files.length ; i++){
+			Path tmp = files[i].getPath();
+			if(tmp.getName().startsWith("part")){
+				inputFile = tmp;
+				break;
+			}
+		}
+		//System.out.println(inputFile.toString());
 		FSDataInputStream in = fileSystem.open(inputFile);
 		LineReader lr = new LineReader(in);
 		Text line = new Text();
@@ -240,6 +366,64 @@ public class NodeBuilder implements Runnable {
 		org.apache.hadoop.mapred.FileOutputFormat.setOutputPath(jobConf,
 				outputDir);
 		return jobConf;
+	}
+	
+	private boolean mustStop(){
+		for(StoppingCriterion s : stopping)
+			if(s.mustStop(this))
+				return true;
+		return false;
+	}
+
+	@Override
+	public double getCurrentGain() {
+		return parentInfos.getEntropy() - leftDistribution.getScoreLeftDistribution().getScore();
+	}
+
+	@Override
+	public int getDepth(){
+		return parentInfos.getDepth() + 1;
+	}
+
+	@Override
+	public int getMinExamples() {
+		int countL = leftDistribution.getScoreLeftDistribution().getDistribution().getTotal();
+		int countR = parentDistribution.getTotal() - countL;
+		return Math.min(countL, countR);
+//		//Il faut compter le nombre d'exemples à droite et à gauche et retourner le minimum
+//		Path dataRes = new Path(this.workingDir, this.job4outDir);
+//		String pathRight = (new Path(dataRes, "right")).toString();
+//		String pathLeft = (new Path(dataRes, "left")).toString();
+//		log.log(Level.DEBUG, pathRight.toString());
+//		log.log(Level.DEBUG, pathLeft.toString());
+//		Reader readerR = null;
+//		Reader readerL = null;
+//		try {
+//			readerR = new FileReader(pathRight);
+//		} catch (FileNotFoundException e) {
+//			log.log(Level.ERROR, "Cannot find file : "+pathRight);
+//		}
+//		try {
+//			readerL = new FileReader(pathLeft);
+//		} catch (FileNotFoundException e) {
+//			log.log(Level.ERROR, "Cannot find file : "+pathLeft);
+//		}
+//		LineNumberReader lineR = new LineNumberReader(readerR);
+//		LineNumberReader lineL = new LineNumberReader(readerL);
+//		int countR = 0, countL = 0;
+//		try {
+//			while(lineR.readLine()!=null)
+//				countR = lineR.getLineNumber();
+//		} catch (IOException e) {
+//			log.log(Level.ERROR, "Error occurs while reading "+pathRight);
+//		}
+//		try {
+//			while(lineL.readLine()!=null)
+//				countL = lineL.getLineNumber();
+//		} catch (IOException e) {
+//			log.log(Level.ERROR, "Error occurs while reading "+pathLeft);
+//		}
+//		return Math.min(countL, countR);
 	}
 
 }

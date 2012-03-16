@@ -18,7 +18,100 @@ public class Question extends HadoopConfStockable implements
 		WritableComparable<Question>, Cloneable {
 
 	public static final String HADOOP_CONFIGURATION_KEY = "faf-question";
+
+	int col;
+	AttrType type;
+	DoubleWritable doubleValue;
+	// !!! NOTE IMPORTANTE :
+	// Chaine représentant :
+	// - valeur d'un attribut discret
+	// - valeur d'un attribut texte
+	Text textValue;
+	GramContainer gramValue;
+
+	public static final String DELIMITER = ":";
+
+	public Question() {
+		this.doubleValue = new DoubleWritable();
+		this.textValue = new Text();
+		this.gramValue = new GramContainer();
+	}
+
+	public Question(int col, AttrType type, double value) {
+		this();
+		this.col = col;
+		if (type != AttrType.CONTINUOUS) {
+			throw new IllegalArgumentException(
+					"Constructor with double value can only be used if"
+							+ " attr type is continuous");
+		}
+		this.type = type;
+		this.doubleValue.set(value);
+	}
+
+	public Question(int col, AttrType type, String value) {
+		this();
+		this.col = col;
+		if (type != AttrType.DISCRETE) {
+			throw new IllegalArgumentException(
+					"Constructor with string value can only be used if"
+							+ " attr type is discrete");
+		}
+		this.type = type;
+		this.textValue.set(value);
+	}
 	
+	private void initGram(int col, AttrType type) {
+
+		this.col = col;
+		if (type != AttrType.TEXT) {
+			throw new IllegalArgumentException(
+					"Constructor with gram value can only be used if"
+							+ " attr type is text");
+		}
+		this.type = type;
+	}
+	
+	public Question(int col, AttrType type, SGram value) {
+		this();
+		initGram(col, type);
+		this.gramValue.set(value);
+	}
+
+	public Question(int col, AttrType type, FGram value) {
+		this();
+		initGram(col, type);
+		this.gramValue.set(value);
+	}
+
+	public Question(String strRepr) {
+		this();
+		fromString(strRepr);
+	}
+
+	public int getCol() {
+		return col;
+	}
+
+	public double getDoubleValue() {
+		return this.doubleValue.get();
+	}
+
+	public String getTextValue() {
+		return this.textValue.toString();
+	}
+
+	public AttrType getType() {
+		return type;
+	}
+
+	public String getStringValue() {
+		if (type == AttrType.CONTINUOUS)
+			return doubleValue.toString();
+		else
+			return textValue.toString();
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -27,12 +120,17 @@ public class Question extends HadoopConfStockable implements
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		// Only use textValue or doubleValue according to
 		// type to generate hash code
-		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT) {
+		switch(this.type) {
+		case DISCRETE:
 			result = prime * result
-					+ ((doubleValue == null) ? 0 : doubleValue.hashCode());
-		} else {
+			+ ((doubleValue == null) ? 0 : doubleValue.hashCode());
+			break;
+		case CONTINUOUS:
 			result = prime * result
-					+ ((textValue == null) ? 0 : textValue.hashCode());
+			+ ((textValue == null) ? 0 : textValue.hashCode());
+		case TEXT:
+			result = prime * result
+			+ ((gramValue == null) ? 0 : gramValue.hashCode());
 		}
 		return result;
 	}
@@ -52,13 +150,13 @@ public class Question extends HadoopConfStockable implements
 			return false;
 		// Only compare textValue or doubleValue according to
 		// type
-		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT) {
+		if (this.type == AttrType.DISCRETE) {
 			if (textValue == null) {
 				if (other.textValue != null)
 					return false;
 			} else if (!textValue.equals(other.textValue))
 				return false;
-		} else {
+		} else if(this.type == AttrType.CONTINUOUS){
 			if (doubleValue == null) {
 				if (other.doubleValue != null)
 					return false;
@@ -66,57 +164,14 @@ public class Question extends HadoopConfStockable implements
 				// FIXME Maybe which should do an approximate comparison here
 				// as double values can change a little
 				return false;
+		} else if (this.type == AttrType.TEXT) {
+			if (gramValue == null) {
+				if (other.gramValue != null)
+					return false;
+			} else if (!gramValue.equals(other.gramValue))
+				return false;
 		}
 		return true;
-	}
-
-	int col;
-	AttrType type;
-	DoubleWritable doubleValue;
-	// !!! NOTE IMPORTANTE :
-	// Chaine représentant :
-	// - valeur d'un attribut discret
-	// - valeur d'un attribut texte
-	Text textValue;
-
-	public static final String DELIMITER = ":";
-
-	public int getCol() {
-		return col;
-	}
-
-	public Question() {
-		this.doubleValue = new DoubleWritable();
-		this.textValue = new Text();
-	}
-
-	public Question(int col, AttrType type, double value) {
-		this();
-		this.col = col;
-		if (type != AttrType.CONTINUOUS) {
-			throw new IllegalArgumentException(
-					"Constructor with double value can only be used if"
-							+ " attr type is continuous");
-		}
-		this.type = type;
-		this.doubleValue.set(value);
-	}
-
-	public Question(int col, AttrType type, String value) {
-		this();
-		this.col = col;
-		if (type == AttrType.CONTINUOUS) {
-			throw new IllegalArgumentException(
-					"Constructor with string value can only be used if"
-							+ " attr type is discrete or text");
-		}
-		this.type = type;
-		this.textValue.set(value);
-	}
-
-	public Question(String strRepr) {
-		this();
-		fromString(strRepr);
 	}
 
 	@Override
@@ -135,7 +190,7 @@ public class Question extends HadoopConfStockable implements
 			break;
 		case 'T':
 			this.type = AttrType.TEXT;
-			this.textValue.readFields(in);
+			this.gramValue.readFields(in);
 			break;
 		case 'D':
 			this.type = AttrType.DISCRETE;
@@ -185,12 +240,15 @@ public class Question extends HadoopConfStockable implements
 		case CONTINUOUS:
 			out.writeChar('C');
 			this.doubleValue.write(out);
+			break;
 		case DISCRETE:
 			out.writeChar('D');
 			this.textValue.write(out);
+			break;
 		case TEXT:
 			out.writeChar('T');
-			this.textValue.write(out);
+			this.gramValue.write(out);
+			break;
 		}
 	}
 
@@ -205,10 +263,13 @@ public class Question extends HadoopConfStockable implements
 		int comparison = this.type.compareTo(other.type);
 		if (comparison != 0)
 			return comparison;
-		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT)
+		if (this.type == AttrType.DISCRETE)
 			return this.textValue.compareTo(other.textValue);
 		if (this.type == AttrType.CONTINUOUS) {
 			return this.doubleValue.compareTo(other.doubleValue);
+		}
+		if(this.type == AttrType.TEXT) {
+			return this.gramValue.compareTo(other.gramValue);
 		}
 		//System.out.println("CompareTo returns true !!");
 		return 0;
@@ -220,43 +281,39 @@ public class Question extends HadoopConfStockable implements
 		outStr += Question.DELIMITER;
 		outStr += Question.typeToChar(this.type);
 		outStr += Question.DELIMITER;
-		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT) {
+		switch(this.type) {
+		case DISCRETE:
 			outStr += this.getTextValue();
-		} else {
+			break;
+		case CONTINUOUS:
 			outStr += this.getDoubleValue();
+			break;
+		case TEXT:
+			outStr += this.gramValue.toString();
 		}
 		return outStr;
 	}
 
 	public void fromString(String strRepr) {
-		String[] fields = strRepr.split(Question.DELIMITER);
+		String[] fields = strRepr.split(Question.DELIMITER, 3);
 		this.col = Integer.parseInt(fields[0]);
 		this.type = Question.charToType(fields[1].charAt(0));
-		System.out.println(Arrays.toString(fields));
-		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT) {
+		//System.out.println(Arrays.toString(fields));
+		switch(this.type) {
+		case DISCRETE:
 			this.textValue.set(fields[2]);
+			break;
+		case CONTINUOUS:
+			this.doubleValue.set(Double.parseDouble(fields[2]));
+			break;
+		case TEXT:
+			this.gramValue.fromString(fields[2]);
+		}
+		if (this.type == AttrType.DISCRETE || this.type == AttrType.TEXT) {
+			
 		} else {
 			this.doubleValue.set(Double.parseDouble(fields[2]));
 		}
-	}
-
-	public double getDoubleValue() {
-		return this.doubleValue.get();
-	}
-
-	public String getTextValue() {
-		return this.textValue.toString();
-	}
-
-	public AttrType getType() {
-		return type;
-	}
-
-	public String getStringValue() {
-		if (type == AttrType.CONTINUOUS)
-			return doubleValue.toString();
-		else
-			return textValue.toString();
 	}
 
 	public boolean ask(QuestionExample example) throws FAFException {
@@ -264,18 +321,19 @@ public class Question extends HadoopConfStockable implements
 	}
 
 	public boolean ask(String value) throws FAFException {
-		// System.out.println("Question double value = "+doubleValue.toString());
-		// System.out.println("Question text or discrete value = "+textValue);
 		boolean res = false;
-		if (getType().equals(AttrType.TEXT)
-				|| getType().equals(AttrType.DISCRETE))
+		switch(this.type) {
+		case DISCRETE:
 			res = value.equals(textValue.toString());
-		// value<=doubleValue => true
-		else if (getType().equals(AttrType.CONTINUOUS)) {
-			Double d = doubleValue.get();
+			break;
+		case CONTINUOUS:
+			double d = doubleValue.get();
 			res = Double.parseDouble(value) <= d;
-		} else
-			throw new FAFException("No type matching");
+			break;
+		case TEXT:
+			res = this.gramValue.query(value);
+			break;
+		}
 		return res;
 	}
 

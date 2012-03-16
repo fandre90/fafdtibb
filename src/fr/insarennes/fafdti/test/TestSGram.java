@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import fr.insarennes.fafdti.builder.FGram;
 import fr.insarennes.fafdti.builder.SGram;
-
+import static fr.insarennes.fafdti.test.UtilsTest.*;
 
 public class TestSGram {
 
@@ -21,14 +21,25 @@ public class TestSGram {
 	public void testWrite() throws IOException {
 		SGram sGram = new SGram("aaa", "bbb", 1);
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		DataOutput dataOut = new DataOutputStream(buffer);
+		DataOutput dataOut = bufferToDataOutput(buffer);
 		sGram.write(dataOut);
-		DataInput dataIn = new DataInputStream(new ByteArrayInputStream(
-				buffer.toByteArray()));
+		DataInput dataIn = bufferToDataInput(buffer);
 		sGram.readFields(dataIn);
 		assertTrue(sGram.query("ddd aaa ccc bbb yyy"));
 		assertTrue(sGram.query("aaa bbb"));
 		assertFalse(sGram.query("bbb aaa ccc aaa"));
+	}
+	
+	@Test
+	public void testToString() {
+		SGram sGram = new SGram("aaa", "bbb", 1);
+		String strRepr = sGram.toString();
+		SGram sGram2 = new SGram();
+		sGram2.fromString(strRepr);
+		System.out.println(strRepr);
+		assertTrue(sGram2.query("ddd aaa ccc bbb yyy"));
+		assertTrue(sGram2.query("aaa bbb"));
+		assertFalse(sGram2.query("bbb aaa ccc aaa"));
 	}
 
 	@Test

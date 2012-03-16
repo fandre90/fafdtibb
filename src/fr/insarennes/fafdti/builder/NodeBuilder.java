@@ -1,5 +1,6 @@
 package fr.insarennes.fafdti.builder;
 
+import java.beans.FeatureDescriptor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -111,9 +112,9 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			if(featureSpec==null){
 				fileSystem = FileSystem.get(conf);
 				featureSpec = new DotNamesInfo(inputNamesPath, fileSystem);
-				Job job0 = setupJob0();
-				job0.waitForCompletion(false);
 			}
+			Job job0 = setupJob0();
+			job0.waitForCompletion(false);
 			ScoredDistributionVector parentDistribution = readParentDistribution();
 			this.parentDistribution = parentDistribution;
 			Job job1 = setupJob1(parentDistribution);

@@ -1,6 +1,5 @@
 package fr.insarennes.fafdti.builder;
 
-import java.beans.FeatureDescriptor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -145,6 +144,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		//si on ne s'arrête pas, c'est une question
 		if(!this.mustStop()){
 			log.log(Level.INFO, "Making a question node...");
+			//construction du noeud
 			Question question = leftDistribution.getQuestion();
 			DecisionTreeQuestion dtq = new DecisionTreeQuestion(question);
 			try {
@@ -176,12 +176,13 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		//sinon fils
 		else{
 			log.log(Level.INFO, "Making a distribution leaf...");
+			//construction de la feuille
 			int[] distr = parentDistribution.getDistributionVector();
 			int sum = parentDistribution.getTotal();
 			log.log(Level.DEBUG, "sum="+sum);
 			Map<String, Double> map = new HashMap<String, Double>();
 			for(int i=0 ; i<distr.length ; i++){
-				log.log(Level.DEBUG, "ditr[i]="+distr[i]);
+				log.log(Level.DEBUG, "distr[i]="+distr[i]);
 				Double distri = new Double((double)distr[i]/(double)sum);
 				if(distri.doubleValue()>0.0){
 					String label = featureSpec.getLabels()[i];

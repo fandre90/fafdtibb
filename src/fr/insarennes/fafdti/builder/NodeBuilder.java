@@ -295,6 +295,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	}
 
 	private String readFileFirstLine(Path inputDir) throws IOException {
+		System.out.println(inputDir.toString());
 		Configuration conf = new Configuration();
 		FileSystem fileSystem;
 		fileSystem = FileSystem.get(conf);

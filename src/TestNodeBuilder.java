@@ -12,6 +12,7 @@ import fr.insarennes.fafdti.builder.NodeBuilder;
 import fr.insarennes.fafdti.builder.Scheduler;
 import fr.insarennes.fafdti.builder.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
+import fr.insarennes.fafdti.visitors.Checker;
 import fr.insarennes.fafdti.visitors.XmlExporter;
 
 public class TestNodeBuilder {
@@ -36,6 +37,13 @@ public class TestNodeBuilder {
 		scheduler.execute(nb);
 		scheduler.start();
 		while(scheduler.isAlive());
+		//check
+		Checker check = new Checker();
+		root.getRoot().accept(check);
+		if(!check.checkOK()){
+			System.out.println("construction failed : pending found");
+			System.exit(1);
+		}
 		//export xml
 		String outxml = "/home/momo/workspace/FaF/res/xml/exp";
 		XmlExporter xml = new XmlExporter(root.getRoot(), outxml);

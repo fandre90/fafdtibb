@@ -383,7 +383,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	@Override
 	public double getCurrentGain() {
 		ScoredDistributionVector left = qLeftDistribution.getScoreLeftDistribution().getDistribution();
-		return parentInfos.getEntropy() - ScoreLeftDistribution.computeCombinedEntropy(left, left.computeRightDistribution(left));
+		return parentInfos.getEntropy() - ScoreLeftDistribution.computeCombinedEntropy(left, parentDistribution.computeRightDistribution(left));
 	}
 
 	@Override

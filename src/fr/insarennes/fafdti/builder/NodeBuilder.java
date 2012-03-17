@@ -67,7 +67,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	protected DecisionNodeSetter nodeSetter;
 	protected List<StoppingCriterion> stopping;
 	protected ScoredDistributionVector parentDistribution;
-	protected QuestionScoreLeftDistribution leftDistribution;
+	protected QuestionScoreLeftDistribution qLeftDistribution;
 	protected ParentInfos parentInfos;
 	
 	private final String job0outDir = "initial-entropy";
@@ -116,6 +116,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			job0.waitForCompletion(false);
 			ScoredDistributionVector parentDistribution = readParentDistribution();
 			this.parentDistribution = parentDistribution;
+			System.out.println("<<<<<<<<<<"+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
 			job1.submit();
 			Job job2 = setupJob2(parentDistribution);
@@ -123,7 +124,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			Job job3 = setupJob3();
 			job3.waitForCompletion(false);
 			QuestionScoreLeftDistribution qDVPair = readBestQuestion();
-			this.leftDistribution = qDVPair;
+			this.qLeftDistribution = qDVPair;
+			System.out.println("<<<<<<<<<<"+qLeftDistribution.toString());
 			// Old API
 			JobConf job4Conf = setupJob4(qDVPair.getQuestion());
 			JobClient.runJob(job4Conf);
@@ -145,7 +147,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		if(!this.mustStop()){
 			log.log(Level.INFO, "Making a question node...");
 			//construction du noeud
-			Question question = leftDistribution.getQuestion();
+			Question question = qLeftDistribution.getQuestion();
 			DecisionTreeQuestion dtq = new DecisionTreeQuestion(question);
 			try {
 				nodeSetter.set(dtq);
@@ -380,7 +382,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 
 	@Override
 	public double getCurrentGain() {
-		return parentInfos.getEntropy() - leftDistribution.getScoreLeftDistribution().getScore();
+		ScoredDistributionVector left = qLeftDistribution.getScoreLeftDistribution().getDistribution();
+		return parentInfos.getEntropy() - ScoreLeftDistribution.computeCombinedEntropy(left, left.computeRightDistribution(left));
 	}
 
 	@Override
@@ -390,7 +393,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 
 	@Override
 	public int getMinExamples() {
-		int countL = leftDistribution.getScoreLeftDistribution().getDistribution().getTotal();
+		int countL = qLeftDistribution.getScoreLeftDistribution().getDistribution().getTotal();
 		int countR = parentDistribution.getTotal() - countL;
 		return Math.min(countL, countR);
 //		//Il faut compter le nombre d'exemples à droite et à gauche et retourner le minimum

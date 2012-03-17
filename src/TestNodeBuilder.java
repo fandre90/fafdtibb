@@ -42,11 +42,15 @@ public class TestNodeBuilder {
 		while(scheduler.isAlive()){
 			//affichage des stats
 			StatNumExamplesClassified stat = new StatNumExamplesClassified();
-			root.getRoot().accept(stat);
+			try{
+				root.getRoot().accept(stat);
+			}catch(FAFException e){
+				;
+			}
 			List<DecisionTree> pending = stat.getPending();
 			int sum = stat.getResult();
 			while(!pending.isEmpty()){
-				System.out.println(sum+" examples classified");
+				//System.out.println(sum+" examples classified");
 				List<DecisionTree> tmp = new ArrayList<DecisionTree>();
 				for(DecisionTree dt : pending){
 					StatNumExamplesClassified st = new StatNumExamplesClassified();

@@ -114,8 +114,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			}
 			Job job0 = setupJob0();
 			job0.waitForCompletion(false);
-			ScoredDistributionVector parentDistribution = readParentDistribution();
-			this.parentDistribution = parentDistribution;
+			parentDistribution = readParentDistribution();
 			System.out.println("<<<<<<<<<<"+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
 			job1.submit();
@@ -123,11 +122,10 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			job2.waitForCompletion(false);
 			Job job3 = setupJob3();
 			job3.waitForCompletion(false);
-			QuestionScoreLeftDistribution qDVPair = readBestQuestion();
-			this.qLeftDistribution = qDVPair;
+			qLeftDistribution = readBestQuestion();
 			System.out.println("<<<<<<<<<<"+qLeftDistribution.toString());
 			// Old API
-			JobConf job4Conf = setupJob4(qDVPair.getQuestion());
+			JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
 			JobClient.runJob(job4Conf);
 			
 			this.constructThenRecursiveCall();
@@ -175,7 +173,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			scheduler.done(this);
 		}
 		
-		//sinon fils
+		//sinon feuille
 		else{
 			log.log(Level.INFO, "Making a distribution leaf...");
 			//construction de la feuille

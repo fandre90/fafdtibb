@@ -11,8 +11,11 @@ import fr.insarennes.fafdti.builder.GainMin;
 import fr.insarennes.fafdti.builder.NodeBuilder;
 import fr.insarennes.fafdti.builder.Scheduler;
 import fr.insarennes.fafdti.builder.StoppingCriterion;
+import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
+import fr.insarennes.fafdti.tree.DecisionTreePending;
 import fr.insarennes.fafdti.visitors.Checker;
+import fr.insarennes.fafdti.visitors.StatNumExamplesClassified;
 import fr.insarennes.fafdti.visitors.XmlExporter;
 
 public class TestNodeBuilder {
@@ -36,7 +39,24 @@ public class TestNodeBuilder {
 		Scheduler scheduler = Scheduler.INSTANCE;
 		scheduler.execute(nb);
 		scheduler.start();
-		while(scheduler.isAlive());
+		while(scheduler.isAlive()){
+			//affichage des stats
+			StatNumExamplesClassified stat = new StatNumExamplesClassified();
+			root.getRoot().accept(stat);
+			List<DecisionTree> pending = stat.getPending();
+			int sum = stat.getResult();
+			while(!pending.isEmpty()){
+				System.out.println(sum+" examples classified");
+				List<DecisionTree> tmp = new ArrayList<DecisionTree>();
+				for(DecisionTree dt : pending){
+					StatNumExamplesClassified st = new StatNumExamplesClassified();
+					dt.accept(st);
+					sum+=st.getResult();
+					tmp.addAll(st.getPending());
+				}
+				pending = tmp;
+			}
+		}
 		//check
 		Checker check = new Checker();
 		root.getRoot().accept(check);

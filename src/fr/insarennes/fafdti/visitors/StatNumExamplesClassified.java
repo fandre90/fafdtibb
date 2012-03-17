@@ -1,9 +1,13 @@
 package fr.insarennes.fafdti.visitors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreePending;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
@@ -13,14 +17,18 @@ public class StatNumExamplesClassified implements DecisionTreeVisitor {
 
 	private static Logger log = Logger.getLogger(StatNumExamplesClassified.class);
 	private int nbExamplesClassified;
-	private int nbExamplesTotal;
+	private List<DecisionTree> pending;
 	
-	public StatNumExamplesClassified(int total){
-		nbExamplesTotal = total;
+	public StatNumExamplesClassified(){
 		nbExamplesClassified = 0;
+		pending = new ArrayList<DecisionTree>();
 	}
-	public double getResult(){
-		return (double)nbExamplesClassified/(double)nbExamplesTotal;
+	public int getResult(){
+		return nbExamplesClassified;
+	}
+	public List<DecisionTree> getPending(){
+		//utils pour relancer des visites seulement sur ceux qui n'a pas encore été visité
+		return pending;
 	}
 	@Override
 	public void visitQuestion(DecisionTreeQuestion dtq) {
@@ -41,7 +49,7 @@ public class StatNumExamplesClassified implements DecisionTreeVisitor {
 	@Override
 	public void visitPending(DecisionTreePending dtp)
 			throws InvalidCallException {
-		
+		pending.add(dtp);
 	}
 
 }

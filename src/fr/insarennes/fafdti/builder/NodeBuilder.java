@@ -68,6 +68,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	protected List<StoppingCriterion> stopping;
 	protected ScoredDistributionVector parentDistribution;
 	protected QuestionScoreLeftDistribution qLeftDistribution;
+	protected ScoredDistributionVector rightDistribution;
 	protected ParentInfos parentInfos;
 	
 	private final String job0outDir = "initial-entropy";
@@ -86,13 +87,13 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		this.criterion = criterion;
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
-		this.parentInfos = new ParentInfos(1.0, 0);
+		this.parentInfos = new ParentInfos(0);
 	}
 	
 	public NodeBuilder(DotNamesInfo featureSpec, String inputDataPath,
 			String workingDir, Criterion criterion, 
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
-			ParentInfos parentInfos) {
+			ParentInfos parentInfos, ScoredDistributionVector parentDistribution) {
 		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
 		this.nodeUUID = UUID.randomUUID();
@@ -101,6 +102,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
 		this.parentInfos = parentInfos;
+		this.parentDistribution = parentDistribution;
 	}
 	
 	@Override
@@ -111,10 +113,10 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			if(featureSpec==null){
 				fileSystem = FileSystem.get(conf);
 				featureSpec = new DotNamesInfo(inputNamesPath, fileSystem);
+				Job job0 = setupJob0();
+				job0.waitForCompletion(false);
+				parentDistribution = readParentDistribution();
 			}
-			Job job0 = setupJob0();
-			job0.waitForCompletion(false);
-			parentDistribution = readParentDistribution();
 			System.out.println("<<<<<<<<<<"+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
 			job1.submit();
@@ -123,6 +125,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			Job job3 = setupJob3();
 			job3.waitForCompletion(false);
 			qLeftDistribution = readBestQuestion();
+			rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
 			System.out.println("<<<<<<<<<<"+qLeftDistribution.toString());
 			// Old API
 			JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
@@ -157,13 +160,14 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			Path dataRes = new Path(this.workingDir,this.job4outDir);
 			Path yesnames = new Path(dataRes, "left");
 			Path nonames = new Path(dataRes, "right");
-			ParentInfos pInfos = new ParentInfos(parentDistribution.getScore(), parentInfos.getDepth() + 1);
+			ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1);
+			
 			NodeBuilder yesSon = new NodeBuilder(this.featureSpec, yesnames.toString(), 
 					this.workingDir.getParent().toString(), this.criterion, dtq.yesSetter(), 
-					this.stopping, pInfos);
+					this.stopping, pInfos, qLeftDistribution.getScoreLeftDistribution().getDistribution());
 			NodeBuilder noSon = new NodeBuilder(this.featureSpec, nonames.toString(), 
 					this.workingDir.getParent().toString(), this.criterion, dtq.noSetter(), 
-					this.stopping, pInfos);
+					this.stopping, pInfos, rightDistribution);
 			
 			Scheduler scheduler = Scheduler.INSTANCE;
 			scheduler.execute(yesSon);
@@ -378,21 +382,17 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		return false;
 	}
 
-	@Override
 	public double getCurrentGain() {
-		ScoredDistributionVector left = qLeftDistribution.getScoreLeftDistribution().getDistribution();
-		return parentInfos.getEntropy() - ScoreLeftDistribution.computeCombinedEntropy(left, parentDistribution.computeRightDistribution(left));
+		return parentDistribution.getScore() - ScoreLeftDistribution.computeCombinedEntropy(qLeftDistribution.getScoreLeftDistribution().getDistribution(), rightDistribution);
 	}
 
-	@Override
 	public int getDepth(){
 		return parentInfos.getDepth() + 1;
 	}
 
-	@Override
 	public int getMinExamples() {
 		int countL = qLeftDistribution.getScoreLeftDistribution().getDistribution().getTotal();
-		int countR = parentDistribution.getTotal() - countL;
+		int countR = rightDistribution.getTotal();
 		return Math.min(countL, countR);
 //		//Il faut compter le nombre d'exemples à droite et à gauche et retourner le minimum
 //		Path dataRes = new Path(this.workingDir, this.job4outDir);

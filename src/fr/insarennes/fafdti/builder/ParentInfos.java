@@ -2,16 +2,10 @@ package fr.insarennes.fafdti.builder;
 
 public class ParentInfos {
 
-	private double entropy;
 	private int depth;
 	
-	public ParentInfos(double entropy, int depth){
-		this.entropy = entropy;
+	public ParentInfos(int depth){
 		this.depth = depth;
-	}
-	
-	public double getEntropy(){
-		return entropy;
 	}
 	
 	public int getDepth(){

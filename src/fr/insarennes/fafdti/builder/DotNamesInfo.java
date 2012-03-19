@@ -22,9 +22,12 @@ import org.apache.hadoop.util.LineReader;
 import fr.insarennes.fafdti.builder.TextAttrSpec.ExpertType;
 
 /**
- * charge les etiquetes d'un fichier .names
- * 
- * @author Francois LEHERICEY
+ * Memory representation of a .names file.
+ * This file specifies :
+ *  - The various labels by which an individual can be labeled
+ *  - All the attributes of the individuals along with their types (discrete, continuous
+ *    or text) and their properties (e.g. for text attributes, different mode of
+ *    analysis are proposed : NGram, FGram and SGram
  */
 public class DotNamesInfo extends HadoopConfStockable {
 	private static final long serialVersionUID = -6855907309314569268L;
@@ -38,56 +41,57 @@ public class DotNamesInfo extends HadoopConfStockable {
 	private String[] commentStartChars = { "|", "#" };
 
 	/**
-	 * construit un FeatureSpec en lisant un fichier .names
-	 * 
-	 * @param file
-	 *            chemin du fichier .name
-	 * @param fs
-	 *            systeme de fichier dans lequel lire
+	 * Read a .names file and stores the parsed information
+	 * @param file The path to the file to be read
+	 * @param fs The FileSystem in which the file is located
 	 * @throws IOException
 	 */
 	public DotNamesInfo(Path file, FileSystem fs) throws IOException,
 			ParseException {
-
 		this.attributeSpec = new ArrayList<AttrSpec>();
-		// FileSystem fs = FileSystem.get(conf);
 		FSDataInputStream in = fs.open(file);
 		LineReader lr = new LineReader(in);
+		String labelLine = skipComments(lr);
+		this.parseLabelLine(labelLine);
+		String attrLine = skipComments(lr);
+		while (!attrLine.equals("")) {
+			this.parseAttributeLine(attrLine);
+			attrLine = skipComments(lr);
+		}
+		lr.close();
+	}
+	
+	/**
+	 * Skip comments and empty lines and return the next line
+	 * to be parsed.
+	 * @return the next line to parse
+	 * @throws IOException 
+	 */
+	private String skipComments(LineReader lr) throws IOException {
 		Text text = new Text();
-
-		// Skip comments
 		boolean skipComments = true;
+		int readBytes = 0;
 		while (skipComments) {
 			skipComments = false;
-			lr.readLine(text);
+			readBytes = lr.readLine(text);
+			if(readBytes == 0) {
+				return "";
+			}
 			for (String startChar : commentStartChars) {
-				if (text.toString().startsWith(startChar)) {
-					// lr.readLine(text);
+				if (text.toString().startsWith(startChar) 
+						|| text.toString().trim().equals("")) {
 					skipComments = true;
 				}
 			}
 		}
-
-		// while (text.toString().startsWith("|")) {
-		// lr.readLine(text);
-		// }
-
-		this.parseLabelLine(text.toString());
-		// index inverse
-		reverseLabelMap = new HashMap<String, Integer>();
-		for (int i = 0; i < labelsArray.length; i++) {
-			reverseLabelMap.put(labelsArray[i], i);
-		}
-
-		lr.readLine(text);
-		while (!text.toString().equals("")) {
-			this.parseAttributeLine(text.toString());
-			lr.readLine(text);
-		}
-
-		lr.close();
+		return text.toString();
 	}
 
+	/**
+	 * Parse the line specifying all possible labels
+	 * @param labelLine the line to parse
+	 * @throws ParseException if the line could not be parsed
+	 */
 	private void parseLabelLine(String labelLine) throws ParseException {
 		labelLine = labelLine.trim();
 		int len = labelLine.length();
@@ -96,12 +100,23 @@ public class DotNamesInfo extends HadoopConfStockable {
 			throw new ParseException("Labels line must end with a dot");
 		labelLine = labelLine.substring(0, len - 1);
 		this.labelsArray = labelLine.split(",");
+		// Create labels array
 		for(int i=0; i<labelsArray.length; ++i) {
 			this.labelsArray[i] = this.labelsArray[i].trim();
 		}
+		// Create reverse array mapping
+		reverseLabelMap = new HashMap<String, Integer>();
+		for (int i = 0; i < labelsArray.length; i++) {
+			reverseLabelMap.put(labelsArray[i], i);
+		}
 	}
 
-	// FIXME FIXME FIXME Parsing du cutoff
+	/**
+	 * Parse an attribute specification line. This line specifies the attribute
+	 * name, its type and various properties
+	 * @param attrLine the line to parse
+	 * @throws ParseException if the line could not be parsed
+	 */
 	private void parseAttributeLine(String attrLine) throws ParseException {
 		// Skip comments
 		if (attrLine.startsWith("|"))
@@ -147,31 +162,35 @@ public class DotNamesInfo extends HadoopConfStockable {
 	}
 
 	/**
-	 * rend l'index de l'etiquette e+ "-" + keySuffix
-	 * 
-	 * @param e
-	 *            etiquette
-	 * @return index
+	 * Returns the index corresponding to a label.
+	 * This method allows the program to use number to represent
+	 * labels instead of strings.
+	 * @param label the label to be indexed
+	 * @return the index of the label
 	 */
-	public int indexOfLabel(String e) {
-		return reverseLabelMap.get(e);
+	public int indexOfLabel(String label) {
+		return reverseLabelMap.get(label);
 	}
 
-	public AttrSpec getAttrSpec(int col) {
-		return (AttrSpec) this.attributeSpec.get(col).clone();
-	}
-
+	/**
+	 * Returns an array containing all possible labels
+	 * @return the array containing all labels
+	 */
 	public String[] getLabels() {
 		return this.labelsArray.clone();
 	}
 
 	/**
-	 * rend le nombre d'etiquettes
+	 * Returns the number of labels
 	 * 
-	 * @return le nombre d'etiquettes
+	 * @return the number of labels
 	 */
 	public int numOfLabel() {
 		return labelsArray.length;
+	}
+
+	public AttrSpec getAttrSpec(int col) {
+		return (AttrSpec) this.attributeSpec.get(col).clone();
 	}
 
 	/**

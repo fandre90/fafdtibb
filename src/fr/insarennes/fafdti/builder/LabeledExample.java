@@ -67,6 +67,7 @@ public class LabeledExample implements Writable {
 			strRepr.append(value+",");
 		}
 		strRepr.append(label.toString());
+		strRepr.append(".");
 		return strRepr.toString();
 	}
 }

@@ -8,6 +8,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.DotNamesInfo;
 
 /**
@@ -44,8 +45,13 @@ public class Step0Map extends Mapper<Object, Text, Text, IntWritable>{
 		
 		// Enlever le point final.
 		label = label.substring(0, label.length() - 1);
-		int index = fs.indexOfLabel(label);
-		
-		context.write(new Text("labels"), new IntWritable(index));
+		int index;
+		try {
+			index = fs.indexOfLabel(label);
+			context.write(new Text("labels"), new IntWritable(index));
+		} catch (FAFException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

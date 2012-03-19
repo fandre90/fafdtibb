@@ -143,7 +143,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			e.printStackTrace();
 		}
 	}
-	private void constructThenRecursiveCall(){
+	private void constructThenRecursiveCall() {
 		//si on ne s'arrête pas, c'est une question
 		if(!this.mustStop()){
 			log.log(Level.INFO, "Making a question node...");
@@ -309,9 +309,9 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		//for(int i=0; i<files.length; i++)	
 		//	System.out.println(files[i].getPath().toString());
 		Path inputFile = null;
-		for(int i=0 ; i<files.length ; i++){
+		for (int i = 0; i < files.length; i++) {
 			Path tmp = files[i].getPath();
-			if(tmp.getName().startsWith("part")){
+			if (tmp.getName().startsWith("part")) {
 				inputFile = tmp;
 				break;
 			}

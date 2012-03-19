@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.LineReader;
 
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.TextAttrSpec.ExpertType;
 
 /**
@@ -168,8 +169,12 @@ public class DotNamesInfo extends HadoopConfStockable {
 	 * @param label the label to be indexed
 	 * @return the index of the label
 	 */
-	public int indexOfLabel(String label) {
-		return reverseLabelMap.get(label);
+	public int indexOfLabel(String label) throws FAFException {
+		Integer labelIndex = reverseLabelMap.get(label);
+		if(labelIndex == null) {
+			throw new FAFException("Non existent label: " + label);
+		}
+		return labelIndex;
 	}
 
 	/**

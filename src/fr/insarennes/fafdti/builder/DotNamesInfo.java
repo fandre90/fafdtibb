@@ -268,5 +268,12 @@ public class DotNamesInfo extends HadoopConfStockable {
 			return false;
 		return true;
 	}
+	
+	public String toString(){
+		String res = "List of labels = ";
+		for(int i=0 ; i<labelsArray.length ; i++)
+			res += labelsArray[i]+", ";
+		return res.substring(0, res.length()-2);
+	}
 
 }

@@ -1,10 +1,20 @@
 package fr.insarennes.fafdti.builder;
 
+//import java.util.concurrent.ExecutorService;
+//import java.util.concurrent.Executors;
+//
+//
+//public class Scheduler{
+//	
+//	private static final int POOL_SIZE = 50;
+//	public static final ExecutorService INSTANCE = Executors.newFixedThreadPool(POOL_SIZE);
+//}
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Scheduler extends Thread {
-	public static final Scheduler INSTANCE = new Scheduler();
+ 	public static final Scheduler INSTANCE = new Scheduler();
 
 	private List<Runnable> fifo;
 	private List<Runnable> runningList;

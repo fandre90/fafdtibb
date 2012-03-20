@@ -58,7 +58,6 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	
 	protected static Logger log = Logger.getLogger(NodeBuilder.class);
 
-	protected Path inputNamesPath;
 	protected Path inputDataPath;
 	protected Path workingDir;
 	protected UUID nodeUUID;
@@ -66,10 +65,10 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	protected Criterion criterion;
 	protected DecisionNodeSetter nodeSetter;
 	protected List<StoppingCriterion> stopping;
+	protected ParentInfos parentInfos;
 	protected ScoredDistributionVector parentDistribution;
 	protected QuestionScoreLeftDistribution qLeftDistribution;
 	protected ScoredDistributionVector rightDistribution;
-	protected ParentInfos parentInfos;
 	
 	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
@@ -77,10 +76,10 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	private final String job3outDir = "best-question";
 	private final String job4outDir = "split";
 
-	public NodeBuilder(String inputNamesPath, String inputDataPath,
+	public NodeBuilder(DotNamesInfo featureSpec, String inputDataPath,
 			String workingDir, Criterion criterion, 
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping) {
-		this.inputNamesPath = new Path(inputNamesPath);
+		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
 		this.nodeUUID = UUID.randomUUID();
 		this.workingDir = new Path(workingDir, nodeUUID.toString());
@@ -107,16 +106,15 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	
 	@Override
 	public void run() {
-		Configuration conf = new Configuration();
-		FileSystem fileSystem;
 		try {
-			if(featureSpec==null){
-				fileSystem = FileSystem.get(conf);
-				featureSpec = new DotNamesInfo(inputNamesPath, fileSystem);
+			if(parentDistribution==null){
+				
 				Job job0 = setupJob0();
 				job0.waitForCompletion(false);
 				parentDistribution = readParentDistribution();
 			}
+			//if parentDistribution.pure() => leafMaker ??
+			System.out.println(">>"+featureSpec.toString());
 			System.out.println("<<<<<<<<<<"+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
 			job1.submit();
@@ -131,11 +129,12 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
 			JobClient.runJob(job4Conf);
 			
-			this.constructThenRecursiveCall();
+			if(this.mustStop()){
+				leafMaker();
+			}
+			else nodeMaker();
 			
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -143,76 +142,74 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			e.printStackTrace();
 		}
 	}
-	private void constructThenRecursiveCall() {
-		//si on ne s'arrête pas, c'est une question
-		if(!this.mustStop()){
-			log.log(Level.INFO, "Making a question node...");
-			//construction du noeud
-			Question question = qLeftDistribution.getQuestion();
-			DecisionTreeQuestion dtq = new DecisionTreeQuestion(question);
-			try {
-				nodeSetter.set(dtq);
-			} catch (CannotOverwriteTreeException e) {
-				log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Question node");
-				log.log(Level.ERROR, e.getMessage());
+	
+	private void nodeMaker(){
+		log.log(Level.INFO, "Making a question node...");
+		//construction du noeud
+		Question question = qLeftDistribution.getQuestion();
+		DecisionTreeQuestion dtq = new DecisionTreeQuestion(question);
+		try {
+			nodeSetter.set(dtq);
+		} catch (CannotOverwriteTreeException e) {
+			log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Question node");
+			log.log(Level.ERROR, e.getMessage());
+		}
+		//on lance la construction du fils droit et gauche
+		Path dataRes = new Path(this.workingDir,this.job4outDir);
+		Path yesnames = new Path(dataRes, "left");
+		Path nonames = new Path(dataRes, "right");
+		ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1);
+		
+		NodeBuilder yesSon = new NodeBuilder(this.featureSpec, yesnames.toString(), 
+				this.workingDir.getParent().toString(), this.criterion, dtq.yesSetter(), 
+				this.stopping, pInfos, qLeftDistribution.getScoreLeftDistribution().getDistribution());
+		NodeBuilder noSon = new NodeBuilder(this.featureSpec, nonames.toString(), 
+				this.workingDir.getParent().toString(), this.criterion, dtq.noSetter(), 
+				this.stopping, pInfos, rightDistribution);
+		
+		Scheduler scheduler = Scheduler.INSTANCE;
+		scheduler.execute(yesSon);
+		scheduler.execute(noSon);
+		
+		//on indique qu'on a fini
+		scheduler.done(this);
+	}
+	
+	private void leafMaker(){
+		log.log(Level.INFO, "Making a distribution leaf...");
+		//construction de la feuille
+		int[] distr = parentDistribution.getDistributionVector();
+		int sum = parentDistribution.getTotal();
+		log.log(Level.DEBUG, "sum="+sum);
+		Map<String, Double> map = new HashMap<String, Double>();
+		for(int i=0 ; i<distr.length ; i++){
+			log.log(Level.DEBUG, "distr[i]="+distr[i]);
+			Double distri = new Double((double)distr[i]/(double)sum);
+			if(distri.doubleValue()>0.0){
+				String label = featureSpec.getLabels()[i];
+				map.put(label, distri);
 			}
-			//on lance la construction du fils droit et gauche
-			Path dataRes = new Path(this.workingDir,this.job4outDir);
-			Path yesnames = new Path(dataRes, "left");
-			Path nonames = new Path(dataRes, "right");
-			ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1);
-			
-			NodeBuilder yesSon = new NodeBuilder(this.featureSpec, yesnames.toString(), 
-					this.workingDir.getParent().toString(), this.criterion, dtq.yesSetter(), 
-					this.stopping, pInfos, qLeftDistribution.getScoreLeftDistribution().getDistribution());
-			NodeBuilder noSon = new NodeBuilder(this.featureSpec, nonames.toString(), 
-					this.workingDir.getParent().toString(), this.criterion, dtq.noSetter(), 
-					this.stopping, pInfos, rightDistribution);
-			
-			Scheduler scheduler = Scheduler.INSTANCE;
-			scheduler.execute(yesSon);
-			scheduler.execute(noSon);
-			
-			//on indique qu'on a fini
-			scheduler.done(this);
+		}
+		DecisionTreeLeaf dtl = null;
+		try {
+			dtl = new DecisionTreeLeaf(new LeafLabels(map), sum);
+		} catch (InvalidProbabilityComputationException e) {
+			log.log(Level.ERROR, e.getMessage());
+		}
+		try {
+			nodeSetter.set(dtl);
+		} catch (CannotOverwriteTreeException e) {
+			log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Distribution leaf");
 		}
 		
-		//sinon feuille
-		else{
-			log.log(Level.INFO, "Making a distribution leaf...");
-			//construction de la feuille
-			int[] distr = parentDistribution.getDistributionVector();
-			int sum = parentDistribution.getTotal();
-			log.log(Level.DEBUG, "sum="+sum);
-			Map<String, Double> map = new HashMap<String, Double>();
-			for(int i=0 ; i<distr.length ; i++){
-				log.log(Level.DEBUG, "distr[i]="+distr[i]);
-				Double distri = new Double((double)distr[i]/(double)sum);
-				if(distri.doubleValue()>0.0){
-					String label = featureSpec.getLabels()[i];
-					map.put(label, distri);
-				}
-			}
-			DecisionTreeLeaf dtl = null;
-			try {
-				dtl = new DecisionTreeLeaf(new LeafLabels(map), sum);
-			} catch (InvalidProbabilityComputationException e) {
-				log.log(Level.ERROR, e.getMessage());
-			}
-			try {
-				nodeSetter.set(dtl);
-			} catch (CannotOverwriteTreeException e) {
-				log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Distribution leaf");
-			}
-			
-			Scheduler scheduler = Scheduler.INSTANCE;
-			//on indique qu'on a fini
-			scheduler.done(this);
-			//on arrête le scheduler si on est la dernière feuille
-			if(scheduler.everythingIsDone())
-				scheduler.stopMe();
-		}
+		Scheduler scheduler = Scheduler.INSTANCE;
+		//on indique qu'on a fini
+		scheduler.done(this);
+		//on arrête le scheduler si on est la dernière feuille
+		if(scheduler.everythingIsDone())
+			scheduler.stopMe();
 	}
+	
 	private Job setupJob0() throws IOException {
 		Configuration conf = new Configuration();
 		featureSpec.toConf(conf);

@@ -1,10 +1,16 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.DepthMax;
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
 import fr.insarennes.fafdti.builder.ExampleMin;
 import fr.insarennes.fafdti.builder.GainMin;
@@ -33,7 +39,20 @@ public class TestNodeBuilder {
 		stopping.add(new DepthMax(5));
 		stopping.add(new ExampleMin(2));
 		stopping.add(new GainMin(0.1));
-		NodeBuilder nb = new NodeBuilder(inputNames, inputData, outputDir0,
+		//DotNamesInfos
+		Configuration conf = new Configuration();
+		FileSystem fileSystem;
+
+		DotNamesInfo featureSpec = null;
+		try {
+			fileSystem = FileSystem.get(conf);
+			featureSpec = new DotNamesInfo(new Path(inputNames), fileSystem);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		//NodeBuilder
+		NodeBuilder nb = new NodeBuilder(featureSpec, inputData, outputDir0,
 				new EntropyCriterion(), root.getNodeSetter(), stopping);
 		
 		Scheduler scheduler = Scheduler.INSTANCE;

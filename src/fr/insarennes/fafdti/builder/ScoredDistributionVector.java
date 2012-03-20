@@ -87,6 +87,10 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 	public int getTotal() {
 		return total;
 	}
+	
+	public boolean isPure(){
+		return !hasMoreThanOneNonEmptyLabel;
+	}
 
 	public boolean hasMoreThanOneNonEmptyLabel() {
 		return hasMoreThanOneNonEmptyLabel;

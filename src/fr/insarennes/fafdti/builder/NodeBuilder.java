@@ -113,26 +113,30 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				job0.waitForCompletion(false);
 				parentDistribution = readParentDistribution();
 			}
-			//if parentDistribution.pure() => leafMaker ??
-			System.out.println(">>"+featureSpec.toString());
-			System.out.println("<<<<<<<<<<"+parentDistribution.toString());
-			Job job1 = setupJob1(parentDistribution);
-			job1.submit();
-			Job job2 = setupJob2(parentDistribution);
-			job2.waitForCompletion(false);
-			Job job3 = setupJob3();
-			job3.waitForCompletion(false);
-			qLeftDistribution = readBestQuestion();
-			rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
-			System.out.println("<<<<<<<<<<"+qLeftDistribution.toString());
-			// Old API
-			JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
-			JobClient.runJob(job4Conf);
-			
-			if(this.mustStop()){
+			if(parentDistribution.isPure()){
 				leafMaker();
 			}
-			else nodeMaker();
+			else{
+				System.out.println(">>"+featureSpec.toString());
+				System.out.println("<<<<<<<<<<"+parentDistribution.toString());
+				Job job1 = setupJob1(parentDistribution);
+				job1.submit();
+				Job job2 = setupJob2(parentDistribution);
+				job2.waitForCompletion(false);
+				Job job3 = setupJob3();
+				job3.waitForCompletion(false);
+				qLeftDistribution = readBestQuestion();
+				rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
+				System.out.println("<<<<<<<<<<"+qLeftDistribution.toString());
+				// Old API
+				JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
+				JobClient.runJob(job4Conf);
+				
+				if(this.mustStop()){
+					leafMaker();
+				}
+				else nodeMaker();
+			}
 			
 		} catch (IOException e) {
 			e.printStackTrace();

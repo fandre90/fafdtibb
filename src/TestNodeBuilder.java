@@ -28,7 +28,7 @@ public class TestNodeBuilder {
 	public static void main(String[] args) throws FAFException {
 		DecisionTreeHolder root = new DecisionTreeHolder();
 		//String input = "/home/fabien/Bureau/Hadoop/data_test/in/test1";
-		String input = "/home/momo/workspace/FaF/res/examples/exp";
+		String input = "/home/momo/workspace/FaF/res/examples/petits-textes";
 		String inputNames = input + ".names";
 		String inputData = input + ".data";
 		Formatter format = new Formatter();
@@ -58,28 +58,30 @@ public class TestNodeBuilder {
 		Scheduler scheduler = Scheduler.INSTANCE;
 		scheduler.execute(nb);
 		scheduler.start();
-		while(scheduler.isAlive()){
-			//affichage des stats
-			StatNumExamplesClassified stat = new StatNumExamplesClassified();
-			try{
-				root.getRoot().accept(stat);
-			}catch(FAFException e){
-				;
-			}
-			List<DecisionTree> pending = stat.getPending();
-			int sum = stat.getResult();
-			while(!pending.isEmpty()){
-				//System.out.println(sum+" examples classified");
-				List<DecisionTree> tmp = new ArrayList<DecisionTree>();
-				for(DecisionTree dt : pending){
-					StatNumExamplesClassified st = new StatNumExamplesClassified();
-					dt.accept(st);
-					sum+=st.getResult();
-					tmp.addAll(st.getPending());
-				}
-				pending = tmp;
-			}
-		}
+		while(scheduler.isAlive());
+//		{
+//			//affichage des stats
+//			StatNumExamplesClassified stat = new StatNumExamplesClassified();
+//			try{
+//				root.getRoot().accept(stat);
+//			}catch(FAFException e){
+//				;
+//			}
+//			List<DecisionTree> pending = stat.getPending();
+//			int sum = stat.getResult();
+//			while(!pending.isEmpty()){
+//				//System.out.println(sum+" examples classified");
+//				List<DecisionTree> tmp = new ArrayList<DecisionTree>();
+//				for(DecisionTree dt : pending){
+//					StatNumExamplesClassified st = new StatNumExamplesClassified();
+//					dt.accept(st);
+//					sum+=st.getResult();
+//					tmp.addAll(st.getPending());
+//				}
+//				pending = tmp;
+//			}
+//		}
+		System.out.println("Construction process done");
 		//check
 		Checker check = new Checker();
 		root.getRoot().accept(check);
@@ -87,9 +89,11 @@ public class TestNodeBuilder {
 			System.out.println("construction failed : pending found");
 			System.exit(1);
 		}
+		System.out.println("Validation tree resulting : check OK");
 		//export xml
 		String outxml = "/home/momo/workspace/FaF/res/xml/exp";
 		XmlExporter xml = new XmlExporter(root.getRoot(), outxml);
 		xml.launch();
+		System.out.println("Tree resulting exports in "+outxml+".xml");
 	}
 }

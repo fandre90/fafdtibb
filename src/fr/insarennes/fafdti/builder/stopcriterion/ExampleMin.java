@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.stopcriterion;
 
 public class ExampleMin implements StoppingCriterion {
 

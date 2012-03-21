@@ -11,16 +11,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.DepthMax;
 import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
-import fr.insarennes.fafdti.builder.ExampleMin;
-import fr.insarennes.fafdti.builder.GainMin;
 import fr.insarennes.fafdti.builder.Launcher;
 import fr.insarennes.fafdti.builder.NodeBuilder;
 import fr.insarennes.fafdti.builder.Scheduler;
 import fr.insarennes.fafdti.builder.StatBuilder;
-import fr.insarennes.fafdti.builder.StoppingCriterion;
+import fr.insarennes.fafdti.builder.stopcriterion.DepthMax;
+import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
+import fr.insarennes.fafdti.builder.stopcriterion.GainMin;
+import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
 import fr.insarennes.fafdti.tree.DecisionTreePending;
@@ -40,7 +40,12 @@ public class TestNodeBuilder {
 		String outputDir0 = "/home/momo/workspace/FaF/res/out/"
 				+ format.format("%1$tY-%1$tm-%1$td %1$tHh%1$tM", new Date());
 		String outxml = "/home/momo/workspace/FaF/res/xml/iris";
-		new Launcher(inputNames, inputData, outputDir0, outxml);
+		//stopping criterion
+		List<StoppingCriterion> stopping = new ArrayList<StoppingCriterion>();
+		stopping.add(new DepthMax(5));
+		stopping.add(new ExampleMin(1));
+		stopping.add(new GainMin(0.1));
+		new Launcher(inputNames, inputData, outputDir0, outxml, stopping, new EntropyCriterion());
 //		scheduler.start();
 //		while(scheduler.isAlive());
 //		{

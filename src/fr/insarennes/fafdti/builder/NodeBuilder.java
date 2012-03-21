@@ -34,6 +34,9 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.input.InputRequest;
 import org.apache.tools.ant.util.ReaderInputStream;
 
+import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
+import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
+import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 import fr.insarennes.fafdti.hadoop.SplitExampleMultipleOutputFormat;
@@ -77,7 +80,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	private final String job2outDir = "continuous-questions";
 	private final String job3outDir = "best-question";
 	private final String job4outDir = "split";
-
+	
+	//First node constructor
 	public NodeBuilder(DotNamesInfo featureSpec, 
 			String inputDataPath,
 			String workingDir, 
@@ -95,6 +99,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		this.stats = stats;
 	}
 	
+	//Recursive constructor
 	public NodeBuilder(DotNamesInfo featureSpec, 
 			String inputDataPath,
 			String workingDir, 
@@ -129,35 +134,28 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				job0.waitForCompletion(false);
 				parentDistribution = readParentDistribution();
 			}
+			System.out.println("parentDist = "+parentDistribution.toString());
+			Job job1 = setupJob1(parentDistribution);
+			job1.submit();
+			Job job2 = setupJob2(parentDistribution);
+			job2.waitForCompletion(false);
+			Job job3 = setupJob3();
+			job3.waitForCompletion(false);
+			qLeftDistribution = readBestQuestion();
+			if(qLeftDistribution==null){
+				leafMaker();
+				return;
+			}
+			rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
+			rightDistribution.rate(criterion);
+			// Old API
+			JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
+			JobClient.runJob(job4Conf);
 			
-			//util ??????
-			if(parentDistribution.isPure()){
-				System.out.println("feuille pure");
+			if(this.mustStop()){
 				leafMaker();
 			}
-			else{
-				Job job1 = setupJob1(parentDistribution);
-				job1.submit();
-				Job job2 = setupJob2(parentDistribution);
-				job2.waitForCompletion(false);
-				Job job3 = setupJob3();
-				job3.waitForCompletion(false);
-				qLeftDistribution = readBestQuestion();
-				if(qLeftDistribution==null){
-					leafMaker();
-					return;
-				}
-				rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
-				rightDistribution.rate(criterion);
-				// Old API
-				JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
-				JobClient.runJob(job4Conf);
-				
-				if(this.mustStop()){
-					leafMaker();
-				}
-				else nodeMaker();
-			}
+			else nodeMaker();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -203,9 +201,6 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		
 		Scheduler.INSTANCE.execute(yesSon);
 		Scheduler.INSTANCE.execute(noSon);
-		
-		//on indique qu'on a fini
-		//scheduler.done(this);
 	}
 	
 	private void leafMaker(){
@@ -236,13 +231,6 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		}
 		//un pending en moins
 		stats.decrementPending();
-		
-//		Scheduler scheduler = Scheduler.INSTANCE;
-//		//on indique qu'on a fini
-//		scheduler.done(this);
-//		//on arrête le scheduler si on est la dernière feuille
-//		if(scheduler.everythingIsDone())
-//			scheduler.stopMe();
 	}
 	
 	private Job setupJob0() throws IOException {
@@ -430,40 +418,6 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		int countL = qLeftDistribution.getScoreLeftDistribution().getDistribution().getTotal();
 		int countR = rightDistribution.getTotal();
 		return Math.min(countL, countR);
-//		//Il faut compter le nombre d'exemples à droite et à gauche et retourner le minimum
-//		Path dataRes = new Path(this.workingDir, this.job4outDir);
-//		String pathRight = (new Path(dataRes, "right")).toString();
-//		String pathLeft = (new Path(dataRes, "left")).toString();
-//		log.log(Level.DEBUG, pathRight.toString());
-//		log.log(Level.DEBUG, pathLeft.toString());
-//		Reader readerR = null;
-//		Reader readerL = null;
-//		try {
-//			readerR = new FileReader(pathRight);
-//		} catch (FileNotFoundException e) {
-//			log.log(Level.ERROR, "Cannot find file : "+pathRight);
-//		}
-//		try {
-//			readerL = new FileReader(pathLeft);
-//		} catch (FileNotFoundException e) {
-//			log.log(Level.ERROR, "Cannot find file : "+pathLeft);
-//		}
-//		LineNumberReader lineR = new LineNumberReader(readerR);
-//		LineNumberReader lineL = new LineNumberReader(readerL);
-//		int countR = 0, countL = 0;
-//		try {
-//			while(lineR.readLine()!=null)
-//				countR = lineR.getLineNumber();
-//		} catch (IOException e) {
-//			log.log(Level.ERROR, "Error occurs while reading "+pathRight);
-//		}
-//		try {
-//			while(lineL.readLine()!=null)
-//				countL = lineL.getLineNumber();
-//		} catch (IOException e) {
-//			log.log(Level.ERROR, "Error occurs while reading "+pathLeft);
-//		}
-//		return Math.min(countL, countR);
 	}
 
 }

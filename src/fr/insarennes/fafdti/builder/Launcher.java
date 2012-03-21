@@ -1,6 +1,5 @@
 package fr.insarennes.fafdti.builder;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -11,6 +10,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
 import fr.insarennes.fafdti.visitors.Checker;
@@ -25,23 +25,20 @@ public class Launcher implements Observer {
 		String outXml;
 		
 		public Launcher(String inputNames, String inputData, 
-				String outputDir, String xmlOutput) throws ParseException{
-			 root = new DecisionTreeHolder();
-			 result = null;
-			 outXml = xmlOutput;
+				String outputDir, String xmlOutput,
+				List<StoppingCriterion> stoppingList,
+				Criterion criterion) throws ParseException{
+			//attributes initialization
+			root = new DecisionTreeHolder();
+			result = null;
+			outXml = xmlOutput;
 			
-			//stopping criterion
-			List<StoppingCriterion> stopping = new ArrayList<StoppingCriterion>();
-			stopping.add(new DepthMax(5));
-			stopping.add(new ExampleMin(1));
-			stopping.add(new GainMin(0.1));
-			//stats
+			//statistiques object creation
 			StatBuilder stats = new StatBuilder(1);
 			stats.addObserver(this);
-			//DotNamesInfos
+			//DotNamesInfos creation
 			Configuration conf = new Configuration();
 			FileSystem fileSystem;
-
 			DotNamesInfo featureSpec = null;
 			try {
 				fileSystem = FileSystem.get(conf);
@@ -50,36 +47,37 @@ public class Launcher implements Observer {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			//NodeBuilder
+			//NodeBuilder creation
 			NodeBuilder nb = new NodeBuilder(featureSpec, 
 					inputData, outputDir,
-					new EntropyCriterion(), 
+					criterion, 
 					root.getNodeSetter(), 
-					stopping,
+					stoppingList,
 					stats);
-			
+			//launch first node
 			Scheduler.INSTANCE.execute(nb);
 		}
 		
 		public void update(Observable arg0, Object arg1) {
 			if(((StatBuilder)arg1).getNbPending()==0){
-				//on arrête le scheduler
+				//stop scheduler
 				Scheduler.INSTANCE.shutdown();
 				log.info("Construction process done");
+				//get decision tree constructed
 				try {
 					result = root.getRoot();
 				} catch (FAFException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				//check
+				//check it
 				Checker check = new Checker();
 				result.accept(check);
 				if(!check.checkOK()){
-					log.info("construction failed : pending found");
-					System.exit(1);
+					log.error("Construction failed : pending found");
+					return;
 				}
-				log.info("Validation tree resulting : check OK");
+				log.info("Validation tree resul : check OK");
 				//export xml
 				XmlExporter xml = new XmlExporter(result, outXml);
 				xml.launch();

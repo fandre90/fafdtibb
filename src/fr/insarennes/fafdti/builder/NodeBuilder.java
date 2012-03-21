@@ -60,7 +60,6 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 
 	protected Path inputDataPath;
 	protected Path workingDir;
-	protected UUID nodeUUID;
 	protected DotNamesInfo featureSpec;
 	protected Criterion criterion;
 	protected DecisionNodeSetter nodeSetter;
@@ -69,39 +68,56 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	protected ScoredDistributionVector parentDistribution;
 	protected QuestionScoreLeftDistribution qLeftDistribution;
 	protected ScoredDistributionVector rightDistribution;
+	protected StatBuilder stats;
 	
+	
+	private static int indexWorkDir = 0;
 	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
 	private final String job2outDir = "continuous-questions";
 	private final String job3outDir = "best-question";
 	private final String job4outDir = "split";
 
-	public NodeBuilder(DotNamesInfo featureSpec, String inputDataPath,
-			String workingDir, Criterion criterion, 
-			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping) {
+	public NodeBuilder(DotNamesInfo featureSpec, 
+			String inputDataPath,
+			String workingDir, 
+			Criterion criterion, 
+			DecisionNodeSetter nodeSetter, 
+			List<StoppingCriterion> stopping,
+			StatBuilder stats) {
 		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
-		this.nodeUUID = UUID.randomUUID();
-		this.workingDir = new Path(workingDir, nodeUUID.toString());
+		this.workingDir = new Path(workingDir, Integer.toString(indexWorkDir));
 		this.criterion = criterion;
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
 		this.parentInfos = new ParentInfos(0);
+		this.stats = stats;
 	}
 	
-	public NodeBuilder(DotNamesInfo featureSpec, String inputDataPath,
-			String workingDir, Criterion criterion, 
-			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
-			ParentInfos parentInfos, ScoredDistributionVector parentDistribution) {
+	public NodeBuilder(DotNamesInfo featureSpec, 
+			String inputDataPath,
+			String workingDir, 
+			Criterion criterion, 
+			DecisionNodeSetter nodeSetter, 
+			List<StoppingCriterion> stopping,
+			ParentInfos parentInfos, 
+			ScoredDistributionVector parentDistribution,
+			StatBuilder stats) {
 		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
-		this.nodeUUID = UUID.randomUUID();
-		this.workingDir = new Path(workingDir, nodeUUID.toString());
+		incrIndexWorkDir();
+		this.workingDir = new Path(workingDir, Integer.toString(indexWorkDir));
 		this.criterion = criterion;
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
 		this.parentInfos = parentInfos;
 		this.parentDistribution = parentDistribution;
+		this.stats = stats;
+	}
+	
+	synchronized private static void incrIndexWorkDir(){
+		indexWorkDir++;
 	}
 	
 	@Override
@@ -113,12 +129,13 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				job0.waitForCompletion(false);
 				parentDistribution = readParentDistribution();
 			}
+			
+			//util ??????
 			if(parentDistribution.isPure()){
+				System.out.println("feuille pure");
 				leafMaker();
 			}
 			else{
-				System.out.println(">>"+featureSpec.toString());
-				System.out.println("<<<<<<<<<<"+parentDistribution.toString());
 				Job job1 = setupJob1(parentDistribution);
 				job1.submit();
 				Job job2 = setupJob2(parentDistribution);
@@ -126,8 +143,12 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				Job job3 = setupJob3();
 				job3.waitForCompletion(false);
 				qLeftDistribution = readBestQuestion();
+				if(qLeftDistribution==null){
+					leafMaker();
+					return;
+				}
 				rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
-				System.out.println("<<<<<<<<<<"+qLeftDistribution.toString());
+				rightDistribution.rate(criterion);
 				// Old API
 				JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
 				JobClient.runJob(job4Conf);
@@ -160,23 +181,31 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		}
 		//on lance la construction du fils droit et gauche
 		Path dataRes = new Path(this.workingDir,this.job4outDir);
-		Path yesnames = new Path(dataRes, "left");
-		Path nonames = new Path(dataRes, "right");
+		Path yesdata = new Path(dataRes, "left");
+		Path nodata = new Path(dataRes, "right");
 		ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1);
+		//+2(2 sons)-1(current node) = 1
+		stats.incrementPending();
+		NodeBuilder yesSon = new NodeBuilder(this.featureSpec, 
+				yesdata.toString(), 
+				this.workingDir.getParent().toString(), 
+				this.criterion, dtq.yesSetter(), 
+				this.stopping, pInfos, 
+				qLeftDistribution.getScoreLeftDistribution().getDistribution(),
+				stats);
+		NodeBuilder noSon = new NodeBuilder(this.featureSpec, 
+				nodata.toString(), 
+				this.workingDir.getParent().toString(), 
+				this.criterion, dtq.noSetter(), 
+				this.stopping, pInfos, 
+				rightDistribution,
+				stats);
 		
-		NodeBuilder yesSon = new NodeBuilder(this.featureSpec, yesnames.toString(), 
-				this.workingDir.getParent().toString(), this.criterion, dtq.yesSetter(), 
-				this.stopping, pInfos, qLeftDistribution.getScoreLeftDistribution().getDistribution());
-		NodeBuilder noSon = new NodeBuilder(this.featureSpec, nonames.toString(), 
-				this.workingDir.getParent().toString(), this.criterion, dtq.noSetter(), 
-				this.stopping, pInfos, rightDistribution);
-		
-		Scheduler scheduler = Scheduler.INSTANCE;
-		scheduler.execute(yesSon);
-		scheduler.execute(noSon);
+		Scheduler.INSTANCE.execute(yesSon);
+		Scheduler.INSTANCE.execute(noSon);
 		
 		//on indique qu'on a fini
-		scheduler.done(this);
+		//scheduler.done(this);
 	}
 	
 	private void leafMaker(){
@@ -205,13 +234,15 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		} catch (CannotOverwriteTreeException e) {
 			log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Distribution leaf");
 		}
+		//un pending en moins
+		stats.decrementPending();
 		
-		Scheduler scheduler = Scheduler.INSTANCE;
-		//on indique qu'on a fini
-		scheduler.done(this);
-		//on arrête le scheduler si on est la dernière feuille
-		if(scheduler.everythingIsDone())
-			scheduler.stopMe();
+//		Scheduler scheduler = Scheduler.INSTANCE;
+//		//on indique qu'on a fini
+//		scheduler.done(this);
+//		//on arrête le scheduler si on est la dernière feuille
+//		if(scheduler.everythingIsDone())
+//			scheduler.stopMe();
 	}
 	
 	private Job setupJob0() throws IOException {
@@ -327,6 +358,10 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 
 	private QuestionScoreLeftDistribution readBestQuestion() throws IOException {
 		String line = readFileFirstLine(new Path(workingDir, job3outDir));
+		if(line.trim().equals("")){
+			log.warn("No best question generated");
+			return null;
+		}
 		String tokens[] = line.split("\\s+", 2);
 		return new QuestionScoreLeftDistribution(tokens[1]);
 	}
@@ -377,14 +412,14 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	}
 	
 	private boolean mustStop(){
-		for(StoppingCriterion s : stopping)
+		for(StoppingCriterion s : stopping)		
 			if(s.mustStop(this))
 				return true;
 		return false;
 	}
 
 	public double getCurrentGain() {
-		return parentDistribution.getScore() - ScoreLeftDistribution.computeCombinedEntropy(qLeftDistribution.getScoreLeftDistribution().getDistribution(), rightDistribution);
+		return parentDistribution.getScore() - qLeftDistribution.getScoreLeftDistribution().getScore();
 	}
 
 	public int getDepth(){

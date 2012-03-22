@@ -5,8 +5,8 @@
 HEAD="java -jar "
 #directories
 JAR_DIR="../jar/"
-NAMES_DIR="../names/"
-DATA_DIR="../data/"
+NAMES_DIR="../../FaF/res/examples/"
+DATA_DIR="../../FaF/res/examples/"
 XML_DIR="../"
 OUTPUT_DIR="../output/"
 #FAF jar
@@ -67,7 +67,8 @@ fi
 if [ $1 == $BUILD_OPT ] ; then
 check_nb_param 3
 echo "##BUILD MODE"
-$HEAD$BUILD -n $NAMES_DIR$2 -d $DATA_DIR$3 -o $XML_DIR$3
+dat=$(date +%s)
+$HEAD$BUILD -n $NAMES_DIR$2 -d $DATA_DIR$3 -o $XML_DIR$3 -m 1 -M 10 -g 0.1 -w ../../workdir/$dat
 
 #query mode
 elif [ $1 == $QUERY_OPT ] ; then

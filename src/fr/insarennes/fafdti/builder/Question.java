@@ -12,6 +12,9 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.Text;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.GramContainer;
+import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 
 public class Question extends HadoopConfStockable implements

@@ -168,6 +168,9 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	
 	private void nodeMaker(){
 		log.log(Level.INFO, "Making a question node...");
+		//+2(2 sons)-1(current node) = 1
+		//on le fait avant d'appeler set(dtq) sur le nodeSetter
+		stats.incrementPending();
 		//construction du noeud
 		Question question = qLeftDistribution.getQuestion();
 		DecisionTreeQuestion dtq = new DecisionTreeQuestion(question);
@@ -182,8 +185,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		Path yesdata = new Path(dataRes, "left");
 		Path nodata = new Path(dataRes, "right");
 		ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1);
-		//+2(2 sons)-1(current node) = 1
-		stats.incrementPending();
+
 		NodeBuilder yesSon = new NodeBuilder(this.featureSpec, 
 				yesdata.toString(), 
 				this.workingDir.getParent().toString(), 

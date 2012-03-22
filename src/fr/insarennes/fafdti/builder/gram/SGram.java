@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.gram;
 
 import java.io.DataInput;
 import java.io.DataOutput;

@@ -11,8 +11,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import fr.insarennes.fafdti.builder.FGram;
-import fr.insarennes.fafdti.builder.SGram;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.SGram;
 import static fr.insarennes.fafdti.test.UtilsTest.*;
 
 public class TestSGram {

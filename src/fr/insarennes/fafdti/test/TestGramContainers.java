@@ -9,9 +9,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import fr.insarennes.fafdti.builder.FGram;
-import fr.insarennes.fafdti.builder.GramContainer;
-import fr.insarennes.fafdti.builder.SGram;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.GramContainer;
+import fr.insarennes.fafdti.builder.gram.SGram;
 
 import static fr.insarennes.fafdti.test.UtilsTest.*;
 

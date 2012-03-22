@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.gram;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;

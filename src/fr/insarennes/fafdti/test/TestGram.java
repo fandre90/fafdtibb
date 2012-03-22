@@ -5,9 +5,9 @@ import static org.junit.Assert.*;
 import org.apache.commons.net.nntp.NewGroupsOrNewsQuery;
 import org.junit.Test;
 
-import fr.insarennes.fafdti.builder.FGram;
-import fr.insarennes.fafdti.builder.Gram;
-import fr.insarennes.fafdti.builder.SGram;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.Gram;
+import fr.insarennes.fafdti.builder.gram.SGram;
 
 public class TestGram {
 

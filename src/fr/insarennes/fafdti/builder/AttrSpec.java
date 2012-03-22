@@ -3,6 +3,8 @@ package fr.insarennes.fafdti.builder;
 import java.io.Serializable;
 import java.util.Iterator;
 
+import fr.insarennes.fafdti.builder.gram.GramType;
+
 public abstract class AttrSpec implements Cloneable, Serializable {
 	private static final long serialVersionUID = -2277003629169821957L;
 	protected AttrType type;

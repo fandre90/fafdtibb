@@ -11,9 +11,9 @@ import org.junit.Test;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.AttrType;
-import fr.insarennes.fafdti.builder.FGram;
 import fr.insarennes.fafdti.builder.Question;
-import fr.insarennes.fafdti.builder.SGram;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.SGram;
 
 import static fr.insarennes.fafdti.test.UtilsTest.*;
 

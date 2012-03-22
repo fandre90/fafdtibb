@@ -14,6 +14,7 @@ import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
 import fr.insarennes.fafdti.visitors.Checker;
+import fr.insarennes.fafdti.visitors.StatChecker;
 import fr.insarennes.fafdti.visitors.XmlExporter;
 
 
@@ -70,14 +71,17 @@ public class Launcher implements Observer {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				//check it
-				Checker check = new Checker();
+				//check it and stats
+				StatChecker check = new StatChecker();
 				result.accept(check);
 				if(!check.checkOK()){
 					log.error("Construction failed : pending found");
 					return;
 				}
 				log.info("Validation tree resul : check OK");
+				log.info("-------Stats-------");
+				log.info(check.toString());
+				log.info("-------------------");
 				//export xml
 				XmlExporter xml = new XmlExporter(result, outXml);
 				xml.launch();

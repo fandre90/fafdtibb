@@ -1,9 +1,10 @@
 package fr.insarennes.fafdti.cli;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -12,16 +13,14 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 
 import fr.insarennes.fafdti.builder.*;
-import fr.insarennes.fafdti.tree.*;
-import fr.insarennes.fafdti.visitors.XmlExporter;
+import fr.insarennes.fafdti.builder.stopcriterion.DepthMax;
+import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
+import fr.insarennes.fafdti.builder.stopcriterion.GainMin;
+import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 
 public class FAFBuildMode {
 	
@@ -32,15 +31,30 @@ public class FAFBuildMode {
 	public static final int MINOR_VERSION = 0;
 	public static final String HEAD_USAGE = "java -jar "+APP_NAME+MAJOR_VERSION+"."+MINOR_VERSION+".jar";
 	
+	//options
 	public static final String NAMES = "names";
 	public static final String DATA = "data";
 	public static final String OUT = "output";
+	public static final String WORKINGDIR = "workdir";
 	public static final String BAGGING = "bagging";
-	public static final String CRITERIA = "crit";
-	public static final String MAXLEAVES = "leavmx";
+	public static final String CRITERION = "criterion";
+	public static final String MAXDEPTH = "maxdepth";
 	public static final String MINEXBYLEAF = "minex";
+	public static final String GAINMIN = "gainmin";
 	
 	public static Options opts;
+	
+	//criterion names constants
+	public static final String ENTROPY = "entropy";
+	public static final String GINI = "gini";
+	
+	//default values constants
+	public static final String DEFAULT_WORKING_DIR = "./working_dir";
+	public static final String DEFAULT_CRITERION = ENTROPY;
+	public static final String DEFAULT_BAGGING = "1";
+	public static final String DEFAULT_MINEX = "1";
+	public static final String DEFAULT_GAINMIN = "10e-3";
+	public static final String DEFAULT_MAXDEPTH = Integer.MAX_VALUE+"";
 	
 	public static void initOptions(){
 		opts = new Options();
@@ -48,9 +62,11 @@ public class FAFBuildMode {
 		Option o2 = new Option(DATA.substring(0, 1), DATA, true, "Set .data filename");
 		Option o3 = new Option(OUT.substring(0, 1), OUT, true, "Set output filename (optional)");
 		Option o4 = new Option(BAGGING.substring(0,1), BAGGING, true, "Set number of trees buildt for bagging (optional)");
-		Option o5 = new Option(CRITERIA.substring(0,1), CRITERIA, true, "Set the criteria used to build the tree (optional)");
-		Option o6 = new Option(MAXLEAVES.substring(0,1), MAXLEAVES, true, "Choose the maximum number of leaves for one tree (optional)");
+		Option o5 = new Option(CRITERION.substring(0,1), CRITERION, true, "Set the criteria used to build the tree (optional)");
+		Option o6 = new Option(MAXDEPTH.substring(0,1).toUpperCase(), MAXDEPTH, true, "Choose the maximum number of leaves for one tree (optional)");
 		Option o7 = new Option(MINEXBYLEAF.substring(0,1), MINEXBYLEAF, true, "Choose the minimum number of examples by leaf (optional)");
+		Option o8 = new Option(GAINMIN.substring(0,1), GAINMIN, true, "Choose the minimum gain to make a node (optional)");
+		Option o9 = new Option(WORKINGDIR.substring(0,1), WORKINGDIR, true, "Set the directorie where hadoop will work (optional)");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -60,6 +76,8 @@ public class FAFBuildMode {
 		opts.addOption(o5);
 		opts.addOption(o6);
 		opts.addOption(o7);
+		opts.addOption(o8);
+		opts.addOption(o9);
 	}
 	
 	public static void displayHelp(){
@@ -85,44 +103,43 @@ public class FAFBuildMode {
 			System.exit(0);
 		}
 		
+		String names = cmdline.getOptionValue(NAMES);
+		String data = cmdline.getOptionValue(DATA);
 		//si pas de sortie précisée, même nom que le .data par défaut
-		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(DATA));
+		String out = cmdline.getOptionValue(OUT, data);
 		
 		log.log(Level.INFO, "Parsing done");
-		log.log(Level.INFO, "names = "+cmdline.getOptionValue(NAMES));
-		log.log(Level.INFO, "data = "+cmdline.getOptionValue(DATA));
+		log.log(Level.INFO, "names = "+names);
+		log.log(Level.INFO, "data = "+data);
 		log.log(Level.INFO, "output = "+out);
 		
+		String workingdir = cmdline.getOptionValue(WORKINGDIR, DEFAULT_WORKING_DIR);
+		String bagging = cmdline.getOptionValue(BAGGING, DEFAULT_BAGGING);
+		String maxdepth = cmdline.getOptionValue(MAXDEPTH, DEFAULT_MAXDEPTH);
+		String minex = cmdline.getOptionValue(MINEXBYLEAF, DEFAULT_MINEX);
+		String gainmin = cmdline.getOptionValue(GAINMIN, DEFAULT_GAINMIN);
+		String crit = cmdline.getOptionValue(CRITERION, DEFAULT_CRITERION);
 		
-		//Construction du FeatureSpec à partir du .names
-		DotNamesInfo fs = null;
-		try {
-			fs = new DotNamesInfo(new Path(cmdline.getOptionValue(NAMES)+".names"), FileSystem.get(new Configuration()));
-		} catch (fr.insarennes.fafdti.builder.ParseException e) {
-			// TODO Auto-generated catch block
-			Writer w = new StringWriter();
-			PrintWriter pw = new PrintWriter(w);
-			e.printStackTrace(pw);
-			log.log(Level.ERROR, w.toString());
-			log.log(Level.ERROR, e.getMessage());
-			System.exit(0);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			Writer w = new StringWriter();
-			PrintWriter pw = new PrintWriter(w);
-			e.printStackTrace(pw);
-			log.log(Level.ERROR, w.toString());
+		//construction des critères d'arrêt
+		List<StoppingCriterion> stopping = new ArrayList<StoppingCriterion>();
+		stopping.add(new DepthMax(Integer.parseInt(maxdepth)));
+		stopping.add(new ExampleMin(Integer.parseInt(minex)));
+		stopping.add(new GainMin(Double.parseDouble(gainmin)));
+		
+		//construction du critère de construction
+		Criterion criterion = null;
+		if(crit.equals(ENTROPY))
+			criterion = new EntropyCriterion();
+		else{
+			log.error("Criterion <"+crit+"> not recognized");
 			System.exit(0);
 		}
 		
-		//Lancement de la construction de l'arbre
-		DecisionTree root = null;
-		//*****************//
-		
-		
-		//*****************//
-		//Export du résultat
-		XmlExporter xmlexp = new XmlExporter(root, out);
-		xmlexp.launch();
+		//on lance le launcher
+		try {
+			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion);
+		} catch (fr.insarennes.fafdti.builder.ParseException e) {
+			log.error("ParseException : file "+names+".names malformed");
+		}
 	}
 }

@@ -3,8 +3,8 @@ package fr.insarennes.fafdti.visitors;
 import fr.insarennes.fafdti.tree.*;
 
 public class Checker implements DecisionTreeVisitor{
-	private int nbPending;
-	private boolean visitAllAnyway;
+	protected int nbPending;
+	protected boolean visitAllAnyway;
 	
 	public Checker(){
 		nbPending = 0;

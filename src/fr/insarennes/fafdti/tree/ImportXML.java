@@ -24,8 +24,10 @@ import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.GramType;
 import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.visitors.GraphicExporter;
+import fr.insarennes.fafdti.visitors.XmlConst;
 import fr.insarennes.fafdti.visitors.XmlExporter;
 
 public class ImportXML {
@@ -83,27 +85,27 @@ public class ImportXML {
 		Node n = nl.item(0);
 		String name = n.getNodeName();
 		//cas noeud
-		if(name.equals("question")){
+		if(name.equals(XmlConst.QUESTION)){
 			//Construction du noeud avec la question
 			NamedNodeMap map = n.getAttributes();
-			String feat = map.getNamedItem("feature").getNodeValue();
-			String test = map.getNamedItem("test").getNodeValue();
-			AttrType type = AttrType.getFromString(map.getNamedItem("type").getNodeValue());
+			String feat = map.getNamedItem(XmlConst.FEATURE).getNodeValue();
+			String test = map.getNamedItem(XmlConst.TEST).getNodeValue();
+			AttrType type = AttrType.getFromString(map.getNamedItem(XmlConst.TYPE).getNodeValue());
 			
 			if(type==AttrType.DISCRETE)
 				res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat),type,test));
 			else if (type==AttrType.TEXT){
-				String gramtype = map.getNamedItem("gram").getNodeValue();
-				if(gramtype.equals("sgram")){
-					String fw = map.getNamedItem("fw").getNodeValue();
-					String lw = map.getNamedItem("lw").getNodeValue();
-					String maxdist = map.getNamedItem("maxdist").getNodeValue();
+				GramType gramtype = GramType.getFromString(map.getNamedItem(XmlConst.GRAM).getNodeValue());
+				if(gramtype==GramType.SGRAM){
+					String fw = map.getNamedItem(XmlConst.FIRSTWORD).getNodeValue();
+					String lw = map.getNamedItem(XmlConst.LASTWORD).getNodeValue();
+					String maxdist = map.getNamedItem(XmlConst.MAXDIST).getNodeValue();
 					SGram sgram = new SGram(fw, lw, Integer.parseInt(maxdist));
 					res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat), type, sgram));
 				}
-				else if(gramtype=="fgram"){
-					String words = map.getNamedItem("words").getNodeValue();
-					String[] ws = words.split(",");
+				else if(gramtype==GramType.FGRAM){
+					String words = map.getNamedItem(XmlConst.WORDS).getNodeValue();
+					String[] ws = words.split(XmlConst.DELIMITER);
 					FGram fgram = new FGram(ws);
 					res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat), type, fgram));
 				}
@@ -119,13 +121,13 @@ public class ImportXML {
 			Node son2 = sons.item(1);
 			DecisionTree yes = null;
 			DecisionTree no = null;
-			if(son1.getAttributes().getNamedItem("answer").getNodeValue().equals("yes") && 
-				son2.getAttributes().getNamedItem("answer").getNodeValue().equals("no")){
+			if(son1.getAttributes().getNamedItem(XmlConst.ANSWER).getNodeValue().equals(XmlConst.YESANSWER) && 
+				son2.getAttributes().getNamedItem(XmlConst.ANSWER).getNodeValue().equals(XmlConst.NOANSWER)){
 				yes = buildOneTree(son1);
 				no = buildOneTree(son2);
 			}
-			else if(son2.getAttributes().getNamedItem("answer").getNodeValue().equals("yes") && 
-					son1.getAttributes().getNamedItem("answer").getNodeValue().equals("no")){
+			else if(son2.getAttributes().getNamedItem(XmlConst.ANSWER).getNodeValue().equals(XmlConst.YESANSWER) && 
+					son1.getAttributes().getNamedItem(XmlConst.ANSWER).getNodeValue().equals(XmlConst.NOANSWER)){
 					yes = buildOneTree(son2);
 					no = buildOneTree(son1);
 				}
@@ -136,15 +138,16 @@ public class ImportXML {
 			((DecisionTreeQuestion)res).noSetter().set(no);
 		}
 		//cas feuille
-		else if(name.equals("distribution")){
+		else if(name.equals(XmlConst.DISTRIB)){
 			Map<String,Double> hm = new HashMap<String,Double>();
 			NodeList dist = n.getChildNodes();
 			for(int i=0 ; i<dist.getLength() ; i++){
 				Node result = dist.item(i);
 				NamedNodeMap map = result.getAttributes();
-				hm.put(map.getNamedItem("class").getNodeValue(), Double.valueOf(map.getNamedItem("percentage").getNodeValue()));
+				hm.put(map.getNamedItem(XmlConst.CLASS).getNodeValue(), Double.valueOf(map.getNamedItem(XmlConst.PERCENT).getNodeValue()));
 			}
-			res = new DecisionTreeLeaf(new LeafLabels(hm));
+			String nbCl = n.getAttributes().getNamedItem(XmlConst.NBCLASSFD).getNodeValue();
+			res = new DecisionTreeLeaf(new LeafLabels(hm), Integer.parseInt(nbCl));
 		}
 		else
 			throw new XmlMalformedException();

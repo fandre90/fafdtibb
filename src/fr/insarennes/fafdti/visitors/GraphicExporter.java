@@ -7,6 +7,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.tree.DecisionTree;
@@ -19,6 +22,7 @@ import fr.insarennes.fafdti.tree.DecisionTreePending;
 
 public class GraphicExporter implements DecisionTreeVisitor {
 
+	private static Logger log = Logger.getLogger(GraphicExporter.class);
 	private PrintWriter out;
 	private String filename;
 	private DecisionTree root;
@@ -88,6 +92,11 @@ public class GraphicExporter implements DecisionTreeVisitor {
 		while(it.hasNext()){
 			String lb = it.next();
 			content.append(lb+" "+String.valueOf(map.get(lb))+"\\n");
+		}
+		try {
+			content.append("Total classified = "+String.valueOf(dtl.getNbClassified())+"\\n");
+		} catch (FAFException e) {
+			log.error("Cannot export a distribution leaf if its nbClassified attribute is not set");
 		}
 		items.append(name+"[shape=box, label=\""+content.toString()+"\"];\n");
 	}

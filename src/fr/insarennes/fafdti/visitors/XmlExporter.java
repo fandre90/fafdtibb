@@ -22,9 +22,11 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.gram.FGram;
@@ -60,9 +62,9 @@ public class XmlExporter implements DecisionTreeVisitor {
 		filename = filenam;
 		tree = dt;
 		stack = new Stack<Element>();
-		Element trees = doc.createElement("trees");
+		Element trees = doc.createElement(XmlConst.TREES);
 		doc.appendChild(trees);
-		Element root = doc.createElement("tree");
+		Element root = doc.createElement(XmlConst.TREE);
         trees.appendChild(root);
         stack.push(root);
 	}
@@ -70,41 +72,41 @@ public class XmlExporter implements DecisionTreeVisitor {
 	@Override
 	public void visitQuestion(DecisionTreeQuestion dtq) {
 		Question q = dtq.getQuestion();
-		Element child = doc.createElement("question");
-        child.setAttribute("feature", String.valueOf(q.getCol()));
-        child.setAttribute("type", String.valueOf(q.getType()));
-        child.setAttribute("test", q.getStringValue());
+		Element child = doc.createElement(XmlConst.QUESTION);
+        child.setAttribute(XmlConst.FEATURE, String.valueOf(q.getCol()));
+        child.setAttribute(XmlConst.TYPE, String.valueOf(q.getType()));
+        child.setAttribute(XmlConst.TEST, q.getStringValue());
         if(q.getType()==AttrType.TEXT){
         	GramType type = q.getGram().getType();
-        	child.setAttribute("gram", String.valueOf(type));
+        	child.setAttribute(XmlConst.GRAM, String.valueOf(type));
         	if(type==GramType.SGRAM){
         		SGram sgram = q.getGram().getsGram();
-        		child.setAttribute("fw", sgram.getFirstWord().toString());
-        		child.setAttribute("lw", sgram.getLastWord().toString());
-        		child.setAttribute("maxdist", String.valueOf(sgram.getMaxDistance()));
+        		child.setAttribute(XmlConst.FIRSTWORD, sgram.getFirstWord().toString());
+        		child.setAttribute(XmlConst.LASTWORD, sgram.getLastWord().toString());
+        		child.setAttribute(XmlConst.MAXDIST, String.valueOf(sgram.getMaxDistance()));
         	}
         	else if(type==GramType.FGRAM){
         		FGram fgram = q.getGram().getfGram();
         		Text[] words = fgram.getWords();
         		String ws = "";
         		for(int i=0 ; i<words.length ; i++)
-        			ws+=words[i].toString()+",";
+        			ws+=words[i].toString()+XmlConst.DELIMITER;
         		child.setAttribute("words", ws.substring(0, ws.length() - 2));
 
         	}
         }
         stack.peek().appendChild(child);
         
-        Element treeY = doc.createElement("tree");
-        treeY.setAttribute("answer", "yes");
+        Element treeY = doc.createElement(XmlConst.TREE);
+        treeY.setAttribute(XmlConst.ANSWER, XmlConst.YESANSWER);
         child.appendChild(treeY);
         stack.push(treeY);
         dtq.getYesTree().accept(this);
         
         stack.pop();
         
-        Element treeN = doc.createElement("tree");
-        treeN.setAttribute("answer", "no");
+        Element treeN = doc.createElement(XmlConst.TREE);
+        treeN.setAttribute(XmlConst.ANSWER, XmlConst.NOANSWER);
         child.appendChild(treeN);
         stack.push(treeN);
         dtq.getNoTree().accept(this);
@@ -116,12 +118,18 @@ public class XmlExporter implements DecisionTreeVisitor {
 	@Override
 	public void visitLeaf(DecisionTreeLeaf dtl) {
 		Map<String, Double> map = dtl.getLabels().getLabels();
-		Element child = doc.createElement("distribution");
+		Element child = doc.createElement(XmlConst.DISTRIB);
+		try {
+			child.setAttribute(XmlConst.NBCLASSFD, String.valueOf(dtl.getNbClassified()));
+		} catch (FAFException e1) {
+			// TODO Auto-generated catch block
+			log.error("Cannot export a distribution leaf if its nbClassified attribute is not set");
+		}
 		Set<Entry<String,Double>> set = map.entrySet();
 		for(Entry<String,Double> e : set){
-			Element result = doc.createElement("result");
-	        result.setAttribute("class", e.getKey());
-	        result.setAttribute("percentage", e.getValue().toString());
+			Element result = doc.createElement(XmlConst.RESULT);
+	        result.setAttribute(XmlConst.CLASS, e.getKey());
+	        result.setAttribute(XmlConst.PERCENT, e.getValue().toString());
 	        child.appendChild(result);
 		}
 		

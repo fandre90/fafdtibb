@@ -46,7 +46,7 @@ display_help(){
 	|$UTILSDOT_USAGE"
 	echo "Infos :
 	- Always use <filename> without extension
-	- In <\"question\">, features must be in order and seperated by ';'"
+	- In <\"question\">, features must be in order and seperated by ','"
 	exit -1
 }
 #check number of parameters function

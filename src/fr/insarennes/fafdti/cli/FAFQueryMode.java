@@ -40,6 +40,8 @@ public class FAFQueryMode {
 	
 	public static Options opts;
 	
+	public static final String DELIMITER = ",";
+	
 	public static void initOptions(){
 		opts = new Options();
 		Option o1 = new Option(IN.substring(0, 1), IN, true, "Set .xml filename");
@@ -80,7 +82,7 @@ public class FAFQueryMode {
 		StringTokenizer tk = new StringTokenizer(cmdline.getOptionValue(QUESTION));
 		List<String> qList = new ArrayList<String>();
 		while(tk.hasMoreElements())
-			qList.add(tk.nextToken(";"));
+			qList.add(tk.nextToken(DELIMITER));
 		
 		QuestionExample qExample = new QuestionExample(qList);
 		log.log(Level.INFO, qExample.toString());

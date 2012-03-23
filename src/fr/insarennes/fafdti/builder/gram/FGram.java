@@ -30,6 +30,10 @@ public class FGram implements WritableComparable<FGram> {
 	    }
 	    return fGram;
 	}
+	
+	public Text[] getWords(){
+		return words;
+	}
 
 	public boolean query(String textData) {
 		String[] textWords = textData.split("\\s+");

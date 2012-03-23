@@ -107,6 +107,10 @@ public class Question extends HadoopConfStockable implements
 	public AttrType getType() {
 		return type;
 	}
+	
+	public GramContainer getGram(){
+		return gramValue;
+	}
 
 	public String getStringValue() {
 		if (type == AttrType.CONTINUOUS)

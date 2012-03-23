@@ -19,6 +19,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.hadoop.io.Text;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -26,6 +27,9 @@ import org.w3c.dom.Element;
 
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.GramType;
+import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.tree.CannotOverwriteTreeException;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
@@ -70,6 +74,25 @@ public class XmlExporter implements DecisionTreeVisitor {
         child.setAttribute("feature", String.valueOf(q.getCol()));
         child.setAttribute("type", String.valueOf(q.getType()));
         child.setAttribute("test", q.getStringValue());
+        if(q.getType()==AttrType.TEXT){
+        	GramType type = q.getGram().getType();
+        	child.setAttribute("gram", String.valueOf(type));
+        	if(type==GramType.SGRAM){
+        		SGram sgram = q.getGram().getsGram();
+        		child.setAttribute("fw", sgram.getFirstWord().toString());
+        		child.setAttribute("lw", sgram.getLastWord().toString());
+        		child.setAttribute("maxdist", String.valueOf(sgram.getMaxDistance()));
+        	}
+        	else if(type==GramType.FGRAM){
+        		FGram fgram = q.getGram().getfGram();
+        		Text[] words = fgram.getWords();
+        		String ws = "";
+        		for(int i=0 ; i<words.length ; i++)
+        			ws+=words[i].toString()+",";
+        		child.setAttribute("words", ws.substring(0, ws.length() - 2));
+
+        	}
+        }
         stack.peek().appendChild(child);
         
         Element treeY = doc.createElement("tree");

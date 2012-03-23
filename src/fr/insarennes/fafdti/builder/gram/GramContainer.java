@@ -38,6 +38,18 @@ public class GramContainer implements WritableComparable<GramContainer> {
 		this.fGram = (FGram) fGram.cloneGram();
 	}
 
+	public FGram getfGram() {
+		return fGram;
+	}
+
+	public SGram getsGram() {
+		return sGram;
+	}
+
+	public GramType getType() {
+		return type;
+	}
+
 	@Override
 	public void readFields(DataInput in) throws IOException {
 		char typeChar = in.readChar();

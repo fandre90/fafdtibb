@@ -33,6 +33,18 @@ public class SGram implements WritableComparable<SGram> {
 		this.maxDistance.set(distance);
 	}
 
+	public Text getFirstWord() {
+		return firstWord;
+	}
+
+	public Text getLastWord() {
+		return lastWord;
+	}
+
+	public IntWritable getMaxDistance() {
+		return maxDistance;
+	}
+
 	public SGram cloneGram() {
 	    SGram sGram = new SGram();
 	    sGram.firstWord = new Text(this.firstWord);

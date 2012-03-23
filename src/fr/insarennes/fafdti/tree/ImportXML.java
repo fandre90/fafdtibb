@@ -23,6 +23,8 @@ import org.xml.sax.SAXException;
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.visitors.GraphicExporter;
 import fr.insarennes.fafdti.visitors.XmlExporter;
 
@@ -88,9 +90,25 @@ public class ImportXML {
 			String test = map.getNamedItem("test").getNodeValue();
 			AttrType type = AttrType.getFromString(map.getNamedItem("type").getNodeValue());
 			
-			if(type==AttrType.DISCRETE || type==AttrType.TEXT)
+			if(type==AttrType.DISCRETE)
 				res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat),type,test));
-			else
+			else if (type==AttrType.TEXT){
+				String gramtype = map.getNamedItem("gram").getNodeValue();
+				if(gramtype.equals("sgram")){
+					String fw = map.getNamedItem("fw").getNodeValue();
+					String lw = map.getNamedItem("lw").getNodeValue();
+					String maxdist = map.getNamedItem("maxdist").getNodeValue();
+					SGram sgram = new SGram(fw, lw, Integer.parseInt(maxdist));
+					res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat), type, sgram));
+				}
+				else if(gramtype=="fgram"){
+					String words = map.getNamedItem("words").getNodeValue();
+					String[] ws = words.split(",");
+					FGram fgram = new FGram(ws);
+					res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat), type, fgram));
+				}
+			}
+			else	//CONTINUOUS
 				res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat),type,new Double(test)));
 			//appel récursif fils gauche et droit
 			NodeList sons = n.getChildNodes();

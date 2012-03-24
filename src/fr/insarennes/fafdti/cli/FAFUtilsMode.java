@@ -34,6 +34,8 @@ public class FAFUtilsMode {
 	public static final String IN = "in";
 	public static final String OUT = "out";
 	public static final String DISPLAY = "display";
+	//pour choisir quel arbre exporter parmi tous ceux présent dans le bagging
+	public static final String INDEX = "index";
 	
 	public static Options opts_mode;
 	public static Options opts_png;
@@ -55,16 +57,20 @@ public class FAFUtilsMode {
 		Option png1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
 		Option png2 = new Option(OUT.substring(0,1), OUT, true, "Set .png filename (optional)");
 		Option png3 = new Option(DISPLAY.substring(0,1).toUpperCase(), DISPLAY, false, "Display image when generation done if checked (optional)");
+		Option png4 = new Option(INDEX.substring(0,1).toUpperCase(), INDEX, false, "Set the index of tree to be export among every trees in bagging input (optional)");
 		png1.setRequired(true);
 		opts_png.addOption(png1);
 		opts_png.addOption(png2);
 		opts_png.addOption(png3);
+		opts_png.addOption(png4);
 		//options pour mode dot
 		Option dot1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
 		Option dot2 = new Option(OUT.substring(0,1), OUT, true, "Set .dot filename (optional)");
+		Option dot3 = new Option(INDEX.substring(0,1).toUpperCase(), INDEX, false, "Set the index of tree to be export among every trees in bagging input (optional)");
 		dot1.setRequired(true);
 		opts_dot.addOption(dot1);
 		opts_dot.addOption(dot2);
+		opts_dot.addOption(dot3);
 	}
 	
 	public static void displayHelp(){
@@ -133,8 +139,9 @@ public class FAFUtilsMode {
 		log.log(Level.INFO, "Xml import done");
 		
 		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(IN));
-		//on fait le dot		
-		GraphicExporter graph = new GraphicExporter(importer.getResult(), out);
+		String index = cmdline.getOptionValue(INDEX, "0");
+		//on fait le dot
+		GraphicExporter graph = new GraphicExporter(importer.getResult().getTree(Integer.parseInt(index)), out);
 		graph.launch();
 		log.log(Level.INFO, "makedot done");
 	}

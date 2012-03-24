@@ -10,6 +10,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
@@ -83,7 +84,9 @@ public class Launcher implements Observer {
 				log.info(check.toString());
 				log.info("-------------------");
 				//export xml
-				XmlExporter xml = new XmlExporter(result, outXml);
+				BaggingTrees bgts = new BaggingTrees(1);
+				bgts.setTree(0, result);
+				XmlExporter xml = new XmlExporter(bgts, outXml);
 				xml.launch();
 				log.info("Tree resulting exports in "+outXml+".xml");
 			}		

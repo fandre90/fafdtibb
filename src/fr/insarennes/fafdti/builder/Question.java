@@ -115,8 +115,10 @@ public class Question extends HadoopConfStockable implements
 	public String getStringValue() {
 		if (type == AttrType.CONTINUOUS)
 			return doubleValue.toString();
-		else
+		else if(type == AttrType.DISCRETE)
 			return textValue.toString();
+		else //TEXT
+			return gramValue.toString();
 	}
 
 	@Override

@@ -22,11 +22,11 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.gram.FGram;
@@ -43,12 +43,12 @@ import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationExcepti
 
 public class XmlExporter implements DecisionTreeVisitor {
 	Logger log;
-	DecisionTree tree;
+	BaggingTrees baggingTrees;
 	Document doc;
 	String filename;
 	Stack<Element> stack;
 	
-	public XmlExporter(DecisionTree dt, String filenam){
+	public XmlExporter(BaggingTrees bt, String filenam){
 		log = Logger.getLogger(XmlExporter.class);
 		// creation document
 		 DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
@@ -60,13 +60,23 @@ public class XmlExporter implements DecisionTreeVisitor {
 			e.printStackTrace();
 		}
 		filename = filenam;
-		tree = dt;
+		baggingTrees = bt;
 		stack = new Stack<Element>();
+		
 		Element trees = doc.createElement(XmlConst.TREES);
 		doc.appendChild(trees);
-		Element root = doc.createElement(XmlConst.TREE);
-        trees.appendChild(root);
-        stack.push(root);
+		stack.push(trees);
+	}
+	
+	public void launch(){
+		for(int i=0 ; i<baggingTrees.getSize() ; i++){
+			Element root = doc.createElement(XmlConst.TREE);
+	        stack.peek().appendChild(root);
+	        stack.push(root);
+	        baggingTrees.getTree(i).accept(this);
+	        stack.pop();
+		}
+		finish();
 	}
 	
 	@Override
@@ -75,7 +85,6 @@ public class XmlExporter implements DecisionTreeVisitor {
 		Element child = doc.createElement(XmlConst.QUESTION);
         child.setAttribute(XmlConst.FEATURE, String.valueOf(q.getCol()));
         child.setAttribute(XmlConst.TYPE, String.valueOf(q.getType()));
-        child.setAttribute(XmlConst.TEST, q.getStringValue());
         if(q.getType()==AttrType.TEXT){
         	GramType type = q.getGram().getType();
         	child.setAttribute(XmlConst.GRAM, String.valueOf(type));
@@ -95,6 +104,9 @@ public class XmlExporter implements DecisionTreeVisitor {
 
         	}
         }
+        else //DISCRETE && CONTINOUS
+        	child.setAttribute(XmlConst.TEST, q.getStringValue());
+        
         stack.peek().appendChild(child);
         
         Element treeY = doc.createElement(XmlConst.TREE);
@@ -141,11 +153,6 @@ public class XmlExporter implements DecisionTreeVisitor {
 		throw new InvalidCallException(this.getClass().getName()+" cannot visit a DecisionTreePending");
 		
 
-	}
-
-	public void launch(){
-		tree.accept(this);
-		finish();
 	}
 	
 	private void finish(){
@@ -197,7 +204,9 @@ public class XmlExporter implements DecisionTreeVisitor {
 		ns2.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m3)));
 		ns2.yesSetter().set(new DecisionTreeLeaf(new LeafLabels(n2)));
 		
-		XmlExporter xml = new XmlExporter(gtree, "monxml");
+		BaggingTrees btrees = new BaggingTrees(1);
+		btrees.setTree(0, gtree);
+		XmlExporter xml = new XmlExporter(btrees, "monxml");
 		xml.launch();
 	}
 	

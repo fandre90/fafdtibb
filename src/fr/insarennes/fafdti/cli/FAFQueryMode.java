@@ -20,7 +20,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.bagging.BaggingInterrogator;
 import fr.insarennes.fafdti.tree.ImportXML;
+import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.visitors.Interrogator;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 
@@ -98,11 +100,11 @@ public class FAFQueryMode {
 		}
 		log.log(Level.INFO, "Xml import done");
 		//On visite !
-		Interrogator query = new Interrogator(qExample);
-		importer.getResult().accept(query);
+		BaggingInterrogator bgint = new BaggingInterrogator(importer.getResult());
+		LeafLabels res = bgint.query(qExample);
 		log.log(Level.INFO, "Query process done");
 		log.log(Level.INFO, "Here is the answer");
-		log.log(Level.INFO, query.getResult().toString());
+		log.log(Level.INFO, res.toString());
 		
 		//si OUT précisé, on écrit à la fin du fichier OUT la réponse
 		if(cmdline.hasOption(OUT)){
@@ -118,7 +120,7 @@ public class FAFQueryMode {
 			pw.println("##With question :");
 			pw.print(qExample.toString());
 			pw.println("#Answer is :");
-			pw.println(query.getResult().toString());
+			pw.println(res.toString());
 			pw.flush();
 			pw.close();
 			log.log(Level.INFO, "Answer output writing done");

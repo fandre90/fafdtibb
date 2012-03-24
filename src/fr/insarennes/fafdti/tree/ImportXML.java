@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.gram.FGram;
@@ -89,11 +90,12 @@ public class ImportXML {
 			//Construction du noeud avec la question
 			NamedNodeMap map = n.getAttributes();
 			String feat = map.getNamedItem(XmlConst.FEATURE).getNodeValue();
-			String test = map.getNamedItem(XmlConst.TEST).getNodeValue();
 			AttrType type = AttrType.getFromString(map.getNamedItem(XmlConst.TYPE).getNodeValue());
 			
-			if(type==AttrType.DISCRETE)
+			if(type==AttrType.DISCRETE){
+				String test = map.getNamedItem(XmlConst.TEST).getNodeValue();
 				res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat),type,test));
+			}
 			else if (type==AttrType.TEXT){
 				GramType gramtype = GramType.getFromString(map.getNamedItem(XmlConst.GRAM).getNodeValue());
 				if(gramtype==GramType.SGRAM){
@@ -110,8 +112,10 @@ public class ImportXML {
 					res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat), type, fgram));
 				}
 			}
-			else	//CONTINUOUS
+			else{	//CONTINUOUS
+				String test = map.getNamedItem(XmlConst.TEST).getNodeValue();
 				res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat),type,new Double(test)));
+			}
 			//appel récursif fils gauche et droit
 			NodeList sons = n.getChildNodes();
 			if(sons.getLength()!=2)
@@ -155,8 +159,8 @@ public class ImportXML {
 		return res;
 	}
 	
-	public DecisionTree getResult(){
-		return listTree.get(0);
+	public BaggingTrees getResult(){
+		return new BaggingTrees(listTree);
 	}
 	
 	public class XmlMalformedException extends FAFException{
@@ -183,21 +187,21 @@ public class ImportXML {
 			XmlExporter exp = new XmlExporter(xml.getResult(), "testimport");
 			exp.launch();
 			
-			GraphicExporter graph = new GraphicExporter(xml.getResult(), "testimport");
-			graph.launch();
-			if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
-				try {
-					Runtime.getRuntime().exec("dot -Tpng -otestimport.png testimport.dot");
-					Runtime.getRuntime().exec("display testimport.png");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					System.out.println("png export needs ImageMagick library installed");
-				}
-			}
-			else{
-				System.out.println("png export only available under Linux !");
-			}
+//			GraphicExporter graph = new GraphicExporter(xml.getResult(), "testimport");
+//			graph.launch();
+//			if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
+//				try {
+//					Runtime.getRuntime().exec("dot -Tpng -otestimport.png testimport.dot");
+//					Runtime.getRuntime().exec("display testimport.png");
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//					System.out.println("png export needs ImageMagick library installed");
+//				}
+//			}
+//			else{
+//				System.out.println("png export only available under Linux !");
+//			}
 	}
 
 }

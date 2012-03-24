@@ -1,5 +1,6 @@
 package fr.insarennes.fafdti.builder;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -10,6 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.bagging.BaggingStatChecker;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionTree;
@@ -22,22 +24,22 @@ import fr.insarennes.fafdti.visitors.XmlExporter;
 public class Launcher implements Observer {
 		Logger log = Logger.getLogger(Launcher.class);
 	
-		DecisionTreeHolder root;
-		DecisionTree result;
+		int nbBagging;
+		int baggingDone;
+		List<DecisionTreeHolder> roots;
 		String outXml;
 		
 		public Launcher(String inputNames, String inputData, 
 				String outputDir, String xmlOutput,
 				List<StoppingCriterion> stoppingList,
-				Criterion criterion) throws ParseException{
+				Criterion criterion,
+				int nbBagging) throws ParseException{
 			//attributes initialization
-			root = new DecisionTreeHolder();
-			result = null;
+			roots = new ArrayList<DecisionTreeHolder>(nbBagging);
 			outXml = xmlOutput;
+			this.nbBagging = nbBagging;
+			this.baggingDone = 0;
 			
-			//statistiques object creation
-			StatBuilder stats = new StatBuilder(1);
-			stats.addObserver(this);
 			//DotNamesInfos creation
 			Configuration conf = new Configuration();
 			FileSystem fileSystem;
@@ -49,46 +51,71 @@ public class Launcher implements Observer {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			//NodeBuilder creation
-			NodeBuilder nb = new NodeBuilder(featureSpec, 
-					inputData, outputDir,
-					criterion, 
-					root.getNodeSetter(), 
-					stoppingList,
-					stats);
-			//launch first node
-			Scheduler.INSTANCE.execute(nb);
+			//get data split
+			List<String> datasplit = splitData(inputData);
+			//launch every tree
+			for(int i=0 ; i<nbBagging ; i++){
+				//statistiques object creation
+				StatBuilder stats = new StatBuilder(1);
+				stats.addObserver(this);
+				//NodeBuilder creation
+				roots.set(i, new DecisionTreeHolder());
+				NodeBuilder nb = new NodeBuilder(featureSpec, 
+						datasplit.get(i), outputDir,
+						criterion, 
+						roots.get(i).getNodeSetter(), 
+						stoppingList,
+						stats);
+				//launch first node
+				Scheduler.INSTANCE.execute(nb);
+			}
+			
+			
 		}
 		
+		private List<String> splitData(String inputData) {
+			//TODO splitté le fichier en plusieurs fichiers 
+			//en fonction de nbBagging
+			List<String> res = new ArrayList<String>();
+			res.add(inputData);
+			return res;
+		}
+
 		public void update(Observable arg0, Object arg1) {
 			if(((StatBuilder)arg1).getNbPending()==0){
-				//stop scheduler
-				Scheduler.INSTANCE.shutdown();
-				log.info("Construction process done");
-				//get decision tree constructed
-				try {
-					result = root.getRoot();
-				} catch (FAFException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				baggingDone++;
+				
+				if(baggingDone==nbBagging){
+					//stop scheduler
+					Scheduler.INSTANCE.shutdown();
+					log.info("Construction process done");
+					//get decision trees constructed
+					List<DecisionTree> trees = new ArrayList<DecisionTree>();
+					for(int i=0 ; i<nbBagging ; i++){
+						try {
+							trees.add(roots.get(i).getRoot());
+						} catch (FAFException e) {
+							log.error(e.getMessage());
+						}
+					}
+					//bagging trees construction
+					BaggingTrees result = new BaggingTrees(trees);
+					//check it and stats
+					BaggingStatChecker check = new BaggingStatChecker(result);
+					check.launch();
+					if(!check.checkOK()){
+						log.error("Construction failed : pending found");
+						return;
+					}
+					log.info("Validation tree resul : check OK");
+					log.info("-------Stats-------");
+					log.info(check.toString());
+					log.info("-------------------");
+					//export xml
+					XmlExporter xml = new XmlExporter(result, outXml);
+					xml.launch();
+					log.info("Tree resulting exports in "+outXml+".xml");
 				}
-				//check it and stats
-				StatChecker check = new StatChecker();
-				result.accept(check);
-				if(!check.checkOK()){
-					log.error("Construction failed : pending found");
-					return;
-				}
-				log.info("Validation tree resul : check OK");
-				log.info("-------Stats-------");
-				log.info(check.toString());
-				log.info("-------------------");
-				//export xml
-				BaggingTrees bgts = new BaggingTrees(1);
-				bgts.setTree(0, result);
-				XmlExporter xml = new XmlExporter(bgts, outXml);
-				xml.launch();
-				log.info("Tree resulting exports in "+outXml+".xml");
 			}		
 		}
 }

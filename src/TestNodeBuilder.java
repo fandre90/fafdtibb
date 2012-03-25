@@ -11,9 +11,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.bagging.Launcher;
 import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
-import fr.insarennes.fafdti.builder.Launcher;
 import fr.insarennes.fafdti.builder.NodeBuilder;
 import fr.insarennes.fafdti.builder.Scheduler;
 import fr.insarennes.fafdti.builder.StatBuilder;

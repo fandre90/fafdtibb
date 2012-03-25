@@ -74,7 +74,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	protected StatBuilder stats;
 	
 	
-	private static int indexWorkDir = 0;
+	private static int indexWorkDir = -1;
 	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
 	private final String job2outDir = "continuous-questions";
@@ -91,6 +91,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			StatBuilder stats) {
 		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
+		incrIndexWorkDir();
 		this.workingDir = new Path(workingDir, Integer.toString(indexWorkDir));
 		this.criterion = criterion;
 		this.nodeSetter = nodeSetter;

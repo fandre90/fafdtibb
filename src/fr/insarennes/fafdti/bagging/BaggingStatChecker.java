@@ -1,5 +1,6 @@
 package fr.insarennes.fafdti.bagging;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.insarennes.fafdti.visitors.StatChecker;
@@ -13,6 +14,8 @@ public class BaggingStatChecker {
 	
 	public BaggingStatChecker(BaggingTrees trees){
 		this.trees = trees;
+		this.check = true;
+		this.stats = new ArrayList<String>();
 	}
 	
 	public void launch(){

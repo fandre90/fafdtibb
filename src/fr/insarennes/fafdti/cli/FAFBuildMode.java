@@ -16,6 +16,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import fr.insarennes.fafdti.bagging.Launcher;
 import fr.insarennes.fafdti.builder.*;
 import fr.insarennes.fafdti.builder.stopcriterion.DepthMax;
 import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;

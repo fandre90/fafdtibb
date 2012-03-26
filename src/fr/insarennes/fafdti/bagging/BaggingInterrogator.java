@@ -27,7 +27,8 @@ public class BaggingInterrogator {
 	
 	public LeafLabels query(QuestionExample qe){
 		List<LeafLabels> labels = new ArrayList<LeafLabels>();
-		for(int i=0 ; i<trees.getSize() ; i++){
+		int nbTrees = trees.getSize();
+		for(int i=0 ; i<nbTrees ; i++){
 			Interrogator inter = new Interrogator(qe);
 			trees.getTree(i).accept(inter);
 			labels.add(inter.getResult());
@@ -46,11 +47,11 @@ public class BaggingInterrogator {
 				String key = entry.getKey();
 				if(res.containsKey(key)){
 					Integer hm = howmany.get(key);
-					res.put(key, ((res.get(key)*hm) + entry.getValue())/(hm+1));
+					res.put(key, ((res.get(key)*hm) + entry.getValue()) / nbTrees);
 					howmany.put(key, hm+1);
 				}
 				else{
-					res.put(key,  entry.getValue());
+					res.put(key,  entry.getValue() / nbTrees);
 					howmany.put(key, 1);
 				}
 			}

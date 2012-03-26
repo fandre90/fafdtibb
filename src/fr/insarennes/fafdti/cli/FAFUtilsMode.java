@@ -37,6 +37,8 @@ public class FAFUtilsMode {
 	//pour choisir quel arbre exporter parmi tous ceux présent dans le bagging
 	public static final String INDEX = "index";
 	
+	public static final String DEFAULT_INDEX = "0";
+	
 	public static Options opts_mode;
 	public static Options opts_png;
 	public static Options opts_dot;
@@ -57,7 +59,7 @@ public class FAFUtilsMode {
 		Option png1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
 		Option png2 = new Option(OUT.substring(0,1), OUT, true, "Set .png filename (optional)");
 		Option png3 = new Option(DISPLAY.substring(0,1).toUpperCase(), DISPLAY, false, "Display image when generation done if checked (optional)");
-		Option png4 = new Option(INDEX.substring(0,1).toUpperCase(), INDEX, false, "Set the index of tree to be export among every trees in bagging input (optional)");
+		Option png4 = new Option(INDEX.substring(0,1).toUpperCase(), INDEX, true, "Set the index of tree to be export among every trees in bagging input (optional)");
 		png1.setRequired(true);
 		opts_png.addOption(png1);
 		opts_png.addOption(png2);
@@ -66,7 +68,7 @@ public class FAFUtilsMode {
 		//options pour mode dot
 		Option dot1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
 		Option dot2 = new Option(OUT.substring(0,1), OUT, true, "Set .dot filename (optional)");
-		Option dot3 = new Option(INDEX.substring(0,1).toUpperCase(), INDEX, false, "Set the index of tree to be export among every trees in bagging input (optional)");
+		Option dot3 = new Option(INDEX.substring(0,1).toUpperCase(), INDEX, true, "Set the index of tree to be export among every trees in bagging input (optional)");
 		dot1.setRequired(true);
 		opts_dot.addOption(dot1);
 		opts_dot.addOption(dot2);
@@ -139,7 +141,7 @@ public class FAFUtilsMode {
 		log.log(Level.INFO, "Xml import done");
 		
 		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(IN));
-		String index = cmdline.getOptionValue(INDEX, "0");
+		String index = cmdline.getOptionValue(INDEX, DEFAULT_INDEX);
 		//on fait le dot
 		GraphicExporter graph = new GraphicExporter(importer.getResult().getTree(Integer.parseInt(index)), out);
 		graph.launch();

@@ -42,6 +42,7 @@ public class FAFBuildMode {
 	public static final String MAXDEPTH = "maxdepth";
 	public static final String MINEXBYLEAF = "minex";
 	public static final String GAINMIN = "gainmin";
+	public static final String PERCENTBAGGING = "percent";
 	
 	public static Options opts;
 	
@@ -56,6 +57,7 @@ public class FAFBuildMode {
 	public static final String DEFAULT_MINEX = "1";
 	public static final String DEFAULT_GAINMIN = "10e-3";
 	public static final String DEFAULT_MAXDEPTH = Integer.MAX_VALUE+"";
+	public static final String DEFAULT_PERCENTBAGGING = "0.6";
 	
 	public static void initOptions(){
 		opts = new Options();
@@ -68,6 +70,7 @@ public class FAFBuildMode {
 		Option o7 = new Option(MINEXBYLEAF.substring(0,1), MINEXBYLEAF, true, "Choose the minimum number of examples by leaf (optional)");
 		Option o8 = new Option(GAINMIN.substring(0,1), GAINMIN, true, "Choose the minimum gain to make a node (optional)");
 		Option o9 = new Option(WORKINGDIR.substring(0,1), WORKINGDIR, true, "Set the directorie where hadoop will work (optional)");
+		Option o10 = new Option(PERCENTBAGGING.substring(0,1), PERCENTBAGGING, true, "Set the percentage of data file used to build each trees (optional)");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -79,6 +82,7 @@ public class FAFBuildMode {
 		opts.addOption(o7);
 		opts.addOption(o8);
 		opts.addOption(o9);
+		opts.addOption(o10);
 	}
 	
 	public static void displayHelp(){
@@ -120,6 +124,7 @@ public class FAFBuildMode {
 		String minex = cmdline.getOptionValue(MINEXBYLEAF, DEFAULT_MINEX);
 		String gainmin = cmdline.getOptionValue(GAINMIN, DEFAULT_GAINMIN);
 		String crit = cmdline.getOptionValue(CRITERION, DEFAULT_CRITERION);
+		String percent = cmdline.getOptionValue(PERCENTBAGGING, DEFAULT_PERCENTBAGGING);
 		
 		//construction des critères d'arrêt
 		List<StoppingCriterion> stopping = new ArrayList<StoppingCriterion>();
@@ -138,7 +143,7 @@ public class FAFBuildMode {
 		
 		//on lance le launcher
 		try {
-			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, Integer.parseInt(bagging));
+			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, Integer.parseInt(bagging), Double.parseDouble(percent));
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			log.error("ParseException : file "+names+".names malformed");
 		}

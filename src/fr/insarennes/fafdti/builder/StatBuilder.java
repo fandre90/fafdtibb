@@ -2,13 +2,23 @@ package fr.insarennes.fafdti.builder;
 
 import java.util.Observable;
 
+import org.apache.log4j.Logger;
+
+import fr.insarennes.fafdti.FAFException;
+
 public class StatBuilder extends Observable{
 	
+	private static Logger log = Logger.getLogger(StatBuilder.class);
+			
 	private int nbPendingLeft;
+	private int totalEx;
+	private int nbExClassified;
 	
 	public StatBuilder(int nbPendingLeft){
 		super();
 		this.nbPendingLeft = nbPendingLeft;
+		this.totalEx = 0;
+		this.nbExClassified = 0;
 	}
 	
 	synchronized public int getNbPending(){
@@ -24,6 +34,17 @@ public class StatBuilder extends Observable{
 		nbPendingLeft--;
 		this.setChanged();
 		this.notifyObservers(this);			
+	}
+	
+	synchronized public void setTotalEx(int tot){
+		totalEx = tot;
+	}
+	
+	synchronized public void addExClassified(int nbEx) throws FAFException{
+		nbExClassified += nbEx;
+		if(totalEx==0)
+			throw new FAFException("Set total before add examples classified");
+		log.info(nbExClassified / totalEx+"% examples classified");
 	}
 
 }

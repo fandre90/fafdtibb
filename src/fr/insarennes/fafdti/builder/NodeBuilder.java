@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.input.InputRequest;
 import org.apache.tools.ant.util.ReaderInputStream;
 
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
@@ -134,6 +135,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				Job job0 = setupJob0();
 				job0.waitForCompletion(false);
 				parentDistribution = readParentDistribution();
+				stats.setTotalEx(parentDistribution.getTotal());
 			}
 			System.out.println("parentDist = "+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
@@ -231,6 +233,11 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			nodeSetter.set(dtl);
 		} catch (CannotOverwriteTreeException e) {
 			log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Distribution leaf");
+		}
+		try {
+			stats.addExClassified(sum);
+		} catch (FAFException e) {
+			log.error("Cannot add stats of examples classified because total has not been set");
 		}
 		//un pending en moins
 		stats.decrementPending();

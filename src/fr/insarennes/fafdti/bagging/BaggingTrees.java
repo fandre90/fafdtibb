@@ -25,8 +25,12 @@ public class BaggingTrees {
 		return trees.get(index);
 	}
 	
+	public void setTree(DecisionTree tree){
+		trees.add(tree);
+	}
+	
 	public void setTree(int index, DecisionTree tree){
-		trees.set(index, tree);
+		trees.add(index, tree);
 	}
 	
 	public int getSize(){

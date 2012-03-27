@@ -7,7 +7,7 @@ HEAD="java -jar "
 JAR_DIR="../jar/"
 NAMES_DIR="../../FaF/res/examples/"
 DATA_DIR="../../FaF/res/examples/"
-XML_DIR="../"
+XML_DIR="../xml/"
 OUTPUT_DIR="../output/"
 #FAF jar
 BUILD=$JAR_DIR"fafbuild1.0.jar"
@@ -21,8 +21,8 @@ UTILSDOT_OPT="--utilsdot"
 #usage
 BUILD_USAGE=$BUILD_OPT" <filename of .names> <filename of .data>"
 QUERY_USAGE=$QUERY_OPT" <filename of .xml> <\"question\">"
-UTILSPNG_USAGE=$UTILSPNG_OPT" <filename of .png>"
-UTILSDOT_USAGE=$UTILSDOT_OPT" <filename of .dot>"
+UTILSPNG_USAGE=$UTILSPNG_OPT" <filename of .png> <tree number>"
+UTILSDOT_USAGE=$UTILSDOT_OPT" <filename of .dot> <tree number>"
 
 #output directories creation if they don't exist already
 if [ ! -d $OUTPUT_DIR ] ; then
@@ -67,8 +67,11 @@ fi
 if [ $1 == $BUILD_OPT ] ; then
 check_nb_param 3
 echo "##BUILD MODE"
+#clean log.log
+echo "" > log.log
+#get current date used for suffixed output
 dat=$(date +%s)
-$HEAD$BUILD -n $NAMES_DIR$2 -d $DATA_DIR$3 -o $XML_DIR$3 -m 1 -M 10 -g 0.1 -w ../../workdir/$dat
+$HEAD$BUILD -n $NAMES_DIR$2 -d $DATA_DIR$3 -o $XML_DIR$3$dat -b 2 -c entropy -m 1 -M 10 -g 0.1 -w ../../workdir/$dat
 
 #query mode
 elif [ $1 == $QUERY_OPT ] ; then
@@ -78,15 +81,15 @@ $HEAD$QUERY -i $XML_DIR$2 -q $3
 
 #utils png mode
 elif [ $1 == $UTILSPNG_OPT ] ; then
-check_nb_param 2
+check_nb_param 3
 echo "##UTILS PNG MODE"
-$HEAD$UTILS -p -i $XML_DIR$2 -o $OUTPUT_DIR$2 -D
+$HEAD$UTILS -p -i $XML_DIR$2 -o $OUTPUT_DIR$2$3 -D -I $3
 
 #utils dot mode
 elif [ $1 == $UTILSDOT_OPT ] ; then
-check_nb_param 2
+check_nb_param 3
 echo "##UTILS DOT MODE"
-$HEAD$UTILS -d -i $XML_DIR$2 -o $OUTPUT_DIR$2
+$HEAD$UTILS -d -i $XML_DIR$2 -o $OUTPUT_DIR$2$3 -I $3
 
 else
 display_help

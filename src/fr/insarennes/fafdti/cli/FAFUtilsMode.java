@@ -150,11 +150,11 @@ public class FAFUtilsMode {
 	public static void main(String[] args) {
 		LoggerManager.setupLogger();
 		
+		initOptions();
+		
 		if(args.length<1)
 			displayHelp();
-		else{
-			initOptions();
-			
+		else{			
 			//parsing du mode
 			String[] smode = new String[1];
 			smode[0] = args[0];

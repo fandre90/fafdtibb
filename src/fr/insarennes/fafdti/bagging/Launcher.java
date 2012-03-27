@@ -70,6 +70,7 @@ public class Launcher implements Observer {
 			}
 			//get data split
 			List<String> datasplit = splitData(inputData, outputDir, fileSystem);
+			log.info("Data file splitting done");
 			//launch every tree
 			for(int i=0 ; i<nbBagging ; i++){
 				//statistiques object creation
@@ -212,7 +213,9 @@ public class Launcher implements Observer {
 			}
 			log.info("Validation tree resul : check OK");
 			log.info("-------Stats-------");
-			log.info(check.toString());
+			String[] str = check.toString().split("\n");
+			for(String s : str)
+				log.info(s);
 			log.info("-------------------");
 			//export xml
 			XmlExporter xml = new XmlExporter(result, outXml);

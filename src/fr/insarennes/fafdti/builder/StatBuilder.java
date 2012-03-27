@@ -44,7 +44,7 @@ public class StatBuilder extends Observable{
 		nbExClassified += nbEx;
 		if(totalEx==0)
 			throw new FAFException("Set total before add examples classified");
-		log.info(nbExClassified / totalEx+"% examples classified");
+		log.info(((double)nbExClassified / (double)totalEx)*100.0+"% examples classified");
 	}
 
 }

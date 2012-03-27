@@ -35,7 +35,6 @@ public class BaggingInterrogator {
 		}
 		//on fait la moyenne des résultats
 		Map<String, Double> res = new HashMap<String, Double>();
-		Map<String, Integer> howmany = new HashMap<String, Integer>();
 		
 		Iterator<LeafLabels> it = labels.iterator();
 		while(it.hasNext()){
@@ -46,16 +45,21 @@ public class BaggingInterrogator {
 				Entry<String, Double> entry = it2.next();
 				String key = entry.getKey();
 				if(res.containsKey(key)){
-					Integer hm = howmany.get(key);
-					res.put(key, ((res.get(key)*hm) + entry.getValue()) / nbTrees);
-					howmany.put(key, hm+1);
+					res.put(key, (res.get(key) + entry.getValue()));
 				}
 				else{
-					res.put(key,  entry.getValue() / nbTrees);
-					howmany.put(key, 1);
+					res.put(key,  entry.getValue());
 				}
 			}
 		}
+		Set<Entry<String, Double>> sres = res.entrySet();
+		for(Entry<String, Double> e : sres){
+			String key = e.getKey();
+			res.put(key,e.getValue() / nbTrees);
+			System.out.println(res.get(key));
+		}
+			
+		//on construit le LeafLabels	
 		LeafLabels ll = null;
 		try {
 			ll = new LeafLabels(res);

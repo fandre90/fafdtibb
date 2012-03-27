@@ -17,6 +17,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.tree.ImportXML;
 import fr.insarennes.fafdti.visitors.GraphicExporter;
 
@@ -139,11 +140,18 @@ public class FAFUtilsMode {
 			return;
 		}
 		log.log(Level.INFO, "Xml import done");
+		BaggingTrees bt = importer.getResult();
 		
 		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(IN));
 		String index = cmdline.getOptionValue(INDEX, DEFAULT_INDEX);
+		int intindex = Integer.parseInt(index);
+		//test du paramètre de la valeur rentrée par l'utilisateur
+		if(intindex<0 || intindex>bt.getSize()){
+			log.error("Parameter <"+INDEX+"> must be an integer between 0 and the number of trees in bagging - 1");
+			System.exit(0);
+		}
 		//on fait le dot
-		GraphicExporter graph = new GraphicExporter(importer.getResult().getTree(Integer.parseInt(index)), out);
+		GraphicExporter graph = new GraphicExporter(bt.getTree(intindex), out);
 		graph.launch();
 		log.log(Level.INFO, "makedot done");
 	}

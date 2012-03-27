@@ -70,7 +70,7 @@ public class FAFBuildMode {
 		Option o7 = new Option(MINEXBYLEAF.substring(0,1), MINEXBYLEAF, true, "Choose the minimum number of examples by leaf (optional)");
 		Option o8 = new Option(GAINMIN.substring(0,1), GAINMIN, true, "Choose the minimum gain to make a node (optional)");
 		Option o9 = new Option(WORKINGDIR.substring(0,1), WORKINGDIR, true, "Set the directorie where hadoop will work (optional)");
-		Option o10 = new Option(PERCENTBAGGING.substring(0,1), PERCENTBAGGING, true, "Set the percentage of data file used to build each trees (optional)");
+		Option o10 = new Option(PERCENTBAGGING.substring(0,1), PERCENTBAGGING, true, "Set the percentage of data file (between 0 and 1) used to build each trees (optional)");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -125,12 +125,39 @@ public class FAFBuildMode {
 		String gainmin = cmdline.getOptionValue(GAINMIN, DEFAULT_GAINMIN);
 		String crit = cmdline.getOptionValue(CRITERION, DEFAULT_CRITERION);
 		String percent = cmdline.getOptionValue(PERCENTBAGGING, DEFAULT_PERCENTBAGGING);
+		int intbagging = Integer.parseInt(bagging);
+		int intmaxdepth = Integer.parseInt(maxdepth);
+		int intminex = Integer.parseInt(minex);
+		double doublegainmin = Double.parseDouble(gainmin);
+		double doublepercent = Double.parseDouble(percent);
+		
+		//verification des bornes des différents paramètres rentrés par l'utilisateur
+		if(intbagging<1){
+			log.error("Parameter <"+BAGGING+"> must be an integer greater or equal than 1");
+			System.exit(0);
+		}
+		if(intmaxdepth<1){
+			log.error("Parameter <"+MAXDEPTH+"> must be an integer greater or equal than 1");
+			System.exit(0);
+		}
+		if(intminex<1){
+			log.error("Parameter <"+MINEXBYLEAF+"> must be an integer greater or equal than 1");
+			System.exit(0);
+		}
+		if(doublegainmin<0.0 || doublegainmin>1.0){
+			log.error("Paramater <"+GAINMIN+"> must be a double between 0.0 and 1.0");
+			System.exit(0);
+		}
+		if(doublepercent<0.0 || doublepercent >1.0){
+			log.error("Paramater <"+PERCENTBAGGING+"> must be a double between 0.0 and 1.0");
+			System.exit(0);
+		}
 		
 		//construction des critères d'arrêt
 		List<StoppingCriterion> stopping = new ArrayList<StoppingCriterion>();
-		stopping.add(new DepthMax(Integer.parseInt(maxdepth)));
-		stopping.add(new ExampleMin(Integer.parseInt(minex)));
-		stopping.add(new GainMin(Double.parseDouble(gainmin)));
+		stopping.add(new DepthMax(intmaxdepth));
+		stopping.add(new ExampleMin(intminex));
+		stopping.add(new GainMin(doublegainmin));
 		
 		//construction du critère de construction
 		Criterion criterion = null;
@@ -143,7 +170,7 @@ public class FAFBuildMode {
 		
 		//on lance le launcher
 		try {
-			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, Integer.parseInt(bagging), Double.parseDouble(percent));
+			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, intbagging, doublepercent);
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			log.error("ParseException : file "+names+".names malformed");
 		}

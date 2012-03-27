@@ -148,8 +148,8 @@ public class FAFBuildMode {
 			log.error("Paramater <"+GAINMIN+"> must be a double between 0.0 and 1.0");
 			System.exit(0);
 		}
-		if(doublepercent<0.0 || doublepercent >1.0){
-			log.error("Paramater <"+PERCENTBAGGING+"> must be a double between 0.0 and 1.0");
+		if(doublepercent<=0.0 || doublepercent >1.0){
+			log.error("Paramater <"+PERCENTBAGGING+"> must be a double between 0.0 (excluded) and 1.0");
 			System.exit(0);
 		}
 		

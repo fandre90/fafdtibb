@@ -146,7 +146,7 @@ public class FAFUtilsMode {
 		String index = cmdline.getOptionValue(INDEX, DEFAULT_INDEX);
 		int intindex = Integer.parseInt(index);
 		//test du paramètre de la valeur rentrée par l'utilisateur
-		if(intindex<0 || intindex>bt.getSize()){
+		if(intindex<0 || intindex>=bt.getSize()){
 			log.error("Parameter <"+INDEX+"> must be an integer between 0 and the number of trees in bagging - 1");
 			System.exit(0);
 		}

@@ -55,7 +55,7 @@ public class QueryStater {
 			LeafLabels res = inter.query(qe);
 			String sres = res.getBestScore();
 			//OK ou pas
-			System.out.println(label);
+			//System.out.println(label);
 			if(sres.equals(label))
 				nbSucess++;
 			else nbError++;

@@ -172,7 +172,8 @@ public class FAFBuildMode {
 		try {
 			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, intbagging, doublepercent);
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
-			log.error("ParseException : file "+names+".names malformed");
+			log.error("File " + names + "malformed.");
+			log.error(e.getMessage());
 		}
 	}
 }

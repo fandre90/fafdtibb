@@ -100,7 +100,7 @@ public class XmlExporter implements DecisionTreeVisitor {
         		String ws = "";
         		for(int i=0 ; i<words.length ; i++)
         			ws+=words[i].toString()+XmlConst.DELIMITER;
-        		child.setAttribute("words", ws.substring(0, ws.length() - 2));
+        		child.setAttribute(XmlConst.WORDS, ws.substring(0, ws.length() - 1));
 
         	}
         }

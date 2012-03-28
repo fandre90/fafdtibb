@@ -16,11 +16,13 @@ UTILS=$JAR_DIR"fafutils1.0.jar"
 #options
 BUILD_OPT="--build"
 QUERY_OPT="--query"
+QUERYSTAT_OPT="--querystat"
 UTILSPNG_OPT="--utilspng"
 UTILSDOT_OPT="--utilsdot"
 #usage
 BUILD_USAGE=$BUILD_OPT" <filename of .names> <filename of .data>"
 QUERY_USAGE=$QUERY_OPT" <filename of .xml> <\"question\">"
+QUERYSTAT_USAGE=$QUERYSTAT_OPT" <filename of .xml> <filename of .data>"
 UTILSPNG_USAGE=$UTILSPNG_OPT" <filename of .png> <tree number>"
 UTILSDOT_USAGE=$UTILSDOT_OPT" <filename of .dot> <tree number>"
 
@@ -42,6 +44,7 @@ display_help(){
 	"
 	echo "[usage] :$BUILD_USAGE
 	|$QUERY_USAGE
+	|$QUERYSTAT_USAGE
 	|$UTILSPNG_USAGE
 	|$UTILSDOT_USAGE"
 	echo "Infos :
@@ -78,6 +81,12 @@ elif [ $1 == $QUERY_OPT ] ; then
 check_nb_param 3
 echo "##QUERY MODE"
 $HEAD$QUERY -i $XML_DIR$2 -q $3
+
+#query stats campaign mode
+elif [ $1 == $QUERYSTAT_OPT ] ; then
+check_nb_param 3
+echo "##QUERY STATS CAMPAIGN MODE"
+$HEAD$QUERY -i $XML_DIR$2 < $DATA_DIR$3".data"
 
 #utils png mode
 elif [ $1 == $UTILSPNG_OPT ] ; then

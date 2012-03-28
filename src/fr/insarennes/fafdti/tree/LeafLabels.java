@@ -3,6 +3,7 @@ package fr.insarennes.fafdti.tree;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import fr.insarennes.fafdti.FAFException;
@@ -34,6 +35,20 @@ public class LeafLabels {
 	public Map<String,Double> getLabels(){
 		//recopie
 		return new HashMap<String,Double>(labels);
+	}
+	
+	public String getBestScore(){
+		double bestScore = 0.0;
+		String res = "not_found";
+		Set<Entry<String, Double>> set = labels.entrySet();
+		for(Entry<String, Double> e : set){
+			double tmp = e.getValue();
+			if(tmp > bestScore){
+				bestScore = tmp;
+				res = e.getKey();	
+			}
+		}
+		return res;
 	}
 	
 	private boolean isValid(){

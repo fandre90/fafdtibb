@@ -56,7 +56,7 @@ public class BaggingInterrogator {
 		for(Entry<String, Double> e : sres){
 			String key = e.getKey();
 			res.put(key,e.getValue() / nbTrees);
-			System.out.println(res.get(key));
+			//System.out.println(res.get(key));
 		}
 			
 		//on construit le LeafLabels	

@@ -133,6 +133,7 @@ public class Launcher implements Observer {
 					writers.add(fw);
 				}
 				//construction of map<Line, List<Writer>> to optimize file reading
+				//warning : remove duplicate lines in a same file
 				Map<Integer, List<FSDataOutputStream>> map = new HashMap<Integer, List<FSDataOutputStream>>(total);
 				for(int i=0 ; i<nbBagging ; i++){
 					for(int j=0 ; j<nbLines ; j++){

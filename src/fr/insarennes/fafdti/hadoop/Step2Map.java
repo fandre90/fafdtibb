@@ -37,7 +37,6 @@ public class Step2Map extends MapperBase<Object, Text, IntWritable, ContinuousAt
 							new ContinuousAttrLabelPair(labelIndex, value);
 					IntWritable attrIndex = new IntWritable(i);
 					context.write(attrIndex, pair);
-					System.out.println(attrIndex + " " + pair);
 				}
 			}
 		} catch (FAFException e) {

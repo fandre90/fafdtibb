@@ -31,7 +31,7 @@ public class LabeledExample implements Writable {
 	public void readFields(DataInput in) throws IOException {
 		this.example.readFields(in);
 		this.label.readFields(in);
-		System.out.println("Got example " + this.example);
+		//System.out.println("Got example " + this.example);
 	}
 
 	@Override

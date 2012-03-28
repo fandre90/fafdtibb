@@ -1,6 +1,7 @@
 package fr.insarennes.fafdti.visitors;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -19,6 +20,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FSOutputSummer;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -159,7 +165,18 @@ public class XmlExporter implements DecisionTreeVisitor {
 		log.log(Level.DEBUG, "final stack size="+stack.size());
 		// export dans un fichier
 		log.log(Level.INFO, "Xml file creation");
-        File file = new File(filename+".xml");
+		FileSystem fs = null;
+		try {
+			fs = FileSystem.get(new Configuration());
+		} catch (IOException e1) {
+			log.error(e1.getMessage());
+		}
+		FSDataOutputStream file = null;
+		try {
+			file = fs.create(new Path("filename"+".xml"));
+		} catch (IOException e1) {
+			log.error(e1.getMessage());
+		}
         Result res = new StreamResult(file);
 
         DOMSource source = new DOMSource(doc);

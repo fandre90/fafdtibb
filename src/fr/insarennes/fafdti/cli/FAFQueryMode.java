@@ -102,7 +102,7 @@ public class FAFQueryMode {
 			StringTokenizer tk = new StringTokenizer(cmdline.getOptionValue(QUESTION));
 			List<String> qList = new ArrayList<String>();
 			while(tk.hasMoreElements())
-				qList.add(tk.nextToken(DELIMITER));
+				qList.add(tk.nextToken(DELIMITER).trim());
 			
 			QuestionExample qExample = new QuestionExample(qList);
 			log.log(Level.INFO, qExample.toString());

@@ -43,12 +43,12 @@ public class QueryStater {
 			//parsing de la ligne
 			int index = line.lastIndexOf(FAFQueryMode.DELIMITER);
 			String question = line.substring(0, index - 1);
-			String label = line.substring(index +1, line.length() - 1);
+			String label = line.substring(index + 1, line.length() - 1).trim();
 			//construction du QuestionExample
 			ArrayList<String> values = new ArrayList<String>();
 			StringTokenizer tokn = new StringTokenizer(question);
 			while(tokn.hasMoreElements())
-				values.add(tokn.nextToken(FAFQueryMode.DELIMITER));
+				values.add(tokn.nextToken(FAFQueryMode.DELIMITER).trim());
 			QuestionExample qe = new QuestionExample(values);
 			//question
 			BaggingInterrogator inter = new BaggingInterrogator(trees);

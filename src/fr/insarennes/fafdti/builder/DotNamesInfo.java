@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
@@ -20,7 +22,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.LineReader;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.TextAttrSpec.ExpertType;
 
 /**
  * Memory representation of a .names file.
@@ -40,6 +41,9 @@ public class DotNamesInfo extends HadoopConfStockable {
 	private Map<String, Integer> reverseLabelMap;
 	private ArrayList<AttrSpec> attributeSpec;
 	private String[] commentStartChars = { "|", "#" };
+	
+	private Map<String, GramType> gramTypeMap;
+	private Pattern discreteTypePattern;
 
 	/**
 	 * Read a .names file and stores the parsed information
@@ -50,6 +54,11 @@ public class DotNamesInfo extends HadoopConfStockable {
 	public DotNamesInfo(Path file, FileSystem fs) throws IOException,
 			ParseException {
 		this.attributeSpec = new ArrayList<AttrSpec>();
+		this.gramTypeMap = new HashMap<String, GramType>();
+		this.gramTypeMap.put("ngram", GramType.NGRAM);
+		this.gramTypeMap.put("fgram", GramType.FGRAM);
+		this.gramTypeMap.put("sgram", GramType.SGRAM);
+		this.discreteTypePattern = Pattern.compile("(.+,)+(.+)");
 		FSDataInputStream in = fs.open(file);
 		LineReader lr = new LineReader(in);
 		String labelLine = skipComments(lr);
@@ -79,7 +88,7 @@ public class DotNamesInfo extends HadoopConfStockable {
 				return "";
 			}
 			for (String startChar : commentStartChars) {
-				if (text.toString().startsWith(startChar) 
+				if (text.toString().startsWith(startChar)
 						|| text.toString().trim().equals("")) {
 					skipComments = true;
 				}
@@ -132,36 +141,40 @@ public class DotNamesInfo extends HadoopConfStockable {
 			throw new ParseException("Bad Line : " + attrLine);
 		String name = tokens[0].trim();
 		String typeStr = tokens[1].trim().toLowerCase();
-
-		if (typeStr.equals("discrete"))
+		Matcher discreteMatch = discreteTypePattern.matcher(typeStr);
+		if (typeStr.equals("discrete") || discreteMatch.matches()) {
 			this.attributeSpec.add(new DiscreteAttrSpec());
-		else if (typeStr.equals("continuous"))
+		} else if (typeStr.equals("continuous")) {
 			this.attributeSpec.add(new ContinuousAttrSpec());
-		else if (typeStr.equals("text")) {
-			int expertLength = 0;
-			int expertLevel = 0;
-			ExpertType expertType = null;
-			String[] paramTokens = tokens[2].trim().split("\\s+");
-			for (String param : paramTokens) {
-				String[] keyValTok = param.split("=");
-				String key = keyValTok[0];
-				String value = keyValTok[1];
-				if (key.equals("expert_level")) {
-					expertLevel = Integer.parseInt(value);
-				} else if (key.equals("expert_type")) {
-					// FIXME FIXME FIXME Deal with other expert types
-					expertType = TextAttrSpec.ExpertType.NGRAM;
-				} else if (key.equals("expert_length")) {
-					expertLength = Integer.parseInt(value);
-				}
-			}
-			this.attributeSpec.add(new TextAttrSpec(expertType, expertLength,
-					expertLevel));
+		} else if (typeStr.equals("text")) {
+			parseTextAttrOptions(tokens[2]);
 		} else
 			throw new ParseException("Bad attribute type : -" + typeStr + "-");
-
 	}
 
+	private void parseTextAttrOptions(String params) throws ParseException {
+		int expertLength = 0;
+		int expertLevel = 1;
+		GramType expertType = null;
+		String[] paramTokens = params.trim().split("\\s+");
+		for (String param : paramTokens) {
+			String[] keyValTok = param.split("=");
+			String key = keyValTok[0].trim();
+			String value = keyValTok[1].trim();
+			if (key.equals("expert_level")) {
+				expertLevel = Integer.parseInt(value);
+			} else if (key.equals("expert_type")) {
+				if(gramTypeMap.containsKey(value)) {
+					throw new ParseException("Invalid expert type: " + value);
+				}
+				expertType = gramTypeMap.get(value);
+			} else if (key.equals("expert_length")) {
+				expertLength = Integer.parseInt(value);
+			}
+		}
+		this.attributeSpec.add(new TextAttrSpec(expertType, expertLength,
+				expertLevel));
+	}
 	/**
 	 * Returns the index corresponding to a label.
 	 * This method allows the program to use number to represent

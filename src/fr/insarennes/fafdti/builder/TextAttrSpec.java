@@ -2,16 +2,12 @@ package fr.insarennes.fafdti.builder;
 
 
 public class TextAttrSpec extends AttrSpec {
-	
-	public enum ExpertType {
-		NGRAM
-	}
 
 	private int expertLevel;
 	private int expertLength;
-	private ExpertType expertType;
+	private GramType expertType;
 
-	public TextAttrSpec(ExpertType expertType, int expertLength, int expertLevel) {
+	public TextAttrSpec(GramType expertType, int expertLength, int expertLevel) {
 		this.expertType = expertType;
 		this.expertLength = expertLength;
 		this.expertLevel = expertLevel;

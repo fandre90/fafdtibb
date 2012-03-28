@@ -173,7 +173,7 @@ public class XmlExporter implements DecisionTreeVisitor {
 		}
 		FSDataOutputStream file = null;
 		try {
-			file = fs.create(new Path("filename"+".xml"));
+			file = fs.create(new Path(filename+".xml"));
 		} catch (IOException e1) {
 			log.error(e1.getMessage());
 		}

@@ -22,6 +22,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.LineReader;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.builder.gram.GramType;
 
 /**
  * Memory representation of a .names file.

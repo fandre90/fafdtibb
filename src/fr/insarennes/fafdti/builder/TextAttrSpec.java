@@ -1,5 +1,7 @@
 package fr.insarennes.fafdti.builder;
 
+import fr.insarennes.fafdti.builder.gram.GramType;
+
 
 public class TextAttrSpec extends AttrSpec {
 

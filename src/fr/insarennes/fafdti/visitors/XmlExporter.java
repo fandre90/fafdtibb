@@ -180,11 +180,12 @@ public class XmlExporter implements DecisionTreeVisitor {
         Result res = new StreamResult(file);
 
         DOMSource source = new DOMSource(doc);
-        
         Transformer xformer;
 		try {
 			xformer = TransformerFactory.newInstance().newTransformer();
 			xformer.transform(source, res);
+			file.flush();
+			file.close();
 			log.log(Level.INFO, "Xml generation done");
 			
 		} catch (Exception e) {

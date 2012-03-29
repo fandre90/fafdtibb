@@ -1,7 +1,10 @@
 package fr.insarennes.fafdti.builder.stopcriterion;
 
+import org.apache.log4j.Logger;
+
 public class DepthMax implements StoppingCriterion {
 
+	private static Logger log = Logger.getLogger(DepthMax.class);
 	private int depthMax;
 	
 	public DepthMax(int depth){
@@ -9,7 +12,10 @@ public class DepthMax implements StoppingCriterion {
 	}
 	@Override
 	public boolean mustStop(StopCriterionUtils node) {
-		return node.getDepth() >= depthMax;
+		boolean res = node.getDepth() >= depthMax;
+		if(res)
+			log.info("stopping criterion : max depth");
+		return res;
 	}
 
 }

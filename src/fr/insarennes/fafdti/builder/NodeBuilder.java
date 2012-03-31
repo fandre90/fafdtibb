@@ -128,7 +128,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			log.debug("parentDist = "+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
 			log.info("Thread "+id+ " : launching step1...");
-			job1.waitForCompletion(false);
+			job1.submit();
 			Job job2 = setupJob2(parentDistribution);
 			log.info("Thread "+id+ " : launching step2...");
 			job2.waitForCompletion(false);
@@ -152,12 +152,23 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				else nodeMaker();
 			}
 			
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+		} catch (Exception e){
+			log.error(e.getMessage());
+			log.error("Thread "+id+ " catched an exception : re-launch it");
+			FileSystem fs = null;
+			try {
+				fs = FileSystem.get(new Configuration());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			try {
+				fs.delete(workingDir, true);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			Scheduler.INSTANCE.execute(this);
 		}
 		log.info("Thread "+id+" finished (launched by "+parentInfos.getId()+")");
 	}

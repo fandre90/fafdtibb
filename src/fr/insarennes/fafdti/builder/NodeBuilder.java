@@ -79,16 +79,17 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			Criterion criterion, 
 			DecisionNodeSetter nodeSetter, 
 			List<StoppingCriterion> stopping,
-			StatBuilder stats) {
+			StatBuilder stats,
+			String baggingId) {
+		this.parentInfos = new ParentInfos(0, "launcher", baggingId);
 		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
-		this.id = Integer.toString(++indexWorkDir);
-		this.workingDir = new Path(workingDir, id);
 		this.criterion = criterion;
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
-		this.parentInfos = new ParentInfos(0, "launcher");
 		this.stats = stats;
+		this.id = parentInfos.getBaggingId()+"-"+Integer.toString(++indexWorkDir);
+		this.workingDir = new Path(workingDir, id);
 	}
 	
 	//Recursive constructor
@@ -103,14 +104,14 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			StatBuilder stats) {
 		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
-		this.id = Integer.toString(++indexWorkDir);
-		this.workingDir = new Path(workingDir, id);
 		this.criterion = criterion;
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
 		this.parentInfos = parentInfos;
 		this.parentDistribution = parentDistribution;
 		this.stats = stats;
+		this.id = parentInfos.getBaggingId()+"-"+Integer.toString(++indexWorkDir);
+		this.workingDir = new Path(workingDir, id);
 	}
 	
 	@Override
@@ -126,10 +127,13 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			}
 			log.debug("parentDist = "+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
-			job1.submit();
+			log.info("Thread "+id+ " : launching step1...");
+			job1.waitForCompletion(false);
 			Job job2 = setupJob2(parentDistribution);
+			log.info("Thread "+id+ " : launching step2...");
 			job2.waitForCompletion(false);
 			Job job3 = setupJob3();
+			log.info("Thread "+id+ " : launching step3...");
 			job3.waitForCompletion(false);
 			qLeftDistribution = readBestQuestion();
 			if(qLeftDistribution==null){
@@ -140,6 +144,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				rightDistribution.rate(criterion);
 				// Old API
 				JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
+				log.info("Thread "+id+ " : launching step4...");
 				JobClient.runJob(job4Conf);
 				if(this.mustStop()){
 					leafMaker();
@@ -175,7 +180,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		Path dataRes = new Path(this.workingDir,this.job4outDir);
 		Path yesdata = new Path(dataRes, "left");
 		Path nodata = new Path(dataRes, "right");
-		ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1, id);
+		ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1, id, parentInfos.getBaggingId());
 
 		NodeBuilder yesSon = new NodeBuilder(this.featureSpec, 
 				yesdata.toString(), 
@@ -334,6 +339,10 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				break;
 			}
 		}
+		if(inputFile == null){
+			log.warn("No part file found");
+			return "";
+		}
 		//System.out.println(inputFile.toString());
 		FSDataInputStream in = fileSystem.open(inputFile);
 		LineReader lr = new LineReader(in);
@@ -343,7 +352,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	}
 
 	private QuestionScoreLeftDistribution readBestQuestion() throws IOException {
-		String line = readFileFirstLine(new Path(workingDir, job3outDir));
+		Path path = new Path(workingDir, job3outDir);
+		String line = readFileFirstLine(path);
 		if(line.trim().equals("")){
 			log.warn("No best question generated");
 			return null;

@@ -83,7 +83,8 @@ public class Launcher implements Observer {
 						criterion, 
 						roots.get(i).getNodeSetter(), 
 						stoppingList,
-						stats);
+						stats,
+						String.valueOf(i));
 				//launch first node
 				Scheduler.INSTANCE.execute(nb);
 			}

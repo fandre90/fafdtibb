@@ -134,7 +134,7 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 	public void readFields(DataInput in) throws IOException {
 		score = in.readDouble();
 		int size = in.readInt();
-		System.out.println("Read: " + score + "," + size);
+		//System.out.println("Read: " + score + "," + size);
 		if (size != distributionVector.length) {
 			distributionVector = new int[size];
 		}
@@ -152,7 +152,7 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 	public void write(DataOutput out) throws IOException {
 		out.writeDouble(score);
 		out.writeInt(distributionVector.length);
-		System.out.println("Write: " + score + "," + distributionVector.length);
+		//System.out.println("Write: " + score + "," + distributionVector.length);
 		for (int i = 0; i < distributionVector.length; i++) {
 			out.writeInt(distributionVector[i]);
 		}

@@ -19,7 +19,7 @@ public class Step3Red extends
 			ScoreLeftDistribution scoreLeftDist = sLDist.getScoreLeftDistribution();
 			double curCriterionValue = scoreLeftDist.getScore();
 			if(bestSLDist == null || curCriterionValue < bestCriterionValue) {
-				System.out.println("Current= " + curCriterionValue + "; Best= " + bestCriterionValue);
+				//System.out.println("Current= " + curCriterionValue + "; Best= " + bestCriterionValue);
 				bestCriterionValue = curCriterionValue;
 				bestSLDist = (QuestionScoreLeftDistribution) sLDist.clone();
 			}

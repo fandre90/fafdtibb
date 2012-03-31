@@ -1,16 +1,9 @@
 package fr.insarennes.fafdti.builder;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.LineNumberReader;
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -18,7 +11,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -26,13 +18,10 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.input.InputRequest;
-import org.apache.tools.ant.util.ReaderInputStream;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
@@ -73,6 +62,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	protected QuestionScoreLeftDistribution qLeftDistribution;
 	protected ScoredDistributionVector rightDistribution;
 	protected StatBuilder stats;
+	protected String id;
 	
 	
 	private static int indexWorkDir = -1;
@@ -92,12 +82,12 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			StatBuilder stats) {
 		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
-		incrIndexWorkDir();
-		this.workingDir = new Path(workingDir, Integer.toString(indexWorkDir));
+		this.id = Integer.toString(++indexWorkDir);
+		this.workingDir = new Path(workingDir, id);
 		this.criterion = criterion;
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
-		this.parentInfos = new ParentInfos(0);
+		this.parentInfos = new ParentInfos(0, "launcher");
 		this.stats = stats;
 	}
 	
@@ -113,8 +103,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			StatBuilder stats) {
 		this.featureSpec = featureSpec;
 		this.inputDataPath = new Path(inputDataPath);
-		incrIndexWorkDir();
-		this.workingDir = new Path(workingDir, Integer.toString(indexWorkDir));
+		this.id = Integer.toString(++indexWorkDir);
+		this.workingDir = new Path(workingDir, id);
 		this.criterion = criterion;
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
@@ -123,12 +113,9 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		this.stats = stats;
 	}
 	
-	synchronized private static void incrIndexWorkDir(){
-		indexWorkDir++;
-	}
-	
 	@Override
 	public void run() {
+		log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
 		try {
 			if(parentDistribution==null){
 				
@@ -137,7 +124,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				parentDistribution = readParentDistribution();
 				stats.setTotalEx(parentDistribution.getTotal());
 			}
-			System.out.println("parentDist = "+parentDistribution.toString());
+			log.debug("parentDist = "+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
 			job1.submit();
 			Job job2 = setupJob2(parentDistribution);
@@ -147,18 +134,18 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			qLeftDistribution = readBestQuestion();
 			if(qLeftDistribution==null){
 				leafMaker();
-				return;
 			}
-			rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
-			rightDistribution.rate(criterion);
-			// Old API
-			JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
-			JobClient.runJob(job4Conf);
-			
-			if(this.mustStop()){
-				leafMaker();
+			else{
+				rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
+				rightDistribution.rate(criterion);
+				// Old API
+				JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
+				JobClient.runJob(job4Conf);
+				if(this.mustStop()){
+					leafMaker();
+				}
+				else nodeMaker();
 			}
-			else nodeMaker();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -167,6 +154,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+		log.info("Thread "+id+" finished (launched by "+parentInfos.getId()+")");
 	}
 	
 	private void nodeMaker(){
@@ -187,7 +175,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		Path dataRes = new Path(this.workingDir,this.job4outDir);
 		Path yesdata = new Path(dataRes, "left");
 		Path nodata = new Path(dataRes, "right");
-		ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1);
+		ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1, id);
 
 		NodeBuilder yesSon = new NodeBuilder(this.featureSpec, 
 				yesdata.toString(), 
@@ -331,7 +319,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	}
 
 	private String readFileFirstLine(Path inputDir) throws IOException {
-		System.out.println(inputDir.toString());
+		//System.out.println(inputDir.toString());
 		Configuration conf = new Configuration();
 		FileSystem fileSystem;
 		fileSystem = FileSystem.get(conf);

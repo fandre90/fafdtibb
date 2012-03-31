@@ -53,7 +53,7 @@ public class LabeledExample implements Writable {
 		strRepr = strRepr.substring(0, strRepr.length() - 1);
 		String[] lineTokens = strRepr.split(",");
 		String labelStr = lineTokens[lineTokens.length-1];
-		label.set(labelStr);
+		label.set(labelStr.trim());
 		List<String> values = new ArrayList<String>();
 		for(int i=0; i<lineTokens.length -1; i++) {
 			values.add(lineTokens[i].trim());

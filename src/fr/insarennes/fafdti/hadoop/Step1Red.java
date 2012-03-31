@@ -33,7 +33,7 @@ public class Step1Red extends
 			Context context) throws IOException, InterruptedException {
 		ScoredDistributionVector leftDist = new ScoredDistributionVector(
 				fs.numOfLabel());
-		System.out.println("Got: " + q + " " + q.hashCode());
+		//System.out.println("Got: " + q + " " + q.hashCode());
 		for (IntWritable i : labelIndexes) {
 			leftDist.incrStat(i.get());
 		}

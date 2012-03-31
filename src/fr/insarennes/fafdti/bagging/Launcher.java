@@ -180,8 +180,10 @@ public class Launcher implements Observer {
 		}
 
 		public void update(Observable arg0, Object arg1) {
-			if(((StatBuilder)arg1).getNbPending()==0){
-				incrBaggingDone();
+			if(((Integer)arg1).equals(0)){
+				synchronized(this){
+					baggingDone++;
+				}
 				log.info("One tree fully constructed");
 			}
 				
@@ -222,9 +224,5 @@ public class Launcher implements Observer {
 			XmlExporter xml = new XmlExporter(result, outXml);
 			xml.launch();
 			log.info("Tree resulting exports in "+outXml+".xml");
-		}
-		
-		synchronized private void incrBaggingDone(){
-			baggingDone++;
 		}
 }

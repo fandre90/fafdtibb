@@ -33,7 +33,7 @@ public class StatBuilder extends Observable{
 	synchronized public void decrementPending(){
 		nbPendingLeft--;
 		this.setChanged();
-		this.notifyObservers(this);			
+		this.notifyObservers(new Integer(nbPendingLeft));			
 	}
 	
 	synchronized public void setTotalEx(int tot){

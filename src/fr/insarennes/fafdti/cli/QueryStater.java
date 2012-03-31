@@ -64,8 +64,8 @@ public class QueryStater {
 	
 	public String getStats(){
 		int total = nbError+nbSucess;
-		String res = "Success classification rate = "+((double)nbSucess/(double)total)*100.0+"%";
-		res += " | Error classification rate = "+((double)nbError/(double)total)*100.0+"%";
+		String res = "Success classification rate = "+((double)nbSucess/(double)total)*100.0+"% ("+nbSucess+")";
+		res += " | Error classification rate = "+((double)nbError/(double)total)*100.0+"% ("+nbError+")";
 		return res;
 	}
 

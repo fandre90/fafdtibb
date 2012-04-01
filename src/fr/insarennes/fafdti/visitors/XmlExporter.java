@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -54,7 +55,7 @@ public class XmlExporter implements DecisionTreeVisitor {
 	String filename;
 	Stack<Element> stack;
 	
-	public XmlExporter(BaggingTrees bt, String filenam){
+	public XmlExporter(BaggingTrees bt, String filenam, String comment){
 		log = Logger.getLogger(XmlExporter.class);
 		// creation document
 		 DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
@@ -69,6 +70,10 @@ public class XmlExporter implements DecisionTreeVisitor {
 		baggingTrees = bt;
 		stack = new Stack<Element>();
 		
+		//add comments
+		Comment com = doc.createComment(comment);
+		doc.appendChild(com);
+				
 		Element trees = doc.createElement(XmlConst.TREES);
 		doc.appendChild(trees);
 		stack.push(trees);
@@ -166,13 +171,9 @@ public class XmlExporter implements DecisionTreeVisitor {
 		// export dans un fichier
 		log.log(Level.INFO, "Xml file creation");
 		FileSystem fs = null;
-		try {
-			fs = FileSystem.get(new Configuration());
-		} catch (IOException e1) {
-			log.error(e1.getMessage());
-		}
 		FSDataOutputStream file = null;
 		try {
+			fs = FileSystem.get(new Configuration());
 			file = fs.create(new Path(filename+".xml"));
 		} catch (IOException e1) {
 			log.error(e1.getMessage());
@@ -189,16 +190,12 @@ public class XmlExporter implements DecisionTreeVisitor {
 			log.log(Level.INFO, "Xml generation done");
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Writer w = new StringWriter();
-			PrintWriter pw = new PrintWriter(w);
-			e.printStackTrace(pw);
-			log.log(Level.INFO, w.toString());    
+			log.error(e.getMessage());    
 		}
 	}
 	
 	public static void main(String[] args) throws CannotOverwriteTreeException, InvalidProbabilityComputationException {
-		DecisionTreeQuestion gtree = new DecisionTreeQuestion(new Question(2,AttrType.TEXT,"t1"));
+		DecisionTreeQuestion gtree = new DecisionTreeQuestion(new Question(2,AttrType.DISCRETE,"t1"));
 		DecisionTreeQuestion ys = new DecisionTreeQuestion(new Question(0,AttrType.DISCRETE, "true"));
 		DecisionTreeQuestion ns = new DecisionTreeQuestion(new Question(1,AttrType.CONTINUOUS, 42));
 		DecisionTreeQuestion ns2 = new DecisionTreeQuestion(new Question(1,AttrType.CONTINUOUS, 55));
@@ -215,16 +212,16 @@ public class XmlExporter implements DecisionTreeVisitor {
 		Map<String,Double> n2 = new HashMap<String,Double>();
 		n2.put("ujhh", 0.99);
 		
-		ys.yesSetter().set(new DecisionTreeLeaf(new LeafLabels(m1)));
-		ys.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m2)));
+		ys.yesSetter().set(new DecisionTreeLeaf(new LeafLabels(m1), 1));
+		ys.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m2), 1));
 		ns.yesSetter().set(ns2);
-		ns.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m4)));
-		ns2.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m3)));
-		ns2.yesSetter().set(new DecisionTreeLeaf(new LeafLabels(n2)));
+		ns.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m4), 1));
+		ns2.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m3), 2));
+		ns2.yesSetter().set(new DecisionTreeLeaf(new LeafLabels(n2), 1));
 		
 		BaggingTrees btrees = new BaggingTrees(1);
 		btrees.setTree(0, gtree);
-		XmlExporter xml = new XmlExporter(btrees, "monxml");
+		XmlExporter xml = new XmlExporter(btrees, "monxml", "commentaires");
 		xml.launch();
 	}
 	

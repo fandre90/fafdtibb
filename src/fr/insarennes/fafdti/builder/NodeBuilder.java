@@ -158,11 +158,6 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			FileSystem fs = null;
 			try {
 				fs = FileSystem.get(new Configuration());
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			try {
 				fs.delete(workingDir, true);
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block

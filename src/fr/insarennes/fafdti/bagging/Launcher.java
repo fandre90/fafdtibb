@@ -43,19 +43,22 @@ public class Launcher implements Observer {
 		private String outXml;
 		private double baggingPercent;	//between 0 and 1
 		private final String baggingDir = "bagging-data";  
+		private String comment;
 		
 		public Launcher(String inputNames, String inputData, 
 				String outputDir, String xmlOutput,
 				List<StoppingCriterion> stoppingList,
 				Criterion criterion,
 				int nbBagging,
-				double baggingPercent) throws ParseException{
+				double baggingPercent,
+				String comment) throws ParseException{
 			//attributes initialization
 			this.roots = new ArrayList<DecisionTreeHolder>(nbBagging);
 			this.outXml = xmlOutput;
 			this.nbBagging = nbBagging;
 			this.baggingDone = 0;
 			this.baggingPercent = baggingPercent;
+			this.comment = comment;
 			
 			//launch process
 			//DotNamesInfos creation
@@ -134,7 +137,7 @@ public class Launcher implements Observer {
 					writers.add(fw);
 				}
 				//construction of map<Line, List<Writer>> to optimize file reading
-				//warning : remove duplicate lines in a same file
+				//warning : keep duplicate lines !
 				Map<Integer, List<FSDataOutputStream>> map = new HashMap<Integer, List<FSDataOutputStream>>(total);
 				for(int i=0 ; i<nbBagging ; i++){
 					for(int j=0 ; j<nbLines ; j++){
@@ -222,7 +225,7 @@ public class Launcher implements Observer {
 				log.info(s);
 			log.info("-------------------");
 			//export xml
-			XmlExporter xml = new XmlExporter(result, outXml);
+			XmlExporter xml = new XmlExporter(result, outXml, comment);
 			xml.launch();
 			log.info("Tree resulting exports in "+outXml+".xml");
 		}

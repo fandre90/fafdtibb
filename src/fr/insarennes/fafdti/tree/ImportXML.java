@@ -51,12 +51,8 @@ public class ImportXML {
 			File xml = new File(filename+".xml");
 			doc = constructeur.parse(xml);
 			
-		}catch(ParserConfigurationException pce){
-			log.log(Level.ERROR, "Erreur de configuration du parseur DOM");
-		}catch(SAXException se){
-			log.log(Level.ERROR, "Erreur lors du parsing du document");
-		}catch(IOException ioe){
-			log.log(Level.ERROR,"Erreur d'entrée/sortie");
+		} catch(Exception e){
+			log.error(e.getMessage());
 		}
 	}
 	
@@ -184,7 +180,7 @@ public class ImportXML {
 	public static void main(String[] args) throws FAFException{
 			ImportXML xml = new ImportXML("monxml");
 			xml.launch();
-			XmlExporter exp = new XmlExporter(xml.getResult(), "testimport");
+			XmlExporter exp = new XmlExporter(xml.getResult(), "testimport", "commentaire");
 			exp.launch();
 			
 //			GraphicExporter graph = new GraphicExporter(xml.getResult(), "testimport");

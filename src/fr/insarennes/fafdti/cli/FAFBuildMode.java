@@ -43,6 +43,7 @@ public class FAFBuildMode {
 	public static final String MINEXBYLEAF = "minex";
 	public static final String GAINMIN = "gainmin";
 	public static final String PERCENTBAGGING = "percent";
+	public static final String THREADS = "threads";
 	
 	public static Options opts;
 	
@@ -71,6 +72,7 @@ public class FAFBuildMode {
 		Option o8 = new Option(GAINMIN.substring(0,1), GAINMIN, true, "Choose the minimum gain to make a node (optional)");
 		Option o9 = new Option(WORKINGDIR.substring(0,1), WORKINGDIR, true, "Set the directorie where hadoop will work (optional)");
 		Option o10 = new Option(PERCENTBAGGING.substring(0,1), PERCENTBAGGING, true, "Set the percentage of data file (between 0 and 1) used to build each trees (optional)");
+		Option o11 = new Option(THREADS.substring(0,1), THREADS, true, "Set pool size of scheduler (optional)");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -83,6 +85,7 @@ public class FAFBuildMode {
 		opts.addOption(o8);
 		opts.addOption(o9);
 		opts.addOption(o10);
+		opts.addOption(o11);
 	}
 	
 	public static void displayHelp(){
@@ -117,6 +120,18 @@ public class FAFBuildMode {
 		log.log(Level.INFO, "names = "+names);
 		log.log(Level.INFO, "data = "+data);
 		log.log(Level.INFO, "output = "+out);
+		
+		//Set pool size if needed
+		if(cmdline.hasOption(THREADS)){
+			String s = cmdline.getOptionValue(THREADS);
+			int sint = Integer.parseInt(s);
+			if(sint<1){
+				log.error("Parameter <"+THREADS+"> must be an integer greater or equal than 1");
+				System.exit(0);
+			}
+			else
+				Scheduler.setPoolSize(sint);
+		}
 		
 		String workingdir = cmdline.getOptionValue(WORKINGDIR, DEFAULT_WORKING_DIR);
 		String bagging = cmdline.getOptionValue(BAGGING, DEFAULT_BAGGING);
@@ -168,9 +183,12 @@ public class FAFBuildMode {
 			System.exit(0);
 		}
 		
+		//construction du commentaire à insérer dans le fichier de sortie
+		String comment = "names = "+names+" , data = "+data+" , criterion = "+crit+" , maxdepth = "+maxdepth+" , minexamplesbyleaf = "+minex+" , gainmin = "+gainmin+" , bagging = "+bagging+" , datarate = "+percent;
+		
 		//on lance le launcher
 		try {
-			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, intbagging, doublepercent);
+			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, intbagging, doublepercent, comment);
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			log.error("File " + names + "malformed.");
 			log.error(e.getMessage());

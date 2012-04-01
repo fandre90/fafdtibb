@@ -45,7 +45,7 @@ public class TestNodeBuilder {
 		stopping.add(new DepthMax(5));
 		stopping.add(new ExampleMin(1));
 		stopping.add(new GainMin(0.1));
-		new Launcher(inputNames, inputData, outputDir0, outxml, stopping, new EntropyCriterion(), 1, 0.6);
+		new Launcher(inputNames, inputData, outputDir0, outxml, stopping, new EntropyCriterion(), 1, 0.6, "comments");
 //		scheduler.start();
 //		while(scheduler.isAlive());
 //		{

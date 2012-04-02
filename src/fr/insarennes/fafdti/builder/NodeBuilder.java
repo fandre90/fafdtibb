@@ -64,8 +64,6 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	protected StatBuilder stats;
 	protected String id;
 	
-	
-	private static int indexWorkDir = -1;
 	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
 	private final String job2outDir = "continuous-questions";
@@ -88,7 +86,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
 		this.stats = stats;
-		this.id = parentInfos.getBaggingId()+"-"+Integer.toString(++indexWorkDir);
+		this.id = parentInfos.getBaggingId()+"-"+Integer.toString(stats.getNextId());
 		this.workingDir = new Path(workingDir, id);
 	}
 	
@@ -110,7 +108,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		this.parentInfos = parentInfos;
 		this.parentDistribution = parentDistribution;
 		this.stats = stats;
-		this.id = parentInfos.getBaggingId()+"-"+Integer.toString(++indexWorkDir);
+		this.id = parentInfos.getBaggingId()+"-"+Integer.toString(stats.getNextId());
 		this.workingDir = new Path(workingDir, id);
 	}
 	
@@ -119,16 +117,21 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
 		try {
 			if(parentDistribution==null){
-				
+				log.info("Thread "+id+ " : launching step0...");
 				Job job0 = setupJob0();
 				job0.waitForCompletion(false);
+				if(!job0.isSuccessful()){
+					log.error("Thread "+id+ " : step0 failed, re-launch thread");
+					relaunch();
+					return;
+				}
 				parentDistribution = readParentDistribution();
 				stats.setTotalEx(parentDistribution.getTotal());
 			}
 			log.debug("parentDist = "+parentDistribution.toString());
 			Job job1 = setupJob1(parentDistribution);
 			log.info("Thread "+id+ " : launching step1...");
-			job1.submit();
+			job1.waitForCompletion(false);
 			Job job2 = setupJob2(parentDistribution);
 			log.info("Thread "+id+ " : launching step2...");
 			job2.waitForCompletion(false);
@@ -155,17 +158,21 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		} catch (Exception e){
 			log.error(e.getMessage());
 			log.error("Thread "+id+ " catched an exception : re-launch it");
-			FileSystem fs = null;
-			try {
-				fs = FileSystem.get(new Configuration());
-				fs.delete(workingDir, true);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			Scheduler.INSTANCE.execute(this);
+			relaunch();
 		}
 		log.info("Thread "+id+" finished (launched by "+parentInfos.getId()+")");
+	}
+	
+	private void relaunch(){
+		FileSystem fs = null;
+		try {
+			fs = FileSystem.get(new Configuration());
+			fs.delete(workingDir, true);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Scheduler.INSTANCE.execute(this);
 	}
 	
 	private void nodeMaker(){

@@ -13,12 +13,18 @@ public class StatBuilder extends Observable{
 	private int nbPendingLeft;
 	private int totalEx;
 	private int nbExClassified;
+	private int id;
 	
 	public StatBuilder(int nbPendingLeft){
 		super();
 		this.nbPendingLeft = nbPendingLeft;
 		this.totalEx = 0;
 		this.nbExClassified = 0;
+		this.id = -1;
+	}
+	
+	synchronized int getNextId(){
+		return ++id;
 	}
 	
 	synchronized public int getNbPending(){

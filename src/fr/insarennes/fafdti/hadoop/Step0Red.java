@@ -21,6 +21,7 @@ public class Step0Red extends ReducerBase<Text, IntWritable, Text, ScoredDistrib
 	@Override
 	protected void reduce(Text t, Iterable<IntWritable> etiquettes, Context context) 
 	throws IOException ,InterruptedException {
+		log.debug("dotNamesInfo="+fs.toString());
 		ScoredDistributionVector out = 
 				new ScoredDistributionVector(fs.numOfLabel());
 		for (IntWritable e : etiquettes) {

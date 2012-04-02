@@ -42,7 +42,7 @@ public class Step0Map extends Mapper<Object, Text, Text, IntWritable>{
 		while(st.hasMoreTokens()){
 			label = st.nextToken();
 		}
-		
+	
 		// Enlever le point final.
 		label = label.substring(0, label.length() - 1);
 		int index;

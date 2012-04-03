@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Timer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -20,6 +21,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.LineReader;
 import org.apache.log4j.Logger;
 
+import fr.insarennes.fafdti.Chrono;
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Util;
 import fr.insarennes.fafdti.builder.Criterion;
@@ -31,27 +33,38 @@ import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
+import fr.insarennes.fafdti.visitors.XmlConst;
 import fr.insarennes.fafdti.visitors.XmlExporter;
 
 
 public class Launcher implements Observer {
 		private Logger log = Logger.getLogger(Launcher.class);
-	
+		
+		//Number of trees constructed by bagging algorithm
 		private int nbBagging;
+		//Number of tree fully constructed
 		private int baggingDone;
+		//List of trees' roots
 		private List<DecisionTreeHolder> roots;
+		//Output path with filename (without extension)
 		private String outXml;
-		private double baggingPercent;	//between 0 and 1
-		private final String baggingDir = "bagging-data";  
-		private String comment;
+		//Rate of initial data to build each trees of bagging (between 0 and 1)
+		private double baggingPercent;
+		//Directory name where generated splitted data files
+		private final String baggingDir = "bagging-data";
+		//Comments to add in xml output
+		private Map<String,String> comment;
+		//Timer to get time to make process fully
+		private Chrono chrono;
 		
 		public Launcher(String inputNames, String inputData, 
-				String outputDir, String xmlOutput,
+				String outputDir, 	//working dir
+				String xmlOutput,
 				List<StoppingCriterion> stoppingList,
 				Criterion criterion,
 				int nbBagging,
 				double baggingPercent,
-				String comment) throws ParseException{
+				Map<String,String> comment) throws ParseException{
 			//attributes initialization
 			this.roots = new ArrayList<DecisionTreeHolder>(nbBagging);
 			this.outXml = xmlOutput;
@@ -60,6 +73,9 @@ public class Launcher implements Observer {
 			this.baggingPercent = baggingPercent;
 			this.comment = comment;
 			
+			//launch timer
+			chrono = new Chrono();
+			chrono.start();
 			//launch process
 			//DotNamesInfos creation
 			Configuration conf = new Configuration();
@@ -96,9 +112,11 @@ public class Launcher implements Observer {
 		private List<String> splitData(String inputData, String outputDir, FileSystem filesystem) {
 			List<String> res = new ArrayList<String>();
 			if(nbBagging==1){
+				comment.put(XmlConst.DATARATE, "1.0");
 				res.add(inputData);
 			}
 			else{
+				comment.put(XmlConst.DATARATE, String.valueOf(baggingPercent));
 				//count number of examples (=lines)
 				FSDataInputStream in = null;
 				try {
@@ -188,10 +206,16 @@ public class Launcher implements Observer {
 				synchronized(this){
 					baggingDone++;
 				}
-				log.info("One tree fully constructed");
+				log.info(baggingDone+" tree(s) fully constructed");
 			}
 				
 			if(baggingDone==nbBagging){
+				try {
+					chrono.stop();
+				} catch (FAFException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				finish();
 			}
 		}
@@ -219,12 +243,16 @@ public class Launcher implements Observer {
 				return;
 			}
 			log.info("Validation tree resul : check OK");
+			
+			long timer = chrono.getTimeInMinutes();
 			log.info("-------Stats-------");
+			log.info("Process done in "+timer+" minutes");
 			String[] str = check.toString().split("\n");
 			for(String s : str)
 				log.info(s);
 			log.info("-------------------");
 			//export xml
+			comment.put(XmlConst.TIME, String.valueOf(timer));
 			XmlExporter xml = new XmlExporter(result, outXml, comment);
 			xml.launch();
 			log.info("Tree resulting exports in "+outXml+".xml");

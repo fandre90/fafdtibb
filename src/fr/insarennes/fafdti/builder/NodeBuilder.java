@@ -117,70 +117,84 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	public void run() {
 		log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
 		try {
+			//JOB0
 			if(parentDistribution==null){
 				log.info("Thread "+id+ " : launching step0...");
 				Job job0 = setupJob0();
 				job0.waitForCompletion(false);
+				//****//
 				while(!job0.isSuccessful()){
 					log.info("Thread "+id+ " : RE-launching step0...");
 					deleteDir(job0outDir);
 					job0 = setupJob0();
 					job0.waitForCompletion(false);
 				}
+				//****//
+				//get initial distribution
 				parentDistribution = readParentDistribution();
 				stats.setTotalEx(parentDistribution.getTotal());
 			}
 			log.debug("parentDist = "+parentDistribution.toString());
-			
+			//JOB1
 			Job job1 = setupJob1(parentDistribution);
 			log.info("Thread "+id+ " : launching step1...");
 			job1.waitForCompletion(false);
+			//****//
 			while(!job1.isSuccessful()){
 				log.info("Thread "+id+ " : RE-launching step1...");
 				deleteDir(job1outDir);
 				job1 = setupJob1(parentDistribution);
 				job1.waitForCompletion(false);
 			}
-			
+			//****//
+			//JOB2
 			Job job2 = setupJob2(parentDistribution);
 			log.info("Thread "+id+ " : launching step2...");
 			job2.waitForCompletion(false);
+			//****//
 			while(!job2.isSuccessful()){
 				log.info("Thread "+id+ " : RE-launching step2...");
 				deleteDir(job2outDir);
 				job2 = setupJob2(parentDistribution);
 				job2.waitForCompletion(false);
 			}
-			
+			//****//
+			//JOB3
 			Job job3 = setupJob3();
 			log.info("Thread "+id+ " : launching step3...");
 			job3.waitForCompletion(false);
+			//****//
 			while(!job3.isSuccessful()){
 				log.info("Thread "+id+ " : RE-launching step3...");
 				deleteDir(job3outDir);
 				job3 = setupJob3();
 				job3.waitForCompletion(false);
 			}
-				
+			//****//
+			//get best question	
 			qLeftDistribution = readBestQuestion();
-			
+			//if no best question : make a leaf
 			if(qLeftDistribution==null){
 				leafMaker();
 			}
+			//else
 			else{
+				//compute right distribution from left one
 				rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
 				rightDistribution.rate(criterion);
-				
+				//JOB4
 				// Old API
 				JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
 				log.info("Thread "+id+ " : launching step4...");
 				RunningJob rj4 = JobClient.runJob(job4Conf);
+				//****//
 				while(!rj4.isSuccessful()){
 					log.info("Thread "+id+ " : RE-launching step4...");
 					deleteDir(job4outDir);
 					job4Conf = setupJob4(qLeftDistribution.getQuestion());
 					rj4 = JobClient.runJob(job4Conf);
 				}
+				//****//
 				
 				if(this.mustStop()){
 					leafMaker();
@@ -191,11 +205,14 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			log.info("Thread "+id+" finished (launched by "+parentInfos.getId()+")");
 			
 		} catch (Exception e){
+			//if catch an exception : relaunch full thread
 			log.error(e.getMessage());
 			log.error("Thread "+id+ " catched an exception : re-launch it");
 			relaunch();
 		}
 	}
+	
+	//*******************relaunching utils methods*******************//
 	
 	private void deleteDir(String dir){
 		FileSystem fs = null;
@@ -220,6 +237,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		deleteDir(job3outDir);
 		deleteDir(job4outDir);
 	}
+	
+	//*******************Construction methods************//
 	
 	private void nodeMaker(){
 		log.log(Level.INFO, "Making a question node...");
@@ -294,6 +313,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		//un pending en moins
 		stats.decrementPending();
 	}
+	
+	//***************setup JOB methods********************//
 	
 	private Job setupJob0() throws IOException {
 		Configuration conf = new Configuration();
@@ -381,7 +402,47 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		FileOutputFormat.setOutputPath(job, outputDir);
 		return job;
 	}
+	
+	/*
+	 * private Job setupJob4(Question bestQuestion) throws IOException {
+	 * Configuration conf = new Configuration(); bestQuestion.toConf(conf); Job
+	 * job = new Job(conf, "Positive and negative examples separation");
+	 * 
+	 * job.setOutputKeyClass(NullWritable.class);
+	 * job.setOutputValueClass(LabeledExample.class);
+	 * 
+	 * job.setMapperClass(Step4Map.class);
+	 * //job.setReducerClass(Step4Red.class);
+	 * job.setInputFormatClass(TextInputFormat.class);
+	 * job.setOutputFormatClass(NullOutputFormat.class);
+	 * //MultipleOutputs.addNamedOutput(job, "text", TextOutputFormat.class, //
+	 * NullWritable.class, LabeledExample.class);
+	 * 
+	 * FileInputFormat.addInputPath(job, inputDataPath); Path outputDir = new
+	 * Path(workingDir, job4outDir); FileOutputFormat.setOutputPath(job,
+	 * outputDir); return job; }
+	 */
+	
+	@SuppressWarnings("deprecation")
+	private JobConf setupJob4(Question bestQuestion) throws IOException {
+		JobConf jobConf = new JobConf(NodeBuilder.class);
+		bestQuestion.toConf(jobConf);
+		jobConf.setOutputKeyClass(Text.class);
+		jobConf.setOutputValueClass(LabeledExample.class);
+		jobConf.setMapperClass(Step4Map.class);
+		jobConf.setReducerClass(Step4Red.class);
+		jobConf.setInputFormat(org.apache.hadoop.mapred.TextInputFormat.class);
+		org.apache.hadoop.mapred.FileInputFormat.setInputPaths(jobConf,
+				inputDataPath);
+		jobConf.setOutputFormat(SplitExampleMultipleOutputFormat.class);
+		Path outputDir = new Path(workingDir, job4outDir);
+		org.apache.hadoop.mapred.FileOutputFormat.setOutputPath(jobConf,
+				outputDir);
+		return jobConf;
+	}
 
+	//****************Reading results utils methods********//
+	
 	private String readFileFirstLine(Path inputDir) throws IOException {
 		//System.out.println(inputDir.toString());
 		Configuration conf = new Configuration();
@@ -427,44 +488,9 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		String tokens[] = line.split("\\s+");
 		return new ScoredDistributionVector(tokens[tokens.length - 1]);
 	}
-
-	/*
-	 * private Job setupJob4(Question bestQuestion) throws IOException {
-	 * Configuration conf = new Configuration(); bestQuestion.toConf(conf); Job
-	 * job = new Job(conf, "Positive and negative examples separation");
-	 * 
-	 * job.setOutputKeyClass(NullWritable.class);
-	 * job.setOutputValueClass(LabeledExample.class);
-	 * 
-	 * job.setMapperClass(Step4Map.class);
-	 * //job.setReducerClass(Step4Red.class);
-	 * job.setInputFormatClass(TextInputFormat.class);
-	 * job.setOutputFormatClass(NullOutputFormat.class);
-	 * //MultipleOutputs.addNamedOutput(job, "text", TextOutputFormat.class, //
-	 * NullWritable.class, LabeledExample.class);
-	 * 
-	 * FileInputFormat.addInputPath(job, inputDataPath); Path outputDir = new
-	 * Path(workingDir, job4outDir); FileOutputFormat.setOutputPath(job,
-	 * outputDir); return job; }
-	 */
 	
-	@SuppressWarnings("deprecation")
-	private JobConf setupJob4(Question bestQuestion) throws IOException {
-		JobConf jobConf = new JobConf(NodeBuilder.class);
-		bestQuestion.toConf(jobConf);
-		jobConf.setOutputKeyClass(Text.class);
-		jobConf.setOutputValueClass(LabeledExample.class);
-		jobConf.setMapperClass(Step4Map.class);
-		jobConf.setReducerClass(Step4Red.class);
-		jobConf.setInputFormat(org.apache.hadoop.mapred.TextInputFormat.class);
-		org.apache.hadoop.mapred.FileInputFormat.setInputPaths(jobConf,
-				inputDataPath);
-		jobConf.setOutputFormat(SplitExampleMultipleOutputFormat.class);
-		Path outputDir = new Path(workingDir, job4outDir);
-		org.apache.hadoop.mapred.FileOutputFormat.setOutputPath(jobConf,
-				outputDir);
-		return jobConf;
-	}
+	
+	//*****************stopping utils methods************//
 	
 	private boolean mustStop(){
 		for(StoppingCriterion s : stopping)		

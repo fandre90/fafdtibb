@@ -4,7 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -22,6 +24,7 @@ import fr.insarennes.fafdti.builder.stopcriterion.DepthMax;
 import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
 import fr.insarennes.fafdti.builder.stopcriterion.GainMin;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
+import fr.insarennes.fafdti.visitors.XmlConst;
 
 public class FAFBuildMode {
 	
@@ -185,8 +188,14 @@ public class FAFBuildMode {
 		}
 		
 		//construction du commentaire à insérer dans le fichier de sortie
-		String comment = "names = "+names+" , data = "+data+" , criterion = "+crit+" , maxdepth = "+maxdepth+" , minexamplesbyleaf = "+minex+" , gainmin = "+gainmin+" , bagging = "+bagging+" , datarate = "+percent;
-		
+		Map<String,String> comment = new HashMap<String,String>();
+		comment.put(XmlConst.NAMES, names);
+		comment.put(XmlConst.DATA, data);
+		comment.put(XmlConst.CRITERION, crit);
+		comment.put(XmlConst.MAXDEPTH, maxdepth);
+		comment.put(XmlConst.MINEX, minex);
+		comment.put(XmlConst.GAINMIN, gainmin);
+		comment.put(XmlConst.BAGGING, bagging);
 		//on lance le launcher
 		try {
 			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, intbagging, doublepercent, comment);

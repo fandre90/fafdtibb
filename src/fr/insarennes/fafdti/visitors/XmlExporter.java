@@ -55,7 +55,7 @@ public class XmlExporter implements DecisionTreeVisitor {
 	String filename;
 	Stack<Element> stack;
 	
-	public XmlExporter(BaggingTrees bt, String filenam, String comment){
+	public XmlExporter(BaggingTrees bt, String filenam, Map<String,String> comments){
 		log = Logger.getLogger(XmlExporter.class);
 		// creation document
 		 DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
@@ -70,13 +70,17 @@ public class XmlExporter implements DecisionTreeVisitor {
 		baggingTrees = bt;
 		stack = new Stack<Element>();
 		
-		//add comments
-		Comment com = doc.createComment(comment);
-		doc.appendChild(com);
-				
+		//add main trees root
 		Element trees = doc.createElement(XmlConst.TREES);
 		doc.appendChild(trees);
 		stack.push(trees);
+		
+		//add building attributes
+		Element buildopts = doc.createElement(XmlConst.BUILDOPTS);
+		Set<Entry<String,String>> set = comments.entrySet();
+		for(Entry<String,String> e : set)
+			buildopts.setAttribute(e.getKey(), e.getValue());
+		trees.appendChild(buildopts);
 	}
 	
 	public void launch(){
@@ -218,11 +222,11 @@ public class XmlExporter implements DecisionTreeVisitor {
 		ns.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m4), 1));
 		ns2.noSetter().set(new DecisionTreeLeaf(new LeafLabels(m3), 2));
 		ns2.yesSetter().set(new DecisionTreeLeaf(new LeafLabels(n2), 1));
-		
-		BaggingTrees btrees = new BaggingTrees(1);
-		btrees.setTree(0, gtree);
-		XmlExporter xml = new XmlExporter(btrees, "monxml", "commentaires");
-		xml.launch();
+//		
+//		BaggingTrees btrees = new BaggingTrees(1);
+//		btrees.setTree(0, gtree);
+//		XmlExporter xml = new XmlExporter(btrees, "monxml", "commentaires");
+//		xml.launch();
 	}
 	
 }

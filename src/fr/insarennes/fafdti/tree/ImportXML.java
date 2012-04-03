@@ -62,8 +62,9 @@ public class ImportXML {
 		Element root = doc.getDocumentElement();
 		// On recupere ses fils : tree
 		NodeList liste = root.getChildNodes();
-
-	    for (int i = 0; i < liste.getLength(); i++) {
+		
+		//warning = node 0 = building options
+	    for (int i = 1; i < liste.getLength(); i++) {
 	        Node noeud = liste.item(i);
 	        DecisionTree tree = buildOneTree(noeud);
 	        listTree.add(tree);
@@ -180,8 +181,8 @@ public class ImportXML {
 	public static void main(String[] args) throws FAFException{
 			ImportXML xml = new ImportXML("monxml");
 			xml.launch();
-			XmlExporter exp = new XmlExporter(xml.getResult(), "testimport", "commentaire");
-			exp.launch();
+//			XmlExporter exp = new XmlExporter(xml.getResult(), "testimport", "commentaire");
+//			exp.launch();
 			
 //			GraphicExporter graph = new GraphicExporter(xml.getResult(), "testimport");
 //			graph.launch();

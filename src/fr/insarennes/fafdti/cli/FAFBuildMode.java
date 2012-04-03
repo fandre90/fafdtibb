@@ -129,8 +129,9 @@ public class FAFBuildMode {
 				log.error("Parameter <"+THREADS+"> must be an integer greater or equal than 1");
 				System.exit(0);
 			}
-			else
+			else{
 				Scheduler.setPoolSize(sint);
+			}
 		}
 		
 		String workingdir = cmdline.getOptionValue(WORKINGDIR, DEFAULT_WORKING_DIR);

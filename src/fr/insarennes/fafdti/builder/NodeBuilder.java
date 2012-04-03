@@ -14,6 +14,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -120,59 +121,104 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 				log.info("Thread "+id+ " : launching step0...");
 				Job job0 = setupJob0();
 				job0.waitForCompletion(false);
-				if(!job0.isSuccessful()){
-					log.error("Thread "+id+ " : step0 failed, re-launch thread");
-					relaunch();
-					return;
+				while(!job0.isSuccessful()){
+					log.info("Thread "+id+ " : RE-launching step0...");
+					deleteDir(job0outDir);
+					job0 = setupJob0();
+					job0.waitForCompletion(false);
 				}
 				parentDistribution = readParentDistribution();
 				stats.setTotalEx(parentDistribution.getTotal());
 			}
 			log.debug("parentDist = "+parentDistribution.toString());
+			
 			Job job1 = setupJob1(parentDistribution);
 			log.info("Thread "+id+ " : launching step1...");
 			job1.waitForCompletion(false);
+			while(!job1.isSuccessful()){
+				log.info("Thread "+id+ " : RE-launching step1...");
+				deleteDir(job1outDir);
+				job1 = setupJob1(parentDistribution);
+				job1.waitForCompletion(false);
+			}
+			
 			Job job2 = setupJob2(parentDistribution);
 			log.info("Thread "+id+ " : launching step2...");
 			job2.waitForCompletion(false);
+			while(!job2.isSuccessful()){
+				log.info("Thread "+id+ " : RE-launching step2...");
+				deleteDir(job2outDir);
+				job2 = setupJob2(parentDistribution);
+				job2.waitForCompletion(false);
+			}
+			
 			Job job3 = setupJob3();
 			log.info("Thread "+id+ " : launching step3...");
 			job3.waitForCompletion(false);
+			while(!job3.isSuccessful()){
+				log.info("Thread "+id+ " : RE-launching step3...");
+				deleteDir(job3outDir);
+				job3 = setupJob3();
+				job3.waitForCompletion(false);
+			}
+				
 			qLeftDistribution = readBestQuestion();
+			
 			if(qLeftDistribution==null){
 				leafMaker();
 			}
 			else{
 				rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
 				rightDistribution.rate(criterion);
+				
 				// Old API
 				JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
 				log.info("Thread "+id+ " : launching step4...");
-				JobClient.runJob(job4Conf);
+				RunningJob rj4 = JobClient.runJob(job4Conf);
+				while(!rj4.isSuccessful()){
+					log.info("Thread "+id+ " : RE-launching step4...");
+					deleteDir(job4outDir);
+					job4Conf = setupJob4(qLeftDistribution.getQuestion());
+					rj4 = JobClient.runJob(job4Conf);
+				}
+				
 				if(this.mustStop()){
 					leafMaker();
 				}
 				else nodeMaker();
 			}
+		
+			log.info("Thread "+id+" finished (launched by "+parentInfos.getId()+")");
 			
 		} catch (Exception e){
 			log.error(e.getMessage());
 			log.error("Thread "+id+ " catched an exception : re-launch it");
 			relaunch();
 		}
-		log.info("Thread "+id+" finished (launched by "+parentInfos.getId()+")");
 	}
 	
-	private void relaunch(){
+	private void deleteDir(String dir){
 		FileSystem fs = null;
 		try {
 			fs = FileSystem.get(new Configuration());
-			fs.delete(workingDir, true);
+			fs.delete(new Path(workingDir,dir), true);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+	}
+	
+	private void relaunch(){
+		deleteAllDirs();
 		Scheduler.INSTANCE.execute(this);
+	}
+	
+	private void deleteAllDirs(){
+		deleteDir(job0outDir);
+		deleteDir(job1outDir);
+		deleteDir(job2outDir);
+		deleteDir(job3outDir);
+		deleteDir(job4outDir);
 	}
 	
 	private void nodeMaker(){

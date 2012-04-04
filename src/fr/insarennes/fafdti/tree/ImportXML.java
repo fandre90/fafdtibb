@@ -36,10 +36,12 @@ public class ImportXML {
 	private Logger log;
 	private Document doc;
 	private List<DecisionTree> listTree;
+	private Map<String, String> buildopts;
 	
 	public ImportXML(String filename){
 		log = Logger.getLogger(ImportXML.class);
 		listTree = new ArrayList<DecisionTree>();
+		buildopts = new HashMap<String, String>();
 		try{
 			// création d'une fabrique de documents
 			DocumentBuilderFactory fabrique = DocumentBuilderFactory.newInstance();
@@ -63,7 +65,15 @@ public class ImportXML {
 		// On recupere ses fils : tree
 		NodeList liste = root.getChildNodes();
 		
-		//warning = node 0 = building options
+		//node0 = buildopts
+		Node opts = liste.item(0);
+		NamedNodeMap map = opts.getAttributes();
+		for(int i=0 ; i<map.getLength() ; i++){
+			Node item = map.item(i);
+			buildopts.put(item.getNodeName(), item.getNodeValue());
+		}
+		
+		//others nodes = tree
 	    for (int i = 1; i < liste.getLength(); i++) {
 	        Node noeud = liste.item(i);
 	        DecisionTree tree = buildOneTree(noeud);
@@ -158,6 +168,10 @@ public class ImportXML {
 	
 	public BaggingTrees getResult(){
 		return new BaggingTrees(listTree);
+	}
+	
+	public Map<String,String> getBuildingParameters(){
+		return buildopts;
 	}
 	
 	public class XmlMalformedException extends FAFException{

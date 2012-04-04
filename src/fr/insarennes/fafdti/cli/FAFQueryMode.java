@@ -14,7 +14,6 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Level;
@@ -22,9 +21,9 @@ import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingInterrogator;
+import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.tree.ImportXML;
 import fr.insarennes.fafdti.tree.LeafLabels;
-import fr.insarennes.fafdti.visitors.Interrogator;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 
 
@@ -86,14 +85,34 @@ public class FAFQueryMode {
 		
 		//si pas de question, on lance une session de stats sur l'entrée standart
 		if(!cmdline.hasOption(QUESTION)){
-			QueryStater stater = new QueryStater(cmdline.getOptionValue(IN));
+			//Importer bagging trees
+			String xmlInput = cmdline.getOptionValue(IN);
+			BaggingTrees trees = null;
+			ImportXML importer = new ImportXML(xmlInput);
+			try {
+				importer.launch();
+			} catch (FAFException e) {
+				log.error("Xml import failed");
+				System.exit(0);
+			}
+			trees = importer.getResult();
+			//Launch stater
+			QueryStater stater = new QueryStater(trees);
 			try {
 				stater.launch();
 			} catch (IOException e) {
 				log.error("Error occured while reading standard input");
 				System.exit(0);
+			} catch (FAFException e) {
+				log.error(e.getMessage());
+				System.exit(0);
 			}
-			log.info(stater.getStats());
+			//log result in console
+			log.info(stater.getFastResult());			
+			//Make html output
+			HtmlStater html = new HtmlStater(importer.getBuildingParameters(), stater);
+			String output = cmdline.getOptionValue(OUT, xmlInput);
+			html.make(output);
 		}
 			
 		//sinon on pose la question normalement

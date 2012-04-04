@@ -3,8 +3,10 @@ package fr.insarennes.fafdti.cli;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -23,20 +25,28 @@ public class QueryStater {
 	private BaggingTrees trees;
 	private int nbError;
 	private int nbSucess;
+	private Map<String, Integer> searchByLabel;
+	private Map<String, Integer> foundByLabel;
+	private Map<String, Integer> correctByLabel;
+	private Map<String, Integer> errorByLabel;
+	private List<Map<String,Integer>> listMaps;
 	
-	public QueryStater(String xmlInput){
+	public QueryStater(BaggingTrees trees){
 		nbError = 0;
 		nbSucess = 0;
-		ImportXML importer = new ImportXML(xmlInput);
-		try {
-			importer.launch();
-		} catch (FAFException e) {
-			log.error("Xml import failed");
-		}
-		trees = importer.getResult();
+		this.trees = trees;
+		searchByLabel = new HashMap<String, Integer>();
+		foundByLabel = new HashMap<String, Integer>();
+		correctByLabel = new HashMap<String, Integer>();
+		errorByLabel = new HashMap<String, Integer>();
+		listMaps = new ArrayList<Map<String,Integer>>();
+		listMaps.add(searchByLabel);
+		listMaps.add(correctByLabel);
+		listMaps.add(errorByLabel);
+		listMaps.add(foundByLabel);
 	}
 	
-	public void launch() throws IOException{
+	public void launch() throws IOException, FAFException{
 		BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
 		String line = "";
 		while((line=buffer.readLine()) != null){
@@ -56,17 +66,57 @@ public class QueryStater {
 			String sres = res.getBestScore();
 			//OK ou pas
 			//System.out.println(label);
-			if(sres.equals(label))
+			if(sres.equals(label)){
 				nbSucess++;
-			else nbError++;
+				incrInMap(correctByLabel, sres);
+			}
+			else {
+				nbError++;
+				incrInMap(errorByLabel, label);
+			}
+			incrInMap(searchByLabel, label);
+			incrInMap(foundByLabel, sres);
+		}
+		if(getTotal()==0){
+			throw new FAFException("Nothing found on standard input");
 		}
 	}
 	
-	public String getStats(){
-		int total = nbError+nbSucess;
-		String res = "Success classification rate = "+((double)nbSucess/(double)total)*100.0+"% ("+nbSucess+")";
-		res += " | Error classification rate = "+((double)nbError/(double)total)*100.0+"% ("+nbError+")";
-		return res;
+	private void incrInMap(Map<String, Integer> map, String label){
+		Integer i = map.get(label);
+		if(i==null){
+			map.put(label, 1);
+			for(Map<String,Integer> m : listMaps)
+				if(!m.equals(map))
+					m.put(label, 0);
+		}
+		else
+			map.put(label, i+1);
+	}
+	
+	public int getTotal(){
+		return nbError+nbSucess;
+	}
+	public int getTotalError(){
+		return nbError;
+	}
+
+	public String getFastResult() {
+		return "Good classifcation rate = "+(double)nbSucess/(double)getTotal()+" | Bad classification rate = "+(double)nbError/(double)getTotal();
+	}
+	
+	public Map<String, Integer> getErrorByLabel(){
+		return errorByLabel;
+	}
+	
+	public Map<String, Integer> getCorrectByLabel(){
+		return correctByLabel;
+	}
+	public Map<String, Integer> getSearchByLabel(){
+		return searchByLabel;
+	}
+	public Map<String, Integer> getFoundByLabel(){
+		return foundByLabel;
 	}
 
 }

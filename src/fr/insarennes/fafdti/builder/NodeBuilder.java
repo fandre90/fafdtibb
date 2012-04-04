@@ -443,28 +443,30 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 
 	//****************Reading results utils methods********//
 	
-	private String readFileFirstLine(Path inputDir) throws IOException {
-		//System.out.println(inputDir.toString());
+	private FSDataInputStream getPartNonEmpty(Path inputDir) throws IOException{
 		Configuration conf = new Configuration();
 		FileSystem fileSystem;
 		fileSystem = FileSystem.get(conf);
 		FileStatus[] files = fileSystem.listStatus(inputDir);
-		//for(int i=0; i<files.length; i++)	
-		//	System.out.println(files[i].getPath().toString());
-		Path inputFile = null;
+		FSDataInputStream in = null;
 		for (int i = 0; i < files.length; i++) {
 			Path tmp = files[i].getPath();
-			if (tmp.getName().startsWith("part")) {
-				inputFile = tmp;
-				break;
-			}
+			if (tmp.getName().startsWith("part") && fileSystem.getFileStatus(tmp).getLen() > 0)
+					in = fileSystem.open(tmp);
 		}
-		if(inputFile == null){
-			log.warn("No part file found");
+		if(in == null){
+			log.warn("No non-empty part file found");
+			return null;
+		}
+		return in;
+	}
+	
+	private String readFileFirstLine(Path inputDir) throws IOException {
+		FSDataInputStream in = getPartNonEmpty(inputDir);
+		
+		if(in==null)
 			return "";
-		}
-		//System.out.println(inputFile.toString());
-		FSDataInputStream in = fileSystem.open(inputFile);
+		
 		LineReader lr = new LineReader(in);
 		Text line = new Text();
 		lr.readLine(line);

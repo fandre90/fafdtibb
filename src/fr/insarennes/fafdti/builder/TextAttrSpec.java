@@ -9,6 +9,7 @@ public class TextAttrSpec extends AttrSpec {
 	private int expertLength;
 	private GramType expertType;
 
+
 	public TextAttrSpec(GramType expertType, int expertLength, int expertLevel) {
 		this.expertType = expertType;
 		this.expertLength = expertLength;
@@ -18,6 +19,15 @@ public class TextAttrSpec extends AttrSpec {
 
 	public int getExpertLength() {
 		return this.expertLength;
+	}
+	
+
+	public GramType getExpertType() {
+		return expertType;
+	}
+
+	public void setExpertType(GramType expertType) {
+		this.expertType = expertType;
 	}
 
 	public int getExpertLevel() {

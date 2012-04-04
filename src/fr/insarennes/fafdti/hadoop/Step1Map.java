@@ -16,6 +16,10 @@ import fr.insarennes.fafdti.builder.AttrSpec;
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.TextAttrSpec;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.GramType;
+import fr.insarennes.fafdti.builder.gram.SGram;
 
 public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 
@@ -50,21 +54,15 @@ public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 			// Iterate over all attribute values
 			for (int i = 0; i < lineTokens.length - 1; i++) {
 				lineTokens[i] = lineTokens[i].trim();
-				// Is it necessary to construct a new object every time ?
 				AttrSpec attrSpec = fs.getAttrSpec(i);
 				AttrType attrType = attrSpec.getType();
 				if (attrType == AttrType.DISCRETE) {
 					Question q = new Question(i, attrType, lineTokens[i]);
-					// System.out.println("Q: " + q);
-					// System.out.println("I: " + labelIndex);
 					context.write(q, labelIndex);
 				} else if (attrType == AttrType.TEXT) {
-					// FIXME On ne génère que des 1-Gram ici
 					String[] words = lineTokens[i].split("\\s");
 					for (String word : words) {
 						Question q = new Question(i, attrType, word);
-						// System.out.println("Q: " + q);
-						// System.out.println("I: " + labelIndex);
 						context.write(q, labelIndex);
 					}
 				}
@@ -74,4 +72,38 @@ public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 			e.printStackTrace();
 		}
 	}
+	
+		protected void generateNFGram(int qIdx, TextAttrSpec textAttr, String text) {
+			int minSize = 1;
+			int maxSize = textAttr.getExpertLength();
+			if(textAttr.getExpertType() == GramType.FGRAM) {
+				minSize = maxSize;
+			}
+			String[] words = text.split("\\s+");
+			for(int i=0; i< words.length; ++i) {
+				int sizeLimit = Math.max(
+					Math.min(maxSize, words.length - i),
+					minSize);
+				for(int size = minSize; size <= sizeLimit; ++size) {
+					String[] gramWords = new String[size];
+					for(int j=0; j < size; ++j) {
+						gramWords[j] = words[i + j];
+					}
+					Question q = new Question(qIdx, AttrType.TEXT, new FGram(gramWords));
+				}
+			}
+		}
+
+		protected void generateSGram(int qIdx, TextAttrSpec textAttr, String text) {
+			int maxDistance = textAttr.getExpertLength();
+			String[] words = text.split("\\s+");
+			for(int i=0; i< words.length; ++i) {
+				int distLimit = Math.min(maxDistance, words.length - i - 2);
+				for(int dist = 0; dist <= distLimit; ++dist) {
+					String firstWord = words[i];
+					String lastWord = words[i + dist + 1];
+					Question q = new Question(qIdx, AttrType.TEXT, new SGram(firstWord, lastWord, dist));
+				}
+			}
+		}
 }

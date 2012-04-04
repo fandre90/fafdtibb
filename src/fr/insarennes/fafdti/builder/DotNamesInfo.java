@@ -154,9 +154,9 @@ public class DotNamesInfo extends HadoopConfStockable {
 	}
 
 	private void parseTextAttrOptions(String params) throws ParseException {
-		int expertLength = 0;
+		int expertLength = 1;
 		int expertLevel = 1;
-		GramType expertType = null;
+		GramType expertType = GramType.NGRAM;
 		String[] paramTokens = params.trim().split("\\s+");
 		for (String param : paramTokens) {
 			String[] keyValTok = param.split("=");

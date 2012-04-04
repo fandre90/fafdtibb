@@ -74,8 +74,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	//First node constructor
 	public NodeBuilder(DotNamesInfo featureSpec, 
 			String inputDataPath,
-			String workingDir, 
-			Criterion criterion, 
+			String workingDir,
+			Criterion criterion,
 			DecisionNodeSetter nodeSetter, 
 			List<StoppingCriterion> stopping,
 			StatBuilder stats,

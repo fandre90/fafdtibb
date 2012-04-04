@@ -11,8 +11,7 @@ public class FGram implements WritableComparable<FGram> {
 
 	Text[] words;
 
-	public FGram() {
-	}
+	public FGram() {}
 
 	public FGram(String[] words) {
 		this.words = new Text[words.length];

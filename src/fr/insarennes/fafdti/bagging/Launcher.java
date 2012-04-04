@@ -252,7 +252,7 @@ public class Launcher implements Observer {
 				log.info(s);
 			log.info("-------------------");
 			//export xml
-			comment.put(XmlConst.TIME, String.valueOf(timer));
+			comment.put(XmlConst.TIME, String.valueOf(timer)+"minutes");
 			XmlExporter xml = new XmlExporter(result, outXml, comment);
 			xml.launch();
 			log.info("Tree resulting exports in "+outXml+".xml");

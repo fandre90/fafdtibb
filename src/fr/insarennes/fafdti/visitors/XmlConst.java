@@ -34,6 +34,6 @@ public class XmlConst {
 	public static final String GAINMIN = "gainmin";
 	public static final String BAGGING = "bagging";
 	public static final String DATARATE = "datarate";
-	public static final String TIME = "timeinminutes";
+	public static final String TIME = "time";
 
 }

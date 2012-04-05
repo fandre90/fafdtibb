@@ -102,7 +102,7 @@ public class QueryStater {
 	}
 
 	public String getFastResult() {
-		return "Good classifcation rate = "+(double)nbSucess/(double)getTotal()+" | Bad classification rate = "+(double)nbError/(double)getTotal();
+		return "Success classification rate = "+(double)nbSucess/(double)getTotal()+" | Error classification rate = "+(double)nbError/(double)getTotal();
 	}
 	
 	public Map<String, Integer> getErrorByLabel(){

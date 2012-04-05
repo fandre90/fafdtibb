@@ -113,6 +113,7 @@ public class FAFQueryMode {
 			HtmlStater html = new HtmlStater(importer.getBuildingParameters(), stater);
 			String output = cmdline.getOptionValue(OUT, xmlInput);
 			html.make(output);
+			log.info("Full report has been generated in "+output+".html");
 		}
 			
 		//sinon on pose la question normalement

@@ -75,7 +75,9 @@ public class HtmlStater {
 		Map<String, Integer> errorByLabel = stater.getErrorByLabel();
 		Map<String, Integer> foundByLabel = stater.getFoundByLabel();
 		int totalSearch, totalFound, totalCorrect, totalError;
+		double totalPrecision, totalRecall, nbLabels;
 		totalCorrect=totalError=totalFound=totalSearch=0;
+		totalPrecision=totalRecall=nbLabels=0;
 		print.write(
 				"<h3 align=center> errors statistics :</h3><br>" +
 				"<TABLE BORDER=\"1\">" +
@@ -99,6 +101,11 @@ public class HtmlStater {
 			totalError+=error;
 			totalFound+=found;
 			totalSearch+=search;
+			nbLabels++;
+			double precision = (double)correct / (double)found;
+			double recall = (double)correct / (double)search;
+			totalPrecision+=precision;
+			totalRecall+=recall;
 			print.write(
 					"<TR>" +
 					"<TD> " + key + "</TD>" +
@@ -106,9 +113,9 @@ public class HtmlStater {
 					"<TD> " + String.valueOf(found) + "</TD>" +
 					"<TD> " + String.valueOf(correct) + "</TD>" +
 					"<TD> " + String.valueOf(error) + "</TD>" +
-					"<TD> " + String.valueOf((double)correct / (double)search) + "</TD>" +
-					"<TD> " + String.valueOf((double)correct / (double)found) + "</TD>" +
-					"<TD> " + String.valueOf((double)found / (double)search) + "</TD>" +
+					"<TD> " + String.valueOf(precision) + "</TD>" +
+					"<TD> " + String.valueOf(recall) + "</TD>" +
+					"<TD> " + String.valueOf((double)error / (double)search) + "</TD>" +
 					"</TR>");
 		}
 		print.write(
@@ -118,9 +125,9 @@ public class HtmlStater {
 				"<TD>" + String.valueOf(totalFound) + "</TD>" +
 				"<TD>" + String.valueOf(totalCorrect) + "</TD>" +
 				"<TD>" + String.valueOf(totalError) + "</TD>" +
-				"<TD>" + String.valueOf((double)totalCorrect / (double)totalSearch) + "</TD>" +
-				"<TD>" + String.valueOf((double)totalCorrect / (double)totalFound) + "</TD>" +
-				"<TD>" + String.valueOf((double)totalFound / (double)totalSearch) + "</TD>");
+				"<TD>" + String.valueOf(totalPrecision / nbLabels) + "</TD>" +
+				"<TD>" + String.valueOf(totalRecall / nbLabels) + "</TD>" +
+				"<TD>" + String.valueOf((double)totalError / (double)totalSearch) + "</TD>");
 		print.write("</TABLE>" +
 					"</html>");
 		print.flush();

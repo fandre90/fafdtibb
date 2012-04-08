@@ -57,6 +57,8 @@ public class HtmlStater {
 				"<TH> minimum examples by leaf </TH>" +
 				"<TH> maximum depth</TH>" +
 				"<TH> built in </TH>" +
+				"<TH> pool size </TH>" +
+				"<TH> data file size </TH>" +
 				"</TR>" +
 				"<TR>" +
 				"<TD> " + buildopts.get(XmlConst.NAMES) + "</TD>" +
@@ -67,6 +69,8 @@ public class HtmlStater {
 				"<TD> " + buildopts.get(XmlConst.MINEX) + "</TD>" +
 				"<TD> " + buildopts.get(XmlConst.MAXDEPTH) + "</TD>" +
 				"<TD> " + buildopts.get(XmlConst.TIME) + "</TD>" +
+				"<TD> " + buildopts.get(XmlConst.THREADS) + "</TD>" +
+				"<TD> " + buildopts.get(XmlConst.FILESIZE) + "</TD>" +
 				"</TR>" +
 				"</TABLE>");
 		

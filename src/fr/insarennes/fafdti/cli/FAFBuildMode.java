@@ -196,6 +196,7 @@ public class FAFBuildMode {
 		comment.put(XmlConst.MINEX, minex);
 		comment.put(XmlConst.GAINMIN, gainmin);
 		comment.put(XmlConst.BAGGING, bagging);
+		comment.put(XmlConst.THREADS, String.valueOf(Scheduler.getPoolSize()));
 		//on lance le launcher
 		try {
 			new Launcher(names+".names", data+".data", workingdir, out, stopping, criterion, intbagging, doublepercent, comment);

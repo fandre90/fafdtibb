@@ -111,19 +111,26 @@ public class Launcher implements Observer {
 		
 		private List<String> splitData(String inputData, String outputDir, FileSystem filesystem) {
 			List<String> res = new ArrayList<String>();
+			try {
+				comment.put(XmlConst.FILESIZE, filesystem.getFileStatus(new Path(inputData)).getLen()+"octets");
+			} catch (IOException e1) {
+				log.error(e1.getMessage());
+			}
+			
 			if(nbBagging==1){
 				comment.put(XmlConst.DATARATE, "1.0");
 				res.add(inputData);
 			}
 			else{
 				comment.put(XmlConst.DATARATE, String.valueOf(baggingPercent));
-				//count number of examples (=lines)
+				//open data file
 				FSDataInputStream in = null;
 				try {
 					in = filesystem.open(new Path(inputData));
 				} catch (IOException e) {
 					log.error("Cannot open "+inputData);
 				}
+				//count number of examples (=lines)
 				LineReader lr = new LineReader(in);
 				Text text = new Text();
 				int total = 0;

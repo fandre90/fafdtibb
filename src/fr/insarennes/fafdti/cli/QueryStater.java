@@ -52,7 +52,7 @@ public class QueryStater {
 		while((line=buffer.readLine()) != null){
 			//parsing de la ligne
 			int index = line.lastIndexOf(FAFQueryMode.DELIMITER);
-			String question = line.substring(0, index - 1);
+			String question = line.substring(0, index);
 			String label = line.substring(index + 1, line.length() - 1).trim();
 			//construction du QuestionExample
 			ArrayList<String> values = new ArrayList<String>();
@@ -64,6 +64,9 @@ public class QueryStater {
 			BaggingInterrogator inter = new BaggingInterrogator(trees);
 			LeafLabels res = inter.query(qe);
 			String sres = res.getBestScore();
+			log.debug("question="+qe.toString());
+			log.debug("label search="+label);
+			log.debug("label found="+sres);
 			//OK ou pas
 			//System.out.println(label);
 			if(sres.equals(label)){

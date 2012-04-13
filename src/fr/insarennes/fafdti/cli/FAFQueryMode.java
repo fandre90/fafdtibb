@@ -1,3 +1,13 @@
+/**
+ * Point d'entrée du mode d'interrogation de FAFDTIBB
+ * 
+ * On peut soit directement poser une question sur un arbre (le format est 
+ * le suivant : les valeurs des différents attributs doivent être en ordre, 
+ * séparer par une virgule et si besoin le tout entouré de guillemets), 
+ * 
+ * soit lancer une campagne de test sur l'entrée standard et générer un rapport html
+ */
+
 package fr.insarennes.fafdti.cli;
 
 import java.io.FileWriter;

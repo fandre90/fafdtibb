@@ -1,3 +1,6 @@
+/** Classe implémentant un chronomètre
+ */
+
 package fr.insarennes.fafdti;
 
 import java.util.Date;

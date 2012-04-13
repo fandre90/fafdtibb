@@ -1,3 +1,11 @@
+/**
+ * Classe expérimentale qui peut servir à parcourir l'arbre afin de compter le nombre
+ * d'exemples déjà classifier dans les feuilles, et de récupérer en plus la liste
+ * des sous-arbre encore en construction afin de relancer des visites sur ceux-ci.
+ * 
+ * L'utilité de cette classe reste à prouver !!! ;-)
+ */
+
 package fr.insarennes.fafdti.visitors;
 
 import java.util.ArrayList;

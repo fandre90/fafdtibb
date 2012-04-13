@@ -1,3 +1,8 @@
+/** Point d'entrée du mode utilitaire de FAFDTIBB
+ * 
+ * On peut soit exporter un arbre sous format DOT, soit sous format PNG
+ */
+
 package fr.insarennes.fafdti.cli;
 
 import java.io.IOException;

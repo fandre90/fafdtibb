@@ -1,3 +1,6 @@
+/** Classe encapsulant le critère de profondeur maximale de construction de l'arbre
+ */
+
 package fr.insarennes.fafdti.builder.stopcriterion;
 
 import org.apache.log4j.Logger;

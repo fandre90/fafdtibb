@@ -1,3 +1,9 @@
+/**
+ * Classe servant à construire le rapport html d'une campagne de test
+ * à partir des résultat du {@link QueryStater} et des informations de construction
+ * de l'arbre
+ */
+
 package fr.insarennes.fafdti.cli;
 
 import java.io.FileWriter;

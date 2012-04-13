@@ -1,3 +1,7 @@
+/** Interface des visiteurs d'un DecisionTree
+ * 
+ */
+
 package fr.insarennes.fafdti.tree;
 
 import fr.insarennes.fafdti.visitors.InvalidCallException;

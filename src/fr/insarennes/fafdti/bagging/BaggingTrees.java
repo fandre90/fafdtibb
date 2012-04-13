@@ -1,3 +1,8 @@
+/**
+ * Classe encapsulant une liste de DecisionTree utilisée pour représenter la structure
+ * de données util à l'algorithme de bagging
+ */
+
 package fr.insarennes.fafdti.bagging;
 
 import java.util.ArrayList;

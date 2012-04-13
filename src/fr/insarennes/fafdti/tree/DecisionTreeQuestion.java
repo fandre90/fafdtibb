@@ -1,3 +1,8 @@
+/** Classe DecisionTreeQuestion implémentant DecisionTree
+ * Cette classe représente un noeud binaire de l'arbre de décision
+ * Elle encapsule la question attachée à ce noeud et une référence vers chacun de ses fils
+ */
+
 package fr.insarennes.fafdti.tree;
 
 import fr.insarennes.fafdti.builder.Question;

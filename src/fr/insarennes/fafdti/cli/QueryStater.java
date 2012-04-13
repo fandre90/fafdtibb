@@ -1,3 +1,6 @@
+/** Classe effectuant la campagne de test sur l'entrée standard
+ */
+
 package fr.insarennes.fafdti.cli;
 
 import java.io.BufferedReader;

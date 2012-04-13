@@ -1,3 +1,8 @@
+/** Classe contenant simplement un DecisionTree
+ * Elle sert à l'initialisation du processus de construction, afin de fournir un
+ * containeur permettant de stocker la racine de l'arbre et de fournir un DecisionNodeSetter
+ */
+
 package fr.insarennes.fafdti.tree;
 
 import fr.insarennes.fafdti.FAFException;

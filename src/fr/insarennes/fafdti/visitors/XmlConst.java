@@ -1,3 +1,8 @@
+/**
+ * Définitions de toutes les constantes utilisées à la fois pour l'import 
+ * et l'export xml
+ */
+
 package fr.insarennes.fafdti.visitors;
 
 public class XmlConst {

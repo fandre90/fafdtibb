@@ -1,3 +1,8 @@
+/**
+ * Classe qui permet, en plus de checker l'arbre en entier, de compter le nombre
+ * de noeuds et de feuilles qu'il contient
+ */
+
 package fr.insarennes.fafdti.visitors;
 
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;

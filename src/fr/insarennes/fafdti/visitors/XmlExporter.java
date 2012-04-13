@@ -1,3 +1,6 @@
+/** Classe permettant d'exporter un arbre de décision dans un fichier xml
+ */
+
 package fr.insarennes.fafdti.visitors;
 
 import java.io.File;
@@ -55,6 +58,11 @@ public class XmlExporter implements DecisionTreeVisitor {
 	String filename;
 	Stack<Element> stack;
 	
+	/**
+	 * @param bt le BaggingTrees à exporter
+	 * @param filenam le nom du fichier générer
+	 * @param comments les informations supplémentaires à ajouter (paramètres/options de construction)
+	 */
 	public XmlExporter(BaggingTrees bt, String filenam, Map<String,String> comments){
 		log = Logger.getLogger(XmlExporter.class);
 		// creation document
@@ -87,6 +95,9 @@ public class XmlExporter implements DecisionTreeVisitor {
 		trees.appendChild(buildopts);
 	}
 	
+	/**
+	 * Lance le processus d'export
+	 */
 	public void launch(){
 		for(int i=0 ; i<baggingTrees.getSize() ; i++){
 			Element root = doc.createElement(XmlConst.TREE);

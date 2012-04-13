@@ -1,3 +1,7 @@
+/**
+ * Interface que doit implémenter toute classe souhaitant se servir de {@link StoppingCriterion}
+ */
+
 package fr.insarennes.fafdti.builder.stopcriterion;
 
 public interface StopCriterionUtils {

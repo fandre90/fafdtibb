@@ -1,3 +1,8 @@
+/** Classe encapsulant le critère du nombre minimal d'exemples par feuille
+ *  pour la construction de l'arbre
+ */
+
+
 package fr.insarennes.fafdti.builder.stopcriterion;
 
 import org.apache.log4j.Logger;

@@ -1,3 +1,9 @@
+/** Classe encapsulant la distribution calculée attachée à un {@link DecisionTreeLeaf}
+ * Une distribution est forcemment composée d'une (ou plusieurs) classes associées
+ * à leur probabilités respectives (la somme de celles-ci devant obligatoirement être
+ * égal (ou très proche) de 1)
+ */
+
 package fr.insarennes.fafdti.tree;
 
 import java.util.HashMap;
@@ -37,6 +43,10 @@ public class LeafLabels {
 		return new HashMap<String,Double>(labels);
 	}
 	
+	/**
+	 * @return la classe dont le score est le plus élevé
+	 * Attention, le résultat est valide seulement si il est différent de "not_found"
+	 */
 	public String getBestScore(){
 		double bestScore = 0.0;
 		String res = "not_found";
@@ -63,6 +73,12 @@ public class LeafLabels {
 		}
 		return Math.abs(d - 1.0) <= EPSILON_VALIDATION_PROBABILITY_COMPUTATION;
 	}
+	
+	/** Exception levée lorsque l'on essaie de construire une distribution
+	 * contenant un ensemble de probabilités incohérentes, c'est-à-dire dont 
+	 * la somme n'est pas assez proche de 1
+	 *
+	 */
 	public class InvalidProbabilityComputationException extends FAFException {
 
 		public InvalidProbabilityComputationException(){

@@ -1,3 +1,7 @@
+/** Classe encapsulant le critère du gain minimum pour la construction de l'arbre
+ */
+
+
 package fr.insarennes.fafdti.builder.stopcriterion;
 
 import org.apache.log4j.Logger;

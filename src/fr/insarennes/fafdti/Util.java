@@ -1,3 +1,7 @@
+/**
+ * Classe utilitaire
+ */
+
 package fr.insarennes.fafdti;
 
 import java.util.Arrays;
@@ -12,6 +16,11 @@ public class Util {
 		return substracted;
 	}
 	
+	/** Génère une liste triée d'entiers aléatoires compris entre 0 et max
+	 * @param size la taille de la liste a générée
+	 * @param max le max
+	 * @return la liste générée
+	 */
 	public static int[] getSortedRandomIntList(int size, int max){
 		int[] res = new int[size];
 		for(int i=0 ; i<size ; i++){

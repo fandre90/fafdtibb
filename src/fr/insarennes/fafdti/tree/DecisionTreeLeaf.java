@@ -1,3 +1,8 @@
+/** Classe DecisionTreeLeaf implémentant DecisionTree
+ * Elle représente les feuille de nos arbres
+ * Elle encapsule un LeafLabels et le nombre d'exemples que l'on a classé dedans
+ */
+
 package fr.insarennes.fafdti.tree;
 
 import fr.insarennes.fafdti.FAFException;
@@ -7,6 +12,10 @@ public class DecisionTreeLeaf implements DecisionTree {
 	private LeafLabels labels;
 	private int nbExamplesClassified;
 	
+	/**
+	 * @deprecated Utiliser l'autre constructeur
+	 * @param lbl
+	 */
 	public DecisionTreeLeaf(LeafLabels lbl){
 		labels = lbl;
 		nbExamplesClassified = Integer.MIN_VALUE;

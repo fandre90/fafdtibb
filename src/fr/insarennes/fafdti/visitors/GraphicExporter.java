@@ -1,3 +1,7 @@
+/** Classe qui crée le fichier .dot représentant l'arbre binaire 
+ * dont la racine est donné au constructeur 
+ */
+
 package fr.insarennes.fafdti.visitors;
 
 import java.io.FileWriter;
@@ -17,8 +21,6 @@ import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.DecisionTreeVisitor;
 import fr.insarennes.fafdti.tree.DecisionTreePending;
-
-//Classe qui crée le fichier .dot représentant l'arbre binaire dont la racine est donné au constructeur
 
 public class GraphicExporter implements DecisionTreeVisitor {
 
@@ -46,6 +48,9 @@ public class GraphicExporter implements DecisionTreeVisitor {
 		}
 	}
 	
+	/** Lance le processus d'export dot
+	 * 
+	 */
 	public void launch(){
 		//on ajoute l'entete
 		this.writeHead();

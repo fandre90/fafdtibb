@@ -1,3 +1,7 @@
+/** Classe servant à interroger un arbre de décision à partir d'un 
+ * {@link QuestionExample}
+ */
+
 package fr.insarennes.fafdti.visitors;
 
 import java.util.HashMap;
@@ -49,6 +53,12 @@ public class Interrogator implements DecisionTreeVisitor {
 	public void visitPending(DecisionTreePending dtl) throws InvalidCallException{
 		throw new InvalidCallException(this.getClass().getName()+" cannot visit a DecisionTreePending");
 	}
+	
+	/**
+	 * @return la distribution contenue dans la feuille trouvée
+	 * Attention, cette distribution n'est valide que si son contenu est différent
+	 * de "warning -- unbuild" avec une proba de 1.0
+	 */
 	public LeafLabels getResult(){
 		return labels;
 	}

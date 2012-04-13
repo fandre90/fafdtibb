@@ -1,3 +1,6 @@
+/** Visiteur permettant de générer une String représentant l'arbre
+ */
+
 package fr.insarennes.fafdti.visitors;
 
 import fr.insarennes.fafdti.tree.*;

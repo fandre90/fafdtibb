@@ -1,3 +1,8 @@
+/** Classe permettant d'interroger un {@link BaggingTrees}
+ * Cette classe interroge chaque arbre du {@link BaggingTrees} puis fait la moyenne
+ * des résultats
+ */
+
 package fr.insarennes.fafdti.bagging;
 
 import java.util.ArrayList;
@@ -25,6 +30,10 @@ public class BaggingInterrogator {
 		this.trees = trees;
 	}
 	
+	/**
+	 * @param qe la question posée
+	 * @return le résultat sous forme de distribution
+	 */
 	public LeafLabels query(QuestionExample qe){
 		List<LeafLabels> labels = new ArrayList<LeafLabels>();
 		int nbTrees = trees.getSize();

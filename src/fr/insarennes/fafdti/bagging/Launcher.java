@@ -1,3 +1,11 @@
+/**
+ * Classe permettant de lancer le processus de construction d'un {@link BaggingTrees}
+ * De plus, lorsque ceci est fini, on check le résultat et on l'exporte en xml.
+ * 
+ * Remarque : on peut construire un arbre de décision ordinaire en précisant le nombre
+ * d'arbre à construire égal à 1 (dans ce cas on ne fera plus de bagging).
+ */
+
 package fr.insarennes.fafdti.bagging;
 
 import java.io.File;

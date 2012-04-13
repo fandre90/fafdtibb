@@ -1,3 +1,7 @@
+/**
+ * Point d'entrée du mode de construction de FAFDTIBB
+ */
+
 package fr.insarennes.fafdti.cli;
 
 import java.io.PrintWriter;

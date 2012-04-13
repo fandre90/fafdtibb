@@ -1,3 +1,10 @@
+/** Classe encapsulant les valeurs d'une question posée
+ * Ces valeurs sont sous forme de String et rangées dans le même ordre que spécifier
+ * dans le fichier de données ayant servi à construire l'arbre.
+ * On peut voir cette classe comme le containeur d'une ligne d'exemple de données
+ * sans le dernier champs qui est la classe à laquelle appartient cet exemple
+ */
+
 package fr.insarennes.fafdti.visitors;
 
 import java.io.DataInput;
@@ -18,6 +25,10 @@ public class QuestionExample implements Iterable<String>, Writable{
 		qExample = ex;
 	}
 
+	/**
+	 * @param label le numéro de l'attribut désiré
+	 * @return la valeur de cet attribut
+	 */
 	public String getValue(int label) {
 		return qExample.get(label);
 	}

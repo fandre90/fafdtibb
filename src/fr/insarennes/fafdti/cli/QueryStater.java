@@ -11,12 +11,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingInterrogator;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
+import fr.insarennes.fafdti.hadoop.Step1Map;
 import fr.insarennes.fafdti.tree.ImportXML;
 import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.visitors.QuestionExample;
@@ -34,6 +37,9 @@ public class QueryStater {
 	private Map<String, Integer> errorByLabel;
 	private List<Map<String,Integer>> listMaps;
 	
+	private final String VALIDATION_REGEX = "(.+,)+(.+)\\.";
+	private Pattern validationPattern;
+	
 	public QueryStater(BaggingTrees trees){
 		nbError = 0;
 		nbSucess = 0;
@@ -47,42 +53,55 @@ public class QueryStater {
 		listMaps.add(correctByLabel);
 		listMaps.add(errorByLabel);
 		listMaps.add(foundByLabel);
+		
+		validationPattern = Pattern.compile(VALIDATION_REGEX);
 	}
 	
 	public void launch() throws IOException, FAFException{
 		BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
 		String line = "";
+		int numLine = 0;
 		while((line=buffer.readLine()) != null){
-			//parsing de la ligne
-			int index = line.lastIndexOf(FAFQueryMode.DELIMITER);
-			String question = line.substring(0, index);
-			String label = line.substring(index + 1, line.length() - 1).trim();
-			//construction du QuestionExample
-			ArrayList<String> values = new ArrayList<String>();
-			StringTokenizer tokn = new StringTokenizer(question);
-			while(tokn.hasMoreElements())
-				values.add(tokn.nextToken(FAFQueryMode.DELIMITER).trim());
-			QuestionExample qe = new QuestionExample(values);
-			//question
-			BaggingInterrogator inter = new BaggingInterrogator(trees);
-			LeafLabels res = inter.query(qe);
-			String sres = res.getBestScore();
-			log.debug("question="+qe.toString());
-			log.debug("label search="+label);
-			log.debug("label found="+sres);
-			//OK ou pas
-			//System.out.println(label);
-			if(sres.equals(label)){
-				nbSucess++;
-				incrInMap(correctByLabel, sres);
+			numLine++;
+			//check pattern
+			Matcher lineMatcher = validationPattern.matcher(line);
+			if(!lineMatcher.matches()) {
+				throw new FAFException("Invalid line "+numLine+" : " + line + "\n"
+							+ "Line must validate the regular expression : "
+							+ VALIDATION_REGEX);
 			}
-			else {
-				nbError++;
-				incrInMap(errorByLabel, label);
+			else{
+				//parsing de la ligne
+				int index = line.lastIndexOf(FAFQueryMode.DELIMITER);
+				String question = line.substring(0, index);
+				String label = line.substring(index + 1, line.length() - 1).trim();
+				//construction du QuestionExample
+				ArrayList<String> values = new ArrayList<String>();
+				StringTokenizer tokn = new StringTokenizer(question);
+				while(tokn.hasMoreElements())
+					values.add(tokn.nextToken(FAFQueryMode.DELIMITER).trim());
+				QuestionExample qe = new QuestionExample(values);
+				//question
+				BaggingInterrogator inter = new BaggingInterrogator(trees);
+				LeafLabels res = inter.query(qe);
+				String sres = res.getBestScore();
+				log.debug("question="+qe.toString());
+				log.debug("label search="+label);
+				log.debug("label found="+sres);
+				//OK ou pas
+				//System.out.println(label);
+				if(sres.equals(label)){
+					nbSucess++;
+					incrInMap(correctByLabel, sres);
+				}
+				else {
+					nbError++;
+					incrInMap(errorByLabel, label);
+				}
+				incrInMap(searchByLabel, label);
+				incrInMap(foundByLabel, sres);
 			}
-			incrInMap(searchByLabel, label);
-			incrInMap(foundByLabel, sres);
-		}
+			}
 		if(getTotal()==0){
 			throw new FAFException("Nothing found on standard input");
 		}
@@ -105,6 +124,10 @@ public class QueryStater {
 	}
 	public int getTotalError(){
 		return nbError;
+	}
+	
+	public int getTotalSuccess(){
+		return nbSucess;
 	}
 
 	public String getFastResult() {

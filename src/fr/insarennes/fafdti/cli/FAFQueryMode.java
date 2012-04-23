@@ -109,6 +109,7 @@ public class FAFQueryMode {
 			//Launch stater
 			QueryStater stater = new QueryStater(trees);
 			try {
+				log.info("Query process starting...");
 				stater.launch();
 			} catch (IOException e) {
 				log.error("Error occured while reading standard input");

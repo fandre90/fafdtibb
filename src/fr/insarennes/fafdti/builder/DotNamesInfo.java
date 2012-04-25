@@ -165,7 +165,7 @@ public class DotNamesInfo extends HadoopConfStockable {
 			if (key.equals("expert_level")) {
 				expertLevel = Integer.parseInt(value);
 			} else if (key.equals("expert_type")) {
-				if(gramTypeMap.containsKey(value)) {
+				if(!gramTypeMap.containsKey(value)) {
 					throw new ParseException("Invalid expert type: " + value);
 				}
 				expertType = gramTypeMap.get(value);

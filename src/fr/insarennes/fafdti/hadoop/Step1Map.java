@@ -60,10 +60,12 @@ public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 					Question q = new Question(i, attrType, lineTokens[i]);
 					context.write(q, labelIndex);
 				} else if (attrType == AttrType.TEXT) {
-					String[] words = lineTokens[i].split("\\s");
-					for (String word : words) {
-						Question q = new Question(i, attrType, word);
-						context.write(q, labelIndex);
+					String[] words = lineTokens[i].split("\\s+");
+					TextAttrSpec textAttr = (TextAttrSpec) attrSpec;
+					if(textAttr.getExpertType() == GramType.SGRAM) {
+						generateSGram(context, labelIndex, i, textAttr, words);
+					} else {
+						generateNFGram(context, labelIndex, i, textAttr, words);
 					}
 				}
 			}
@@ -73,36 +75,42 @@ public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 		}
 	}
 	
-		protected void generateNFGram(int qIdx, TextAttrSpec textAttr, String text) {
+		protected void generateNFGram(Context ctx, IntWritable labelIndex, 
+				int qIdx, TextAttrSpec textAttr, String[] words) 
+						throws IOException, InterruptedException {
 			int minSize = 1;
 			int maxSize = textAttr.getExpertLength();
 			if(textAttr.getExpertType() == GramType.FGRAM) {
 				minSize = maxSize;
 			}
-			String[] words = text.split("\\s+");
 			for(int i=0; i< words.length; ++i) {
-				int sizeLimit = Math.max(
-					Math.min(maxSize, words.length - i),
-					minSize);
+				int sizeLimit = Math.min(
+						words.length - i,
+						maxSize);
 				for(int size = minSize; size <= sizeLimit; ++size) {
 					String[] gramWords = new String[size];
 					for(int j=0; j < size; ++j) {
 						gramWords[j] = words[i + j];
 					}
-					Question q = new Question(qIdx, AttrType.TEXT, new FGram(gramWords));
+					Question q = new Question(qIdx, AttrType.TEXT, 
+							new FGram(gramWords));
+					ctx.write(q, labelIndex);
 				}
 			}
 		}
 
-		protected void generateSGram(int qIdx, TextAttrSpec textAttr, String text) {
+		protected void generateSGram(Context ctx, IntWritable labelIndex, 
+				int qIdx, TextAttrSpec textAttr,  String[] words) 
+						throws IOException, InterruptedException {
 			int maxDistance = textAttr.getExpertLength();
-			String[] words = text.split("\\s+");
-			for(int i=0; i< words.length; ++i) {
+			for(int i=0; i < words.length - 1; i++) {
 				int distLimit = Math.min(maxDistance, words.length - i - 2);
 				for(int dist = 0; dist <= distLimit; ++dist) {
 					String firstWord = words[i];
 					String lastWord = words[i + dist + 1];
-					Question q = new Question(qIdx, AttrType.TEXT, new SGram(firstWord, lastWord, dist));
+					Question q = new Question(qIdx, AttrType.TEXT,
+							new SGram(firstWord, lastWord, textAttr.getExpertLength()));
+					ctx.write(q, labelIndex);
 				}
 			}
 		}

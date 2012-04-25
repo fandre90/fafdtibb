@@ -86,6 +86,18 @@ public class GramContainer implements WritableComparable<GramContainer> {
 		}
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GramContainer other = (GramContainer) obj;
+		return this.compareTo(other) == 0;
+	}
+
 	private GramType charToType(char typeChar) {
 		switch (typeChar) {
 		case 'F':

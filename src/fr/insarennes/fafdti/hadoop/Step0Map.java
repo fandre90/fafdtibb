@@ -44,7 +44,7 @@ public class Step0Map extends Mapper<Object, Text, Text, IntWritable>{
 		}
 	
 		// Enlever le point final.
-		label = label.substring(0, label.length() - 1);
+		label = label.substring(0, label.length() - 1).trim();
 		int index;
 		try {
 			index = fs.indexOfLabel(label);

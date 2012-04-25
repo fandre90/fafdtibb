@@ -186,7 +186,7 @@ public class DotNamesInfo extends HadoopConfStockable {
 	public int indexOfLabel(String label) throws FAFException {
 		Integer labelIndex = reverseLabelMap.get(label);
 		if(labelIndex == null) {
-			throw new FAFException("Non existent label: " + label);
+			throw new FAFException("Non existent label: \"" + label + "\"");
 		}
 		return labelIndex;
 	}

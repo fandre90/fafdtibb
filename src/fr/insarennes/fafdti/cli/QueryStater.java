@@ -96,7 +96,7 @@ public class QueryStater {
 				}
 				else {
 					nbError++;
-					incrInMap(errorByLabel, label);
+					incrInMap(errorByLabel, sres);
 				}
 				incrInMap(searchByLabel, label);
 				incrInMap(foundByLabel, sres);

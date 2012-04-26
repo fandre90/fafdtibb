@@ -118,15 +118,15 @@ public class FAFBuildMode {
 			displayHelp();
 		}
 		
-		String names = cmdline.getOptionValue(NAMES);
 		String data = cmdline.getOptionValue(DATA);
+		String names = cmdline.getOptionValue(NAMES);
 		//si pas de sortie précisée, même nom que le .data par défaut
 		String out = cmdline.getOptionValue(OUT, data);
 		
 		log.log(Level.INFO, "Parsing done");
 		log.log(Level.INFO, "names = "+names);
 		log.log(Level.INFO, "data = "+data);
-		log.log(Level.INFO, "output = "+out);
+		log.log(Level.INFO, "output = "+out);		
 		
 		//Set pool size if needed
 		if(cmdline.hasOption(THREADS)){

@@ -35,6 +35,7 @@ import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
+import fr.insarennes.fafdti.cli.FAFOuputCode;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 import fr.insarennes.fafdti.hadoop.SplitExampleMultipleOutputFormat;
@@ -72,6 +73,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	protected StatBuilder stats;
 	protected String id;
 	
+	protected int relaunchCounter;
+	protected final int MAX_RELAUNCH_COUNTER = 10;
 	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
 	private final String job2outDir = "continuous-questions";
@@ -96,6 +99,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		this.stats = stats;
 		this.id = parentInfos.getBaggingId()+"-"+Integer.toString(stats.getNextId());
 		this.workingDir = new Path(workingDir, id);
+		this.relaunchCounter = 0;
 	}
 	
 	//Recursive constructor
@@ -215,7 +219,14 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			//if catch an exception : relaunch full thread
 			log.error(e.getMessage());
 			log.error("Thread "+id+ " catched an exception : re-launch it");
-			relaunch();
+			relaunchCounter++;
+			if(relaunchCounter <= MAX_RELAUNCH_COUNTER) {
+				relaunch();
+			} else {
+				log.error("Thread " + id + " was relaunched more than " +
+						MAX_RELAUNCH_COUNTER + " times. Aborting.");
+				System.exit(FAFOuputCode.EXIT_ERROR);
+			}
 		}
 	}
 	

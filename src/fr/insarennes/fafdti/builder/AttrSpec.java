@@ -11,9 +11,16 @@ public abstract class AttrSpec implements Cloneable, Serializable {
 	private GramType gramType;
 	private int expertLevel;
 	private int expertLength;
+	protected String name;
 	
+	public AttrSpec(String name){
+		this.name = name;
+	}
 	public AttrType getType() {
 		return this.type;
+	}
+	public String getName(){
+		return this.name;
 	}
 
 	public Object clone() {
@@ -25,15 +32,18 @@ public abstract class AttrSpec implements Cloneable, Serializable {
 		}
 		return o;
 	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + expertLength;
+		result = prime * result + expertLevel;
+		result = prime * result
+				+ ((gramType == null) ? 0 : gramType.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -43,8 +53,22 @@ public abstract class AttrSpec implements Cloneable, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AttrSpec other = (AttrSpec) obj;
+		if (expertLength != other.expertLength)
+			return false;
+		if (expertLevel != other.expertLevel)
+			return false;
+		if (gramType != other.gramType)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
 		if (type != other.type)
 			return false;
 		return true;
 	}
+
+	
+
 }

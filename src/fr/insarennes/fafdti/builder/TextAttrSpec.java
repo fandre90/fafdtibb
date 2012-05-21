@@ -10,7 +10,8 @@ public class TextAttrSpec extends AttrSpec {
 	private GramType expertType;
 
 
-	public TextAttrSpec(GramType expertType, int expertLength, int expertLevel) {
+	public TextAttrSpec(GramType expertType, int expertLength, int expertLevel, String name) {
+		super(name);
 		this.expertType = expertType;
 		this.expertLength = expertLength;
 		this.expertLevel = expertLevel;

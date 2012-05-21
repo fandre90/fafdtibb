@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.AttrType;
-import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.QuestionLabeled;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
@@ -69,8 +69,8 @@ public class GraphicExporter implements DecisionTreeVisitor {
 		//item
 		//Texte dans le noeud
 		StringBuilder content = new StringBuilder();
-		Question q = dtq.getQuestion();
-		content.append("Feature "+q.getCol()+" Value "+q.getStringValue());
+		QuestionLabeled q = (QuestionLabeled)dtq.getQuestion(); 
+		content.append("Feature '"+q.getName()+"' Value '"+q.getStringValue()+"'");
 		//Couleur du noeud
 		String color = new String();
 		AttrType type = q.getType();

@@ -70,7 +70,7 @@ public class TestDotNamesParsing {
 					},
 					{"reuters.names",
 				      new AttrType[] {TEXT},
-				      new TextAttrSpec[] {new TextAttrSpec(NGRAM, 1, 1)},
+				      new TextAttrSpec[] {new TextAttrSpec(NGRAM, 1, 1, "transcript")},
 					},
 			});
 	}

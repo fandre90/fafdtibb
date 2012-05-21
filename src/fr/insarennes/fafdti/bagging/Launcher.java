@@ -11,14 +11,12 @@ package fr.insarennes.fafdti.bagging;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Timer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -65,6 +63,8 @@ public class Launcher implements Observer {
 		private Map<String,String> comment;
 		//Timer to get time to make process fully
 		private Chrono chrono;
+		//Le .names
+		private DotNamesInfo dotNamesInfo;
 		
 		public Launcher(String inputNames, String inputData, 
 				String outputDir, 	//working dir
@@ -89,10 +89,10 @@ public class Launcher implements Observer {
 			//DotNamesInfos creation
 			Configuration conf = new Configuration();
 			FileSystem fileSystem = null;
-			DotNamesInfo featureSpec = null;
+			this.dotNamesInfo = null;
 			try {
 				fileSystem = FileSystem.get(conf);
-				featureSpec = new DotNamesInfo(new Path(inputNames), fileSystem);
+				this.dotNamesInfo = new DotNamesInfo(new Path(inputNames), fileSystem);
 			} catch (IOException e1) {
 				log.error(e1.getMessage());
 				log.error("Could not parse .names file. Aborting.");
@@ -108,7 +108,7 @@ public class Launcher implements Observer {
 				stats.addObserver(this);
 				//NodeBuilder creation
 				roots.add(i, new DecisionTreeHolder());
-				NodeBuilder nb = new NodeBuilder(featureSpec, 
+				NodeBuilder nb = new NodeBuilder(this.dotNamesInfo, 
 						datasplit.get(i), outputDir,
 						criterion, 
 						roots.get(i).getNodeSetter(), 
@@ -271,7 +271,7 @@ public class Launcher implements Observer {
 			log.info("-------------------");
 			//export xml
 			comment.put(XmlConst.TIME, String.valueOf(timer)+"minutes");
-			XmlExporter xml = new XmlExporter(result, outXml, comment);
+			XmlExporter xml = new XmlExporter(result, outXml, comment, this.dotNamesInfo);
 			xml.launch();
 			log.info("Tree resulting exports in "+outXml+".xml");
 		}

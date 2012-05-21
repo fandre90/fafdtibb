@@ -12,6 +12,7 @@ public class XmlConst {
 	
 	public static final String QUESTION = "question";
 	public static final String FEATURE = "feature";
+	public static final String FEATURE_NAME = "feature_name";
 	public static final String TYPE = "type";
 	public static final String TEST = "test";
 	public static final String GRAM = "gram";

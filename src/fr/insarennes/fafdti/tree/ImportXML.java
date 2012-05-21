@@ -6,7 +6,6 @@
 package fr.insarennes.fafdti.tree;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -23,12 +21,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.AttrType;
-import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.QuestionLabeled;
 import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.GramType;
 import fr.insarennes.fafdti.builder.gram.SGram;
@@ -102,11 +99,12 @@ public class ImportXML {
 			//Construction du noeud avec la question
 			NamedNodeMap map = n.getAttributes();
 			String feat = map.getNamedItem(XmlConst.FEATURE).getNodeValue();
+			String feat_name = map.getNamedItem(XmlConst.FEATURE_NAME).getNodeValue();
 			AttrType type = AttrType.getFromString(map.getNamedItem(XmlConst.TYPE).getNodeValue());
 			
 			if(type==AttrType.DISCRETE){
 				String test = map.getNamedItem(XmlConst.TEST).getNodeValue();
-				res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat),type,test));
+				res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat),type,test, feat_name));
 			}
 			else if (type==AttrType.TEXT){
 				GramType gramtype = GramType.getFromString(map.getNamedItem(XmlConst.GRAM).getNodeValue());
@@ -115,18 +113,18 @@ public class ImportXML {
 					String lw = map.getNamedItem(XmlConst.LASTWORD).getNodeValue();
 					String maxdist = map.getNamedItem(XmlConst.MAXDIST).getNodeValue();
 					SGram sgram = new SGram(fw, lw, Integer.parseInt(maxdist));
-					res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat), type, sgram));
+					res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat), type, sgram, feat_name));
 				}
 				else if(gramtype==GramType.FGRAM){
 					String words = map.getNamedItem(XmlConst.WORDS).getNodeValue();
 					String[] ws = words.split(XmlConst.DELIMITER);
 					FGram fgram = new FGram(ws);
-					res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat), type, fgram));
+					res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat), type, fgram, feat_name));
 				}
 			}
 			else{	//CONTINUOUS
 				String test = map.getNamedItem(XmlConst.TEST).getNodeValue();
-				res = new DecisionTreeQuestion(new Question(Integer.parseInt(feat),type,new Double(test)));
+				res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat),type,new Double(test), feat_name));
 			}
 			//appel récursif fils gauche et droit
 			NodeList sons = n.getChildNodes();

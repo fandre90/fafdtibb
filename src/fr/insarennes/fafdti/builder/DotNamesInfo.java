@@ -144,16 +144,16 @@ public class DotNamesInfo extends HadoopConfStockable {
 		String typeStr = tokens[1].trim().toLowerCase();
 		Matcher discreteMatch = discreteTypePattern.matcher(typeStr);
 		if (typeStr.equals("discrete") || discreteMatch.matches()) {
-			this.attributeSpec.add(new DiscreteAttrSpec());
+			this.attributeSpec.add(new DiscreteAttrSpec(name));
 		} else if (typeStr.equals("continuous")) {
-			this.attributeSpec.add(new ContinuousAttrSpec());
+			this.attributeSpec.add(new ContinuousAttrSpec(name));
 		} else if (typeStr.equals("text")) {
-			parseTextAttrOptions(tokens[2]);
+			parseTextAttrOptions(name, tokens[2]);
 		} else
 			throw new ParseException("Bad attribute type : -" + typeStr + "-");
 	}
 
-	private void parseTextAttrOptions(String params) throws ParseException {
+	private void parseTextAttrOptions(String name,String params) throws ParseException {
 		int expertLength = 1;
 		int expertLevel = 1;
 		GramType expertType = GramType.NGRAM;
@@ -174,7 +174,7 @@ public class DotNamesInfo extends HadoopConfStockable {
 			}
 		}
 		this.attributeSpec.add(new TextAttrSpec(expertType, expertLength,
-				expertLevel));
+				expertLevel, name));
 	}
 	/**
 	 * Returns the index corresponding to a label.

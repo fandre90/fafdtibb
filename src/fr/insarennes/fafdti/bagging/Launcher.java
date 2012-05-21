@@ -39,6 +39,7 @@ import fr.insarennes.fafdti.builder.ParseException;
 import fr.insarennes.fafdti.builder.Scheduler;
 import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
+import fr.insarennes.fafdti.cli.FAFOuputCode;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
 import fr.insarennes.fafdti.visitors.XmlConst;
@@ -94,6 +95,8 @@ public class Launcher implements Observer {
 				featureSpec = new DotNamesInfo(new Path(inputNames), fileSystem);
 			} catch (IOException e1) {
 				log.error(e1.getMessage());
+				log.error("Could not parse .names file. Aborting.");
+				System.exit(FAFOuputCode.EXIT_ERROR);
 			}
 			//get data split
 			List<String> datasplit = splitData(inputData, outputDir, fileSystem);

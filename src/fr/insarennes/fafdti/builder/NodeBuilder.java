@@ -345,6 +345,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		job.setMapperClass(Step0Map.class);
 		job.setReducerClass(Step0Red.class);
 
+		job.setJarByClass(this.getClass());
+		
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		FileInputFormat.addInputPath(job, inputDataPath);
@@ -362,6 +364,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		Job job = new Job(conf, "Discrete and text questions generation");
 		job.setOutputKeyClass(Question.class);
 		job.setOutputValueClass(IntWritable.class);
+
+		job.setJarByClass(this.getClass());
 
 		job.setMapperClass(Step1Map.class);
 		job.setReducerClass(Step1Red.class);
@@ -384,6 +388,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(ContinuousAttrLabelPair.class);
 
+		job.setJarByClass(this.getClass());
+
 		job.setMapperClass(Step2Map.class);
 		job.setReducerClass(Step2Red.class);
 
@@ -401,6 +407,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		featureSpec.toConf(conf);
 		criterion.toConf(conf);
 		Job job = new Job(conf, "Best question selection");
+
+		job.setJarByClass(this.getClass());
 
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(QuestionScoreLeftDistribution.class);

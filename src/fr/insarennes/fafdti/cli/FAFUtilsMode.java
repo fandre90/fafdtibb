@@ -99,7 +99,7 @@ public class FAFUtilsMode {
 		log.log(Level.INFO, w.toString());
 		log.log(Level.INFO, wpng.toString());
 		log.log(Level.INFO, wdot.toString());
-		System.exit(FAFOuputCode.EXIT_ERROR);
+		System.exit(FAFExitCode.EXIT_ERROR);
 	}
 	public static void makePng(CommandLine cmdline){
 		log.log(Level.INFO, "Starting makepng");
@@ -154,7 +154,7 @@ public class FAFUtilsMode {
 		//test du paramètre de la valeur rentrée par l'utilisateur
 		if(intindex<0 || intindex>=bt.getSize()){
 			log.error("Parameter <"+INDEX+"> must be an integer between 0 and the number of trees in bagging - 1");
-			System.exit(FAFOuputCode.EXIT_BAD_ARGUMENT);
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 		}
 		//on fait le dot
 		GraphicExporter graph = new GraphicExporter(bt.getTree(intindex), out);

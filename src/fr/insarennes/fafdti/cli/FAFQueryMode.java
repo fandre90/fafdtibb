@@ -74,7 +74,7 @@ public class FAFQueryMode {
 		PrintWriter pw = new PrintWriter(w, true);
 		h.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, HEAD_USAGE, "", opts, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, "");
 		log.log(Level.INFO, w.toString());
-		System.exit(FAFOuputCode.EXIT_ERROR);
+		System.exit(FAFExitCode.EXIT_ERROR);
 	}
 	
 	public static void main(String[] args) {
@@ -103,7 +103,7 @@ public class FAFQueryMode {
 				importer.launch();
 			} catch (FAFException e) {
 				log.error("Xml import failed");
-				System.exit(FAFOuputCode.EXIT_UNOCCURED_EXCEPTION);
+				System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
 			}
 			trees = importer.getResult();
 			//Launch stater
@@ -113,10 +113,10 @@ public class FAFQueryMode {
 				stater.launch();
 			} catch (IOException e) {
 				log.error("Error occured while reading standard input");
-				System.exit(FAFOuputCode.EXIT_UNOCCURED_EXCEPTION);
+				System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
 			} catch (FAFException e) {
 				log.error(e.getMessage());
-				System.exit(FAFOuputCode.EXIT_UNOCCURED_EXCEPTION);
+				System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
 			}
 			//log result in console
 			log.info(stater.getFastResult());			
@@ -145,7 +145,7 @@ public class FAFQueryMode {
 			} catch (FAFException e) {
 				// TODO Auto-generated catch block
 				log.log(Level.ERROR, "Xml import failed");
-				System.exit(FAFOuputCode.EXIT_UNOCCURED_EXCEPTION);
+				System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
 			}
 			log.log(Level.INFO, "Xml import done");
 			//On visite !
@@ -167,7 +167,7 @@ public class FAFQueryMode {
 					w = new FileWriter(cmdline.getOptionValue(OUT), true);
 				} catch (IOException e) {
 					log.log(Level.ERROR, "Unable to open file '"+cmdline.getOptionValue(OUT)+ "' when trying to write answer in it");
-					System.exit(FAFOuputCode.EXIT_UNOCCURED_EXCEPTION);
+					System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
 				}
 				PrintWriter pw = new PrintWriter(w);
 				pw.println("###Query on "+cmdline.getOptionValue(IN)+".xml tree###");

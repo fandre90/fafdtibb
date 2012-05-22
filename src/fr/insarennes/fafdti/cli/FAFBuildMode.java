@@ -119,7 +119,7 @@ public class FAFBuildMode {
 				HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD,
 				"");
 		log.log(Level.INFO, w.toString());
-		System.exit(FAFOuputCode.EXIT_ERROR);
+		System.exit(FAFExitCode.EXIT_ERROR);
 	}
 
 	public static void main(String[] args) {
@@ -153,7 +153,7 @@ public class FAFBuildMode {
 			if (sint < 1) {
 				log.error("Parameter <" + THREADS
 						+ "> must be an integer greater or equal than 1");
-				System.exit(FAFOuputCode.EXIT_BAD_ARGUMENT);
+				System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 			} else {
 				Scheduler.setPoolSize(sint);
 			}
@@ -179,27 +179,27 @@ public class FAFBuildMode {
 		if (intbagging < 1) {
 			log.error("Parameter <" + BAGGING
 					+ "> must be an integer greater or equal than 1");
-			System.exit(FAFOuputCode.EXIT_BAD_ARGUMENT);
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 		}
 		if (intmaxdepth < 1) {
 			log.error("Parameter <" + MAXDEPTH
 					+ "> must be an integer greater or equal than 1");
-			System.exit(FAFOuputCode.EXIT_BAD_ARGUMENT);
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 		}
 		if (intminex < 1) {
 			log.error("Parameter <" + MINEXBYLEAF
 					+ "> must be an integer greater or equal than 1");
-			System.exit(FAFOuputCode.EXIT_BAD_ARGUMENT);
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 		}
 		if (doublegainmin < 0.0 || doublegainmin > 1.0) {
 			log.error("Paramater <" + GAINMIN
 					+ "> must be a double between 0.0 and 1.0");
-			System.exit(FAFOuputCode.EXIT_BAD_ARGUMENT);
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 		}
 		if (doublepercent <= 0.0 || doublepercent > 1.0) {
 			log.error("Paramater <" + PERCENTBAGGING
 					+ "> must be a double between 0.0 (excluded) and 1.0");
-			System.exit(FAFOuputCode.EXIT_BAD_ARGUMENT);
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 		}
 
 		// construction des critères d'arrêt
@@ -214,7 +214,7 @@ public class FAFBuildMode {
 			criterion = new EntropyCriterion();
 		else {
 			log.error("Criterion <" + crit + "> not recognized");
-			System.exit(FAFOuputCode.EXIT_BAD_ARGUMENT);
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 		}
 
 		// construction du commentaire à insérer dans le fichier de sortie
@@ -234,7 +234,7 @@ public class FAFBuildMode {
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			log.error("File " + names + "malformed.");
 			log.error(e.getMessage());
-			System.exit(FAFOuputCode.EXIT_UNOCCURED_EXCEPTION);
+			System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
 		}
 	}
 }

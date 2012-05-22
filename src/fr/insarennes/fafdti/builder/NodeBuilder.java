@@ -35,7 +35,7 @@ import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
-import fr.insarennes.fafdti.cli.FAFOuputCode;
+import fr.insarennes.fafdti.cli.FAFExitCode;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 import fr.insarennes.fafdti.hadoop.SplitExampleMultipleOutputFormat;
@@ -225,7 +225,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			} else {
 				log.error("Thread " + id + " was relaunched more than " +
 						MAX_RELAUNCH_COUNTER + " times. Aborting.");
-				System.exit(FAFOuputCode.EXIT_ERROR);
+				System.exit(FAFExitCode.EXIT_ERROR);
 			}
 		}
 	}
@@ -318,7 +318,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		} catch (InvalidProbabilityComputationException e) {
 			log.log(Level.ERROR, e.getMessage());
 			System.out.println(parentDistribution.toString());
-			System.exit(FAFOuputCode.EXIT_ERROR);
+			System.exit(FAFExitCode.EXIT_ERROR);
 		}
 		try {
 			nodeSetter.set(dtl);

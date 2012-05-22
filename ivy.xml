@@ -1,15 +1,15 @@
 <ivy-module version="2.0" xmlns:e="http://ant.apache.org/ivy/extra">
     <info organisation="insa" module="hadoop-wordcount2"/>
     <dependencies>
+    	<exclude org="javax.jms" name="jms" />
+		<exclude org="com.sun.jmx" name="jmxri" />
+		<exclude org="com.sun.jdmk" name="jmxtools" />
         <dependency org="org.apache.hadoop" name="hadoop-core" rev="0.20.203.0" />
         <dependency org="org.codehaus.jackson" name="jackson-core-lgpl" rev="1.8.5" />
         <dependency org="org.codehaus.jackson" name="jackson-mapper-lgpl" rev="1.8.5" />
         <dependency org="log4j" name="log4j" rev="1.2.8"/>
-        <dependency org="org.apache.mrunit" name="mrunit" rev="0.8.1-incubating">
-        	<artifact name="mrunit" type="jar" ext="jar" e:classifier="hadoop020" />
-        	<exclude org="com.sun.jdmk" />
-  			<exclude org="com.sun.jmx" />
-  			<exclude org="javax.jms" />
+        <dependency org="org.apache.mrunit" name="mrunit" rev="0.9.0-incubating">
+			<artifact name="mrunit" type="jar" ext="jar" e:classifier="hadoop1" />
         </dependency>
     </dependencies>
 </ivy-module>

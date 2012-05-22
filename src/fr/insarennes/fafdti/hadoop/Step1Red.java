@@ -42,6 +42,17 @@ public class Step1Red extends
 				.computeRightDistribution(leftDist);
 		leftDist.rate(criterion);
 		rightDist.rate(criterion);
+		// TEST REMOVE THIS WHEN TEST ARE FINISHED
+		for(Integer i: rightDist.getDistributionVector()) {
+			if(i < 0) {
+				System.out.println(q);
+				System.out.println(i+"");
+				System.out.println("Something went wrong.");
+				System.out.println("Parent: " + parentDistribution.toString());
+				System.out.println("Left: " + leftDist);
+				System.exit(127);
+			}
+		}
 		ScoreLeftDistribution scoreLeftDist = new ScoreLeftDistribution(
 				leftDist, rightDist);
 		context.write(q, scoreLeftDist);

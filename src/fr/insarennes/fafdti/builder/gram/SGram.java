@@ -10,6 +10,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
 public class SGram implements WritableComparable<SGram> {
+
+
 	private Text firstWord;
 	private Text lastWord;
 	private IntWritable maxDistance;
@@ -115,5 +117,43 @@ public class SGram implements WritableComparable<SGram> {
 		this.firstWord.set(fields[1]);
 		this.lastWord.set(fields[2]);
 	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((firstWord == null) ? 0 : firstWord.hashCode());
+		result = prime * result
+				+ ((lastWord == null) ? 0 : lastWord.hashCode());
+		result = prime * result
+				+ ((maxDistance == null) ? 0 : maxDistance.hashCode());
+		return result;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SGram other = (SGram) obj;
+		if (firstWord == null) {
+			if (other.firstWord != null)
+				return false;
+		} else if (!firstWord.equals(other.firstWord))
+			return false;
+		if (lastWord == null) {
+			if (other.lastWord != null)
+				return false;
+		} else if (!lastWord.equals(other.lastWord))
+			return false;
+		if (maxDistance == null) {
+			if (other.maxDistance != null)
+				return false;
+		} else if (!maxDistance.equals(other.maxDistance))
+			return false;
+		return true;
+	}
 }

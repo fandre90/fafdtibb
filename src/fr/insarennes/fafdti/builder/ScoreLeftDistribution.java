@@ -12,6 +12,7 @@ import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 
 
 public class ScoreLeftDistribution implements Writable, Cloneable {
+
 	private DoubleWritable score;
 	private ScoredDistributionVector distribution;
 	public static final String DELIMITER = " ";
@@ -98,5 +99,37 @@ public class ScoreLeftDistribution implements Writable, Cloneable {
 		double scoreValue = Double.parseDouble(fields[0]);
 		this.score.set(scoreValue);
 		this.distribution.fromString(fields[1]);
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((distribution == null) ? 0 : distribution.hashCode());
+		result = prime * result + ((score == null) ? 0 : score.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ScoreLeftDistribution other = (ScoreLeftDistribution) obj;
+		if (distribution == null) {
+			if (other.distribution != null)
+				return false;
+		} else if (!distribution.equals(other.distribution))
+			return false;
+		if (score == null) {
+			if (other.score != null)
+				return false;
+		} else if (!score.equals(other.score))
+			return false;
+		return true;
 	}
 }

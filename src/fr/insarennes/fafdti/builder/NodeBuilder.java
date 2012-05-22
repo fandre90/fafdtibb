@@ -304,7 +304,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		int sum = parentDistribution.getTotal();
 		log.log(Level.DEBUG, "sum="+sum);
 		Map<String, Double> map = new HashMap<String, Double>();
-		for(int i=0 ; i<distr.length ; i++){
+		for(int i=0 ; i<distr.length ; i++) {
 			log.log(Level.DEBUG, "distr[i]="+distr[i]);
 			Double distri = new Double((double)distr[i]/(double)sum);
 			if(distri.doubleValue()>0.0){
@@ -317,6 +317,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 			dtl = new DecisionTreeLeaf(new LeafLabels(map), sum);
 		} catch (InvalidProbabilityComputationException e) {
 			log.log(Level.ERROR, e.getMessage());
+			System.out.println(parentDistribution.toString());
+			System.exit(FAFOuputCode.EXIT_ERROR);
 		}
 		try {
 			nodeSetter.set(dtl);
@@ -414,7 +416,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		job.setOutputValueClass(QuestionScoreLeftDistribution.class);
 
 		job.setMapperClass(Step3Map.class);
-		job.setCombinerClass(Step3Red.class);
+		//job.setCombinerClass(Step3Red.class);
 		job.setReducerClass(Step3Red.class);
 
 		job.setInputFormatClass(TextInputFormat.class);

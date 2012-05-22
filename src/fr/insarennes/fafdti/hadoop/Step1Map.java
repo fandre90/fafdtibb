@@ -1,6 +1,8 @@
 package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,6 +12,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.log4j.Logger;
+
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.AttrSpec;
@@ -83,17 +86,19 @@ public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 			if(textAttr.getExpertType() == GramType.FGRAM) {
 				minSize = maxSize;
 			}
-			for(int i=0; i< words.length; ++i) {
-				int sizeLimit = Math.min(
-						words.length - i,
-						maxSize);
-				for(int size = minSize; size <= sizeLimit; ++size) {
+			for(int size = minSize; size <= maxSize; ++size) {
+				Set<FGram> fGramSet = new HashSet<FGram>();
+				for(int i=0; i<words.length; ++i) {
 					String[] gramWords = new String[size];
-					for(int j=0; j < size; ++j) {
-						gramWords[j] = words[i + j];
+					if(i + size - 1 < words.length) {
+						for(int j=0; j < size; j++) {
+							gramWords[j] = words[i + j];
+						}
+						fGramSet.add(new FGram(gramWords));
 					}
-					Question q = new Question(qIdx, AttrType.TEXT, 
-							new FGram(gramWords));
+				}
+				for(FGram fGram : fGramSet) {
+					Question q = new Question(qIdx, AttrType.TEXT, fGram);
 					ctx.write(q, labelIndex);
 				}
 			}
@@ -102,16 +107,18 @@ public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 		protected void generateSGram(Context ctx, IntWritable labelIndex, 
 				int qIdx, TextAttrSpec textAttr,  String[] words) 
 						throws IOException, InterruptedException {
-			int maxDistance = textAttr.getExpertLength();
-			for(int i=0; i < words.length - 1; i++) {
-				int distLimit = Math.min(maxDistance, words.length - i - 2);
-				for(int dist = 0; dist <= distLimit; ++dist) {
+			int expLen = textAttr.getExpertLength();
+			Set<SGram> sGramSet = new HashSet<SGram>();
+			for(int dist = 0; dist <= expLen; ++dist) {
+				for(int i=0; i< words.length - dist - 1; ++i) {
 					String firstWord = words[i];
 					String lastWord = words[i + dist + 1];
-					Question q = new Question(qIdx, AttrType.TEXT,
-							new SGram(firstWord, lastWord, textAttr.getExpertLength()));
-					ctx.write(q, labelIndex);
+					sGramSet.add(new SGram(firstWord, lastWord, expLen));
 				}
+			}
+			for(SGram sGram : sGramSet) {
+				Question q = new Question(qIdx, AttrType.TEXT, sGram);
+				ctx.write(q, labelIndex);
 			}
 		}
 }

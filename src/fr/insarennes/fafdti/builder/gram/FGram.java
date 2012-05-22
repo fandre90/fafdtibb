@@ -3,6 +3,7 @@ package fr.insarennes.fafdti.builder.gram;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
@@ -101,5 +102,27 @@ public class FGram implements WritableComparable<FGram> {
 		for (int i = 0; i < words.length; ++i) {
 			this.words[i] = new Text(words[i]);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(words);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FGram other = (FGram) obj;
+		if (!Arrays.equals(words, other.words))
+			return false;
+		return true;
 	}
 }

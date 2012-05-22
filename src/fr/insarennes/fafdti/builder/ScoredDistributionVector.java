@@ -3,6 +3,7 @@ package fr.insarennes.fafdti.builder;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
@@ -88,7 +89,7 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		return total;
 	}
 	
-	public boolean isPure(){
+	public boolean isPure() {
 		return !hasMoreThanOneNonEmptyLabel;
 	}
 
@@ -221,4 +222,33 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		String strRepr = this.toString();
 		conf.set(HADOOP_CONFIGURATION_KEY + "-" + keySuffix, strRepr);
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(distributionVector);
+		long temp;
+		temp = Double.doubleToLongBits(score);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ScoredDistributionVector other = (ScoredDistributionVector) obj;
+		if (!Arrays.equals(distributionVector, other.distributionVector))
+			return false;
+		if (Double.doubleToLongBits(score) != Double
+				.doubleToLongBits(other.score))
+			return false;
+		return true;
+	}
+
 }

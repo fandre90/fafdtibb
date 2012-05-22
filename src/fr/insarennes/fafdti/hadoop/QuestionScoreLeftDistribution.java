@@ -18,7 +18,7 @@ public class QuestionScoreLeftDistribution implements
 
 	private Question question;
 	private ScoreLeftDistribution scoreLeftDistribution;
-	public static final String DELIMITER = " ";
+	public static final String DELIMITER = "\t";
 
 	public Question getQuestion() {
 		return question;
@@ -48,28 +48,14 @@ public class QuestionScoreLeftDistribution implements
 
 	@Override
 	public void readFields(DataInput in) throws IOException {
-		// byte[] inBuffer = new byte[1024];
-		// try {
-		// in.readFully(inBuffer);
-		// } catch (Exception e) {
-		//
-		// }
-		// OutputStream out = new FileOutputStream("/tmp/rawBuff.hex", true);
-		// out.write(inBuffer);
-		// System.out.println();
 		this.scoreLeftDistribution.readFields(in);
 		this.question.readFields(in);
-		// System.out.println("Got question : " + this.question);
-		// System.out.println("Char: " + in.readChar());
-
 	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
 		this.scoreLeftDistribution.write(out);
 		this.question.write(out);
-		// out.writeChar('Z');
-		//
 	}
 
 	@Override
@@ -85,7 +71,42 @@ public class QuestionScoreLeftDistribution implements
 				this.scoreLeftDistribution.clone();
 		return qDVPair;
 	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((question == null) ? 0 : question.hashCode());
+		result = prime
+				* result
+				+ ((scoreLeftDistribution == null) ? 0 : scoreLeftDistribution
+						.hashCode());
+		return result;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		QuestionScoreLeftDistribution other = (QuestionScoreLeftDistribution) obj;
+		if (question == null) {
+			if (other.question != null)
+				return false;
+		} else if (!question.equals(other.question))
+			return false;
+		if (scoreLeftDistribution == null) {
+			if (other.scoreLeftDistribution != null)
+				return false;
+		} else if (!scoreLeftDistribution.equals(other.scoreLeftDistribution))
+			return false;
+		return true;
+	}
+	
 	@Override
 	public String toString() {
 		String strRepr = this.question.toString();

@@ -57,8 +57,10 @@ public class GramContainer implements WritableComparable<GramContainer> {
 		switch (this.type) {
 		case FGRAM:
 			this.fGram.readFields(in);
+			break;
 		case SGRAM:
 			this.sGram.readFields(in);
+			break;
 		}
 	}
 
@@ -69,8 +71,10 @@ public class GramContainer implements WritableComparable<GramContainer> {
 		switch(this.type) {
 		case FGRAM:
 			this.fGram.write(out);
+			break;
 		case SGRAM:
 			this.sGram.write(out);
+			break;
 		}
 	}
 
@@ -98,6 +102,22 @@ public class GramContainer implements WritableComparable<GramContainer> {
 		return this.compareTo(other) == 0;
 	}
 
+	@Override
+	public int hashCode() {
+		int result = 1;
+		if(this.type != null) {
+			switch(this.type) {
+			case FGRAM:
+				result = (this.fGram.hashCode() << 1);
+				break;
+			case SGRAM:
+				result = (this.sGram.hashCode() << 1);
+				break;
+			}
+		}
+		return result;
+	}
+	
 	private GramType charToType(char typeChar) {
 		switch (typeChar) {
 		case 'F':
@@ -125,18 +145,16 @@ public class GramContainer implements WritableComparable<GramContainer> {
 	}
 
 	public GramContainer cloneGram() {
-		if (this.type == null) {
-			throw new UnsupportedOperationException(
-					"GramConainer is unitialized !");
-		}
-		GramContainer gram = null;
-		switch (this.type) {
-		case FGRAM:
-			gram = new GramContainer(this.fGram);
-			break;
-		case SGRAM:
-			gram = new GramContainer(this.sGram);
-			break;
+		GramContainer gram = new GramContainer();
+		if(this.type != null) {
+			switch (this.type) {
+			case FGRAM:
+				gram = new GramContainer(this.fGram);
+				break;
+			case SGRAM:
+				gram = new GramContainer(this.sGram);
+				break;
+			}
 		}
 		return gram;
 	}

@@ -4,7 +4,9 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
+import org.apache.commons.net.nntp.NewGroupsOrNewsQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -14,6 +16,7 @@ import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.junit.Test;
 
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
+import org.apache.hadoop.mrunit.types.Pair;
 
 import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.DotNamesInfo;
@@ -22,27 +25,21 @@ import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.hadoop.Step1Map;
+import static fr.insarennes.fafdti.test.UtilsTest.*;
 
 public class TestStep1Map {
 
-	public Configuration generateConfiguration(String resourcePath) 
-			throws ParseException, IOException {
-		URL url = this.getClass().getResource(resourcePath);
-		Path path = new Path(url.getPath());
-		Configuration conf = new Configuration();
-		DotNamesInfo dotNames = new DotNamesInfo(path, FileSystem.get(conf));
-		dotNames.toConf(conf);
-		return conf;
-	}
+
 
 	@Test
 	public void testSGramGeneration() throws ParseException, IOException {
-		Configuration conf = generateConfiguration("res/test2SGram.names");
+		URL url = this.getClass().getResource("res/test2SGram.names");
+		Configuration conf = generateConfiguration(url.getPath());
 		MapDriver<Object, Text, Question, IntWritable> mapDriver = 
 				new MapDriver<Object, Text, Question, IntWritable>();
 		mapDriver.withConfiguration(conf);
 		mapDriver.setMapper(new Step1Map());
-		mapDriver.withInput(null, new Text("aaa bbb ccc ddd, classA."));
+		mapDriver.withInput(0, new Text("aaa bbb ccc ddd, classA."));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, new SGram("aaa",
 				"bbb", 2)), new IntWritable(0));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, new SGram("aaa",
@@ -55,49 +52,54 @@ public class TestStep1Map {
 				"ddd", 2)), new IntWritable(0));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, new SGram("ccc",
 				"ddd", 2)), new IntWritable(0));
-		mapDriver.runTest();
+		mapDriver.runTest(false);
 	}
 
 	@Test
 	public void testFGramGeneration() throws ParseException, IOException {
-		Configuration conf = generateConfiguration("res/test2FGram.names");
+		URL url = this.getClass().getResource("res/test2FGram.names");
+		Configuration conf = generateConfiguration(url.getPath());
 		MapDriver<Object, Text, Question, IntWritable> mapDriver = 
 				new MapDriver<Object, Text, Question, IntWritable>();
 		mapDriver.withConfiguration(conf);
 		mapDriver.setMapper(new Step1Map());
-		mapDriver.withInput(null, new Text("aaa bbb ccc ddd, classA."));
-		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
-				new FGram(new String[]{"aaa", "bbb"})), new IntWritable(0));
+		mapDriver.withInput(0, new Text("aaa bbb ccc ddd, classA."));
+		Question q1 = new Question(0, AttrType.TEXT, 
+				new FGram(new String[]{"aaa", "bbb"}));
+		Pair<Question, IntWritable> p1 = new Pair<Question, IntWritable>(q1, new IntWritable(0));
+		mapDriver.withOutput(q1, new IntWritable(0));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
 				new FGram(new String[]{"bbb", "ccc"})), new IntWritable(0));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
 				new FGram(new String[]{"ccc", "ddd"})), new IntWritable(0));
-		mapDriver.runTest();
+		List<Pair<Question, IntWritable>> lst = mapDriver.run();
+		mapDriver.runTest(false);
 	}
 
 	@Test
 	public void testNGramGeneration() throws ParseException, IOException {
-		Configuration conf = generateConfiguration("res/test2NGram.names");
+		URL url = this.getClass().getResource("res/test2NGram.names");
+		Configuration conf = generateConfiguration(url.getPath());
 		MapDriver<Object, Text, Question, IntWritable> mapDriver = 
 				new MapDriver<Object, Text, Question, IntWritable>();
 		mapDriver.withConfiguration(conf);
 		mapDriver.setMapper(new Step1Map());
-		mapDriver.withInput(null, new Text("aaa bbb ccc ddd, classA."));
+		mapDriver.withInput(0, new Text("aaa bbb ccc ddd, classA."));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
 				new FGram(new String[]{"aaa"})), new IntWritable(0));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
-				new FGram(new String[]{"aaa", "bbb"})), new IntWritable(0));
-		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
 				new FGram(new String[]{"bbb"})), new IntWritable(0));
-		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
-				new FGram(new String[]{"bbb", "ccc"})), new IntWritable(0));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
 				new FGram(new String[]{"ccc"})), new IntWritable(0));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
-				new FGram(new String[]{"ccc", "ddd"})), new IntWritable(0));
-		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
 				new FGram(new String[]{"ddd"})), new IntWritable(0));
-		mapDriver.runTest();
+		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
+				new FGram(new String[]{"aaa", "bbb"})), new IntWritable(0));
+		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
+				new FGram(new String[]{"bbb", "ccc"})), new IntWritable(0));
+		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
+				new FGram(new String[]{"ccc", "ddd"})), new IntWritable(0));
+		mapDriver.runTest(false);
 	}
 
 	@Test

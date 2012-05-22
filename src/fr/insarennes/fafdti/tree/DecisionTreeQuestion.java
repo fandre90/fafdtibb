@@ -9,19 +9,19 @@ import fr.insarennes.fafdti.builder.Question;
 
 
 public class DecisionTreeQuestion implements DecisionTree {
-	private DecisionTree _yesTree;
-	private DecisionTree _noTree;
-	private Question _question;
+	private DecisionTree yesTree;
+	private DecisionTree noTree;
+	private Question question;
 
 	public DecisionTreeQuestion(Question q){
-		_yesTree = new DecisionTreePending();
-		_noTree = new DecisionTreePending();
-		_question = q;
+		yesTree = new DecisionTreePending();
+		noTree = new DecisionTreePending();
+		question = q;
 	}
 	public DecisionTreeQuestion(Question q, DecisionTree dtyes, DecisionTree dtno) {
-		_yesTree = dtyes;
-		_noTree = dtno;
-		_question = q;
+		yesTree = dtyes;
+		noTree = dtno;
+		question = q;
 	}
 	@Override
 	public void accept(DecisionTreeVisitor dtv) {
@@ -37,8 +37,8 @@ public class DecisionTreeQuestion implements DecisionTree {
 	public DecisionNodeSetter yesSetter(){
 		return new DecisionNodeSetter() {
 			public void set(DecisionTree node) throws CannotOverwriteTreeException{
-				if(_yesTree.canOverwrite()){
-					_yesTree = node;
+				if(yesTree.canOverwrite()){
+					yesTree = node;
 				} else {
 					throw new CannotOverwriteTreeException();
 				}
@@ -49,8 +49,8 @@ public class DecisionTreeQuestion implements DecisionTree {
 	public DecisionNodeSetter noSetter(){
 		return new DecisionNodeSetter() {
 			public void set(DecisionTree node) throws CannotOverwriteTreeException{
-				if(_noTree.canOverwrite()){
-					_noTree = node;
+				if(noTree.canOverwrite()){
+					noTree = node;
 				} else {
 					throw new CannotOverwriteTreeException();
 				}
@@ -59,12 +59,12 @@ public class DecisionTreeQuestion implements DecisionTree {
 		};
 	}
 	public Question getQuestion() {
-		return _question;
+		return question;
 	}
 	public DecisionTree getYesTree() {
-		return _yesTree;
+		return yesTree;
 	}
 	public DecisionTree getNoTree() {
-		return _noTree;
+		return noTree;
 	}
 }

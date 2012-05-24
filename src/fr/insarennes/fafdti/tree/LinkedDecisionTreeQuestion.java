@@ -3,6 +3,7 @@ package fr.insarennes.fafdti.tree;
 import org.apache.hadoop.fs.Path;
 
 import fr.insarennes.fafdti.builder.DirDeleter;
+import fr.insarennes.fafdti.builder.INodeBuilder;
 import fr.insarennes.fafdti.builder.Question;
 
 /**
@@ -13,15 +14,15 @@ import fr.insarennes.fafdti.builder.Question;
  */
 public class LinkedDecisionTreeQuestion extends DecisionTreeQuestion {
 	private int nbPendingDone;
-	private Path dirPath;
-	public LinkedDecisionTreeQuestion(Question q, Path dirPath) {
+	private INodeBuilder nodeBuilder;
+	public LinkedDecisionTreeQuestion(Question q, INodeBuilder nodeBuilder) {
 		super(q);
 		nbPendingDone = 0;
-		this.dirPath = dirPath;
+		this.nodeBuilder = nodeBuilder;
 	}
 	private void tryDelDir(){
 		if(nbPendingDone==2)
-			new DirDeleter(this.dirPath);
+			this.nodeBuilder.cleanUp();
 	}
 	public DecisionNodeSetter yesSetter(){
 		return new DecisionNodeSetter() {

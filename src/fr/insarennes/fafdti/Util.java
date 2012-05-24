@@ -44,4 +44,14 @@ public class Util {
 		}
 		return size;
 	}
+	public static double getSize(Path path){
+		double size = 0;
+		try {
+			FileSystem fileSystem = FileSystem.get(new Configuration());
+			size = fileSystem.getFileStatus(path).getLen();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		return size;
+	}
 }

@@ -24,6 +24,7 @@ import org.apache.hadoop.util.LineReader;
 import org.apache.log4j.Level;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.Pair;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.cli.FAFExitCode;
@@ -47,237 +48,109 @@ import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.tree.LinkedDecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
 
-public class NodeBuilderMode1 extends NodeBuilder {
+public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
 	private final String job2outDir = "continuous-questions";
 	private final String job3outDir = "best-question";
 	private final String job4outDir = "split";
-	private double limitMode;
+	private QuestionScoreLeftDistribution qLeftDistribution;
+	private Path workingDir;
+	private String id;
+	private Path inputDataPath;
 	//root constructor
-	public NodeBuilderMode1(DotNamesInfo featureSpec, 
-			String inputDataPath,
-			String workingDir,
-			Criterion criterion,
-			DecisionNodeSetter nodeSetter, 
-			List<StoppingCriterion> stopping,
-			StatBuilder stats,
-			String baggingId, 
-			double limitMode) {
-		super(featureSpec, inputDataPath, workingDir, criterion, nodeSetter, stopping, stats, baggingId);
-		this.limitMode = limitMode;
+	public NodeBuilderFat(DotNamesInfo featureSpec, 
+			Criterion criterion, StatBuilder stats) {
+		super(featureSpec, criterion, stats);
 	}
-	//recursive constructor
-	public NodeBuilderMode1(DotNamesInfo featureSpec, 
-			String inputDataPath,
-			String workingDir, 
-			Criterion criterion, 
-			DecisionNodeSetter nodeSetter, 
-			List<StoppingCriterion> stopping,
-			ParentInfos parentInfos, 
-			ScoredDistributionVector parentDistribution,
-			StatBuilder stats,
-			double limitMode) {
-		super(featureSpec, inputDataPath, workingDir, criterion, nodeSetter, stopping, parentInfos, parentDistribution, stats);
-		this.limitMode = limitMode;
-	}
-	public void run(){
-		log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
-		try {
-			//JOB0
-			if(parentDistribution==null){
-				log.info("Thread "+id+ " : launching step0...");
-				Job job0 = setupJob0();
+	
+	public QuestionScoreLeftDistribution buildNode(Path dataPath, ScoredDistributionVector parentDistribution, Path workDir, String id) throws IOException, InterruptedException, ClassNotFoundException {
+		this.workingDir = workDir;
+		this.id = id;
+		this.inputDataPath = dataPath;
+		//log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
+		//JOB0
+		if(parentDistribution==null){
+			log.info("NodeFat "+id+ " : launching step0...");
+			Job job0 = setupJob0();
+			job0.waitForCompletion(false);
+			//****//
+			while(!job0.isSuccessful()){
+				log.info("NodeFat "+id+ " : RE-launching step0...");
+				deleteDir(job0outDir);
+				job0 = setupJob0();
 				job0.waitForCompletion(false);
-				//****//
-				while(!job0.isSuccessful()){
-					log.info("Thread "+id+ " : RE-launching step0...");
-					deleteDir(job0outDir);
-					job0 = setupJob0();
-					job0.waitForCompletion(false);
-				}
-				//****//
-				//get initial distribution
-				parentDistribution = readParentDistribution();
-				stats.setTotalEx(parentDistribution.getTotal());
 			}
-			log.debug("parentDist = "+parentDistribution.toString());
-			//JOB1
-			Job job1 = setupJob1(parentDistribution);
-			log.info("Thread "+id+ " : launching step1...");
+			//****//
+			//get initial distribution
+			parentDistribution = readParentDistribution();
+			stats.setTotalEx(parentDistribution.getTotal());
+		}
+		log.debug("parentDist = "+parentDistribution.toString());
+		//JOB1
+		Job job1 = setupJob1(parentDistribution);
+		log.info("NodeFat "+id+ " : launching step1...");
+		job1.waitForCompletion(false);
+		//****//
+		while(!job1.isSuccessful()){
+			log.info("NodeFat "+id+ " : RE-launching step1...");
+			deleteDir(job1outDir);
+			job1 = setupJob1(parentDistribution);
 			job1.waitForCompletion(false);
-			//****//
-			while(!job1.isSuccessful()){
-				log.info("Thread "+id+ " : RE-launching step1...");
-				deleteDir(job1outDir);
-				job1 = setupJob1(parentDistribution);
-				job1.waitForCompletion(false);
-			}
-			//****//
-			//JOB2
-			Job job2 = setupJob2(parentDistribution);
-			log.info("Thread "+id+ " : launching step2...");
+		}
+		//****//
+		//JOB2
+		Job job2 = setupJob2(parentDistribution);
+		log.info("NodeFat "+id+ " : launching step2...");
+		job2.waitForCompletion(false);
+		//****//
+		while(!job2.isSuccessful()){
+			log.info("NodeFat "+id+ " : RE-launching step2...");
+			deleteDir(job2outDir);
+			job2 = setupJob2(parentDistribution);
 			job2.waitForCompletion(false);
-			//****//
-			while(!job2.isSuccessful()){
-				log.info("Thread "+id+ " : RE-launching step2...");
-				deleteDir(job2outDir);
-				job2 = setupJob2(parentDistribution);
-				job2.waitForCompletion(false);
-			}
-			//****//
-			//JOB3
-			Job job3 = setupJob3();
-			log.info("Thread "+id+ " : launching step3...");
+		}
+		//****//
+		//JOB3
+		Job job3 = setupJob3();
+		log.info("NodeFat "+id+ " : launching step3...");
+		job3.waitForCompletion(false);
+		//****//
+		while(!job3.isSuccessful()){
+			log.info("NodeFat "+id+ " : RE-launching step3...");
+			deleteDir(job3outDir);
+			job3 = setupJob3();
 			job3.waitForCompletion(false);
-			//****//
-			while(!job3.isSuccessful()){
-				log.info("Thread "+id+ " : RE-launching step3...");
-				deleteDir(job3outDir);
-				job3 = setupJob3();
-				job3.waitForCompletion(false);
-			}
-			//****//
-			//get best question	
-			qLeftDistribution = readBestQuestion();
-			//if no best question : make a leaf
-			if(qLeftDistribution==null){
-				leafMaker();
-			}
-			//else
-			else{
-				//compute right distribution from left one
-				rightDistribution = parentDistribution.computeRightDistribution(qLeftDistribution.getScoreLeftDistribution().getDistribution());
-				rightDistribution.rate(criterion);
-				//JOB4
-				// Old API
-				JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
-				log.info("Thread "+id+ " : launching step4...");
-				RunningJob rj4 = JobClient.runJob(job4Conf);
-				//****//
-				while(!rj4.isSuccessful()){
-					log.info("Thread "+id+ " : RE-launching step4...");
-					deleteDir(job4outDir);
-					job4Conf = setupJob4(qLeftDistribution.getQuestion());
-					rj4 = JobClient.runJob(job4Conf);
-				}
-				//****//
-				
-				if(this.mustStop()){
-					leafMaker();
-				}
-				else nodeMaker();
-			}
-		
-			log.info("Thread "+id+" finished (launched by "+parentInfos.getId()+")");
-			
-		} catch (Exception e){
-			//if catch an exception : relaunch full thread
-			log.error(e.getMessage());
-			log.error("Thread "+id+ " catched an exception : re-launch it");
-			relaunchCounter++;
-			if(relaunchCounter <= MAX_RELAUNCH_COUNTER) {
-				relaunch();
-			} else {
-				log.error("Thread " + id + " was relaunched more than " +
-						MAX_RELAUNCH_COUNTER + " times. Aborting.");
-				System.exit(FAFExitCode.EXIT_ERROR);
-			}
 		}
+		//****//
+		//get best question	
+		qLeftDistribution = readBestQuestion();
+		return qLeftDistribution;
 	}
-	protected void relaunch(){
-		deleteAllDirs();
-		Scheduler.INSTANCE.execute(this);
-	}	
-	protected void deleteAllDirs(){
-		deleteDir(job0outDir);
-		deleteDir(job1outDir);
-		deleteDir(job2outDir);
-		deleteDir(job3outDir);
-		deleteDir(job4outDir);
-	}
-	//*******************Construction methods************//
-	
-	private void nodeMaker(){
-		log.log(Level.INFO, "Making a question node...");
-		//+2(2 sons)-1(current node) = 1
-		//on le fait avant d'appeler set(dtq) sur le nodeSetter
-		stats.incrementPending();
-		//construction du noeud
-		Question question = qLeftDistribution.getQuestion();
-		LinkedDecisionTreeQuestion dtq = new LinkedDecisionTreeQuestion(question, this.workingDir);
-		try {
-			nodeSetter.set(dtq);
-		} catch (CannotOverwriteTreeException e) {
-			log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Question node");
-			log.log(Level.ERROR, e.getMessage());
+	public Pair<Path,Path> getSplitPath() throws IOException {
+		//JOB4
+		// Old API
+		JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
+		log.info("Thread "+id+ " : launching step4...");
+		RunningJob rj4 = JobClient.runJob(job4Conf);
+		//****//
+		while(!rj4.isSuccessful()){
+			log.info("Thread "+id+ " : RE-launching step4...");
+			deleteDir(job4outDir);
+			job4Conf = setupJob4(qLeftDistribution.getQuestion());
+			rj4 = JobClient.runJob(job4Conf);
 		}
-		//on lance la construction du fils droit et gauche
-		Path dataRes = new Path(this.workingDir,this.job4outDir);
-		Path yesdata = new Path(dataRes, "left");
-		Path nodata = new Path(dataRes, "right");
-		ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1, id, parentInfos.getBaggingId());
+		Path p = new Path(this.workingDir, job4outDir);
+		return new Pair<Path,Path>(new Path(p,"left"),new Path(p,"right"));
+	}
 
-		NodeBuilder yesSon = new NodeBuilderMode1(this.featureSpec, 
-				yesdata.toString(), 
-				this.workingDir.getParent().toString(), 
-				this.criterion, dtq.yesSetter(), 
-				this.stopping, pInfos, 
-				qLeftDistribution.getScoreLeftDistribution().getDistribution(),
-				stats, limitMode);
-		NodeBuilder noSon = new NodeBuilderMode1(this.featureSpec, 
-				nodata.toString(), 
-				this.workingDir.getParent().toString(), 
-				this.criterion, dtq.noSetter(), 
-				this.stopping, pInfos, 
-				rightDistribution,
-				stats, limitMode);
-		
-		Scheduler.INSTANCE.execute(yesSon);
-		Scheduler.INSTANCE.execute(noSon);
-	}
 	
-	private void leafMaker(){
-		log.log(Level.INFO, "Making a distribution leaf...");
-		//construction de la feuille
-		int[] distr = parentDistribution.getDistributionVector();
-		int sum = parentDistribution.getTotal();
-		log.log(Level.DEBUG, "sum="+sum);
-		Map<String, Double> map = new HashMap<String, Double>();
-		for(int i=0 ; i<distr.length ; i++) {
-			log.log(Level.DEBUG, "distr[i]="+distr[i]);
-			Double distri = new Double((double)distr[i]/(double)sum);
-			if(distri.doubleValue()>0.0){
-				String label = featureSpec.getLabels()[i];
-				map.put(label, distri);
-			}
-		}
-		DecisionTreeLeaf dtl = null;
-		try {
-			dtl = new DecisionTreeLeaf(new LeafLabels(map), sum);
-		} catch (InvalidProbabilityComputationException e) {
-			log.log(Level.ERROR, e.getMessage());
-			System.out.println(parentDistribution.toString());
-			System.exit(FAFExitCode.EXIT_ERROR);
-		}
-		try {
-			nodeSetter.set(dtl);
-		} catch (CannotOverwriteTreeException e) {
-			log.log(Level.ERROR, "NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Distribution leaf");
-		}
-		try {
-			stats.addExClassified(sum);
-		} catch (FAFException e) {
-			log.error("Cannot add stats of examples classified because total has not been set");
-		}
-		//un pending en moins
-		stats.decrementPending();
-	}
+	
 	//***************setup JOB methods********************//
 	
 	private Job setupJob0() throws IOException {
 		Configuration conf = new Configuration();
-		featureSpec.toConf(conf);
+		dotNames.toConf(conf);
 		criterion.toConf(conf);
 		Job job = new Job(conf, "Initial entropy calculation");
 		job.setOutputKeyClass(Text.class);
@@ -299,7 +172,7 @@ public class NodeBuilderMode1 extends NodeBuilder {
 	private Job setupJob1(ScoredDistributionVector parentDistribution)
 			throws IOException {
 		Configuration conf = new Configuration();
-		featureSpec.toConf(conf);
+		dotNames.toConf(conf);
 		criterion.toConf(conf);
 		parentDistribution.toConf(conf);
 		Job job = new Job(conf, "Discrete and text questions generation");
@@ -322,7 +195,7 @@ public class NodeBuilderMode1 extends NodeBuilder {
 	private Job setupJob2(ScoredDistributionVector parentDistribution)
 			throws IOException {
 		Configuration conf = new Configuration();
-		featureSpec.toConf(conf);
+		dotNames.toConf(conf);
 		criterion.toConf(conf);
 		parentDistribution.toConf(conf);
 		Job job = new Job(conf, "Continuous questions generation");
@@ -345,7 +218,7 @@ public class NodeBuilderMode1 extends NodeBuilder {
 
 	private Job setupJob3() throws IOException {
 		Configuration conf = new Configuration();
-		featureSpec.toConf(conf);
+		dotNames.toConf(conf);
 		criterion.toConf(conf);
 		Job job = new Job(conf, "Best question selection");
 
@@ -457,4 +330,40 @@ public class NodeBuilderMode1 extends NodeBuilder {
 		String tokens[] = line.split("\\s+");
 		return new ScoredDistributionVector(tokens[tokens.length - 1]);
 	}
+	@Override
+	public Pair<String[][], String[][]> getSplitData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void cleanUp() {
+		deleteDir(job0outDir);
+		deleteDir(job1outDir);
+		deleteDir(job2outDir);
+		deleteDir(job3outDir);
+		deleteDir(job4outDir);
+	}
+	@Override
+	public QuestionScoreLeftDistribution buildNode(String[][] data) {
+		throw new UnsupportedOperationException(this.getClass().getName()+" cannot build node with String[][]");
+	}
+	
+	protected void deleteDir(String dir){
+		FileSystem fs = null;
+		try {
+			fs = FileSystem.get(new Configuration());
+			fs.delete(new Path(workingDir,dir), true);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+	}
+
+	@Override
+	public String getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 }

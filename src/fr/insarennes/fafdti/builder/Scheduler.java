@@ -6,22 +6,32 @@ import java.util.concurrent.ThreadPoolExecutor;
  * de thread s'exécutant dans la jvm.
  */
 
-public class Scheduler{
+public class Scheduler implements IScheduler {
 	
 	private final static int DEFAULT_POOL_SIZE = 50;
 	/** le singleton */
-	public final static ThreadPoolExecutor INSTANCE = (ThreadPoolExecutor)Executors.newFixedThreadPool(DEFAULT_POOL_SIZE);
+	private final ThreadPoolExecutor pool;
 	
+	public final Scheduler INSTANCE = new Scheduler();
+	private Scheduler() {
+		pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(DEFAULT_POOL_SIZE);
+	}
 	/** Methode permettant de modifier la taille par défaut du pool
 	 * Attention : à appeler avant le premier appel de Scheduler.INSTANCE.execute(...)
 	 * 
 	 * @param new_size la nouvelle taille
 	 */
-	public static void setPoolSize(int new_size){
-		INSTANCE.setCorePoolSize(new_size);
+	public void setPoolSize(int new_size){
+		pool.setCorePoolSize(new_size);
 	}
 	
-	public static int getPoolSize(){
-		return INSTANCE.getCorePoolSize();
+	public int getPoolSize(){
+		return pool.getCorePoolSize();
+	}
+
+	@Override
+	public void execute(Runnable command) {
+		// TODO Auto-generated method stub
+		
 	}
 }

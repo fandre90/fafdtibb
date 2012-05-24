@@ -70,7 +70,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		super(featureSpec, criterion, stats);
 	}
 	
-	public QuestionScoreLeftDistribution buildNode(Path dataPath, ScoredDistributionVector parentDistribution, Path workDir, String id) throws IOException, InterruptedException, ClassNotFoundException {
+	public QuestionScoreLeftDistribution buildNode(Path dataPath, ScoredDistributionVector parentDistribution, Path workDir, String id) throws IOException, InterruptedException, ClassNotFoundException, FAFException {
 		this.workingDir = workDir;
 		this.id = id;
 		this.inputDataPath = dataPath;
@@ -371,7 +371,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	@Override
 	public QuestionScoreLeftDistribution buildNode(String[][] data,
 			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException {
+			throws IOException, InterruptedException, ClassNotFoundException, FAFException {
 		throw new UnsupportedOperationException(this.getClass().getName()+" cannot build node with String[][]");
 	}
 	

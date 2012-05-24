@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.fs.Path;
 
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Pair;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
@@ -12,11 +13,11 @@ public interface INodeBuilder {
 	// Constructor : dotNames, criterion, workingdir
 	public QuestionScoreLeftDistribution buildNode(String[][] data,
 			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException;
+			throws IOException, InterruptedException, ClassNotFoundException, FAFException;
 
 	public QuestionScoreLeftDistribution buildNode(Path dataPath,
 			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException;
+			throws IOException, InterruptedException, ClassNotFoundException, FAFException;
 
 	public Pair<Path, Path> getSplitPath() throws IOException;
 

@@ -141,6 +141,9 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (FAFException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}

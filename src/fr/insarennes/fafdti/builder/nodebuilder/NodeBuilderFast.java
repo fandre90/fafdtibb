@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 
+import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Pair;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
@@ -41,7 +42,7 @@ public class NodeBuilderFast extends  NodeBuilder implements INodeBuilder{
 	@Override
 	public QuestionScoreLeftDistribution buildNode(Path dataPath,
 			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException {
+			throws IOException, InterruptedException, ClassNotFoundException, FAFException {
 		throw new UnsupportedOperationException(this.getClass().getName()+" cannot build node with Path");
 	}
 
@@ -56,7 +57,7 @@ public class NodeBuilderFast extends  NodeBuilder implements INodeBuilder{
 	@Override
 	public QuestionScoreLeftDistribution buildNode(String[][] data,
 			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException {
+			throws IOException, InterruptedException, ClassNotFoundException, FAFException {
 		// TODO Auto-generated method stub
 		return null;
 	}

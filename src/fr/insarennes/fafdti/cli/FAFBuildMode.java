@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.bagging.Launcher;
 import fr.insarennes.fafdti.builder.*;
+import fr.insarennes.fafdti.builder.scheduler.Scheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.DepthMax;
 import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
 import fr.insarennes.fafdti.builder.stopcriterion.GainMin;

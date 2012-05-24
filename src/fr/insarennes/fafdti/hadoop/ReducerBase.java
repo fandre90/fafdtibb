@@ -9,7 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import fr.insarennes.fafdti.builder.Criterion;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 
 public abstract class ReducerBase<K1, V1, K2, V2> 
 	extends Reducer<K1, V1, K2, V2> {

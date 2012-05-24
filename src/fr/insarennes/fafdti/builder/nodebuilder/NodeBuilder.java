@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.nodebuilder;
 
 import java.io.IOException;
 import java.util.List;
@@ -8,6 +8,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
+import fr.insarennes.fafdti.builder.Criterion;
+import fr.insarennes.fafdti.builder.StatBuilder;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;

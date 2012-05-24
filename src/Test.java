@@ -11,8 +11,8 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.LineReader;
 import org.apache.log4j.Logger;
 
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.hadoop.Step0Map;
 import fr.insarennes.fafdti.hadoop.Step0Red;
 

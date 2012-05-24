@@ -1,7 +1,7 @@
 package fr.insarennes.fafdti.builder.gram;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.AttrType;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 
 public enum GramType {
 	FGRAM, NGRAM, SGRAM;

@@ -9,7 +9,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 
 /**
  * map de l'étape 0 (calcul de l'entropie et du vecteur statistique)

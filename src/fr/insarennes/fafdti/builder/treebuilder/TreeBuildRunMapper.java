@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.treebuilder;
 
 import org.apache.hadoop.mapred.JobConf;
 

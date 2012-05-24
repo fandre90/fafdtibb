@@ -13,10 +13,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 
 public class Step2Red
 		extends

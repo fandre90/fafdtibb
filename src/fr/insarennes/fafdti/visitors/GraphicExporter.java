@@ -10,8 +10,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.QuestionLabeled;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;

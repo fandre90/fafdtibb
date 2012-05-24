@@ -2,6 +2,7 @@ package fr.insarennes.fafdti.builder;
 
 import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.SGram;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 
 /**
  * 

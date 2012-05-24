@@ -1,7 +1,8 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.scheduler;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+
 /** Classe encapsulant un pool de thread permettant de contrôler le nombre maximum
  * de thread s'exécutant dans la jvm.
  */

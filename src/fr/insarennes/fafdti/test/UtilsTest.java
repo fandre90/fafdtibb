@@ -13,8 +13,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.ParseException;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 
 public class UtilsTest {
 	

@@ -14,9 +14,9 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.Step1Map;
 import fr.insarennes.fafdti.hadoop.Step1Red;

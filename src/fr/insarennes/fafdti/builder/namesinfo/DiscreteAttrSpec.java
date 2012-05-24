@@ -1,4 +1,5 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.namesinfo;
+
 
 public class DiscreteAttrSpec extends AttrSpec{
 

@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.namesinfo;
 
 import fr.insarennes.fafdti.builder.gram.GramType;
 

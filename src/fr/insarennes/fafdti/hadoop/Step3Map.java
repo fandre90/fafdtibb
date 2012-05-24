@@ -9,11 +9,11 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.LabeledExample;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 
 public class Step3Map extends
 		MapperBase<Object, Text, Text, QuestionScoreLeftDistribution> {

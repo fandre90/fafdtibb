@@ -3,8 +3,8 @@ package fr.insarennes.fafdti.tree;
 import org.apache.hadoop.fs.Path;
 
 import fr.insarennes.fafdti.builder.DirDeleter;
-import fr.insarennes.fafdti.builder.INodeBuilder;
 import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
 
 /**
  * Classe lié à son dossier sur le hdfs, qui va supprimer ces données une fois que ces

@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.namesinfo;
 
 import java.io.Serializable;
 import java.util.Iterator;

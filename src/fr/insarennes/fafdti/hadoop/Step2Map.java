@@ -8,10 +8,10 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.AttrSpec;
-import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.namesinfo.AttrSpec;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 
 public class Step2Map extends MapperBase<Object, Text, IntWritable, ContinuousAttrLabelPair> {
 	Question attrValue = new Question();

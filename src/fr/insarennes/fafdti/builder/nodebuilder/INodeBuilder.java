@@ -1,10 +1,11 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.nodebuilder;
 
 import java.io.IOException;
 
 import org.apache.hadoop.fs.Path;
 
 import fr.insarennes.fafdti.Pair;
+import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 
 public interface INodeBuilder {

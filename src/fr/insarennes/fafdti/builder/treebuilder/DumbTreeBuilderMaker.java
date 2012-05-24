@@ -1,7 +1,13 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.treebuilder;
 
 import java.util.List;
 
+import fr.insarennes.fafdti.builder.Criterion;
+import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.StatBuilder;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
+import fr.insarennes.fafdti.builder.scheduler.IScheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionNodeSetter;

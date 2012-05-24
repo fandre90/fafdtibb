@@ -17,12 +17,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import fr.insarennes.fafdti.builder.AttrType;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.ParseException;
-import fr.insarennes.fafdti.builder.TextAttrSpec;
-import static fr.insarennes.fafdti.builder.AttrType.*;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.namesinfo.TextAttrSpec;
 import static fr.insarennes.fafdti.builder.gram.GramType.*;
+import static fr.insarennes.fafdti.builder.namesinfo.AttrType.*;
 
 @RunWith(Parameterized.class)
 public class TestDotNamesParsing {

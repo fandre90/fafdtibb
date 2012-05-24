@@ -18,12 +18,12 @@ import org.junit.Test;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 
-import fr.insarennes.fafdti.builder.AttrType;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.ParseException;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.SGram;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.hadoop.Step1Map;
 import static fr.insarennes.fafdti.test.UtilsTest.*;
 

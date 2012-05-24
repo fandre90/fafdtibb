@@ -33,7 +33,7 @@ public class StatBuilder extends Observable{
 	 * 
 	 * @return un identifiant unique dans l'arbre
 	 */
-	synchronized int getNextId(){
+	synchronized public int getNextId(){
 		return ++id;
 	}
 	

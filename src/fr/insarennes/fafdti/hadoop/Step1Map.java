@@ -15,14 +15,14 @@ import org.apache.log4j.Logger;
 
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.builder.AttrSpec;
-import fr.insarennes.fafdti.builder.AttrType;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.Question;
-import fr.insarennes.fafdti.builder.TextAttrSpec;
 import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.GramType;
 import fr.insarennes.fafdti.builder.gram.SGram;
+import fr.insarennes.fafdti.builder.namesinfo.AttrSpec;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.namesinfo.TextAttrSpec;
 
 public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 

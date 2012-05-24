@@ -12,11 +12,11 @@ import org.apache.hadoop.fs.Path;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.Launcher;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
-import fr.insarennes.fafdti.builder.NodeBuilder;
-import fr.insarennes.fafdti.builder.Scheduler;
 import fr.insarennes.fafdti.builder.StatBuilder;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilder;
+import fr.insarennes.fafdti.builder.scheduler.Scheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.DepthMax;
 import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
 import fr.insarennes.fafdti.builder.stopcriterion.GainMin;

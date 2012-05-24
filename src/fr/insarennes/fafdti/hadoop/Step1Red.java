@@ -9,10 +9,10 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import fr.insarennes.fafdti.builder.Criterion;
-import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 
 public class Step1Red extends
 		ReducerBase<Question, IntWritable, Question, ScoreLeftDistribution> {

@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.treebuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,6 +12,13 @@ import org.apache.log4j.Logger;
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Pair;
 import fr.insarennes.fafdti.Util;
+import fr.insarennes.fafdti.builder.Criterion;
+import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.StatBuilder;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
+import fr.insarennes.fafdti.builder.scheduler.IScheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;

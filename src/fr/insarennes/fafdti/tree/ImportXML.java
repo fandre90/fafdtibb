@@ -19,11 +19,11 @@ import org.w3c.dom.NodeList;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
-import fr.insarennes.fafdti.builder.AttrType;
 import fr.insarennes.fafdti.builder.QuestionLabeled;
 import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.GramType;
 import fr.insarennes.fafdti.builder.gram.SGram;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 import fr.insarennes.fafdti.visitors.GraphicExporter;
 import fr.insarennes.fafdti.visitors.XmlConst;
 import fr.insarennes.fafdti.visitors.XmlExporter;

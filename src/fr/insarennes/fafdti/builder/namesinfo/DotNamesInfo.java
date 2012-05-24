@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.builder;
+package fr.insarennes.fafdti.builder.namesinfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,6 +22,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.LineReader;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.builder.HadoopConfSerializer;
+import fr.insarennes.fafdti.builder.HadoopConfStockable;
+import fr.insarennes.fafdti.builder.ParseException;
 import fr.insarennes.fafdti.builder.gram.GramType;
 
 /**

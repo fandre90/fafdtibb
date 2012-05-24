@@ -25,6 +25,8 @@ import fr.insarennes.fafdti.Util;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.DotNamesInfo;
 import fr.insarennes.fafdti.builder.NodeBuilder;
+import fr.insarennes.fafdti.builder.NodeBuilderMode1;
+import fr.insarennes.fafdti.builder.NodeBuilderMode2;
 import fr.insarennes.fafdti.builder.ParseException;
 import fr.insarennes.fafdti.builder.Scheduler;
 import fr.insarennes.fafdti.builder.StatBuilder;
@@ -71,7 +73,8 @@ public class Launcher implements Observer {
 				Criterion criterion,
 				int nbBagging,
 				double baggingPercent,
-				Map<String,String> comment) throws ParseException{
+				Map<String,String> comment,
+				double limitmode) throws ParseException{
 			//attributes initialization
 			this.roots = new ArrayList<DecisionTreeHolder>(nbBagging);
 			this.outXml = xmlOutput;
@@ -79,7 +82,7 @@ public class Launcher implements Observer {
 			this.baggingDone = 0;
 			this.baggingPercent = baggingPercent;
 			this.comment = comment;
-			
+			double dataSize = Util.getSize(inputData);
 			//launch timer
 			chrono = new Chrono();
 			chrono.start();
@@ -104,17 +107,34 @@ public class Launcher implements Observer {
 				//statistiques object creation
 				StatBuilder stats = new StatBuilder(1);
 				stats.addObserver(this);
-				//NodeBuilder creation
-				roots.add(i, new DecisionTreeHolder());
-				NodeBuilder nb = new NodeBuilder(this.dotNamesInfo, 
-						datasplit.get(i), outputDir,
-						criterion, 
-						roots.get(i).getNodeSetter(), 
-						stoppingList,
-						stats,
-						String.valueOf(i));
-				//launch first node
-				Scheduler.INSTANCE.execute(nb);
+				//data file
+				String data = datasplit.get(i);
+				if(dataSize > limitmode){
+					//NodeBuilder creation
+					roots.add(i, new DecisionTreeHolder());
+					NodeBuilder nb = new NodeBuilderMode1(this.dotNamesInfo, 
+							data, outputDir,
+							criterion, 
+							roots.get(i).getNodeSetter(), 
+							stoppingList,
+							stats,
+							String.valueOf(i), limitmode);
+					//launch first node
+					Scheduler.INSTANCE.execute(nb);
+				}
+				else{
+					//NodeBuilder creation
+					roots.add(i, new DecisionTreeHolder());
+					NodeBuilder nb = new NodeBuilderMode2(this.dotNamesInfo, 
+							data, outputDir,
+							criterion, 
+							roots.get(i).getNodeSetter(), 
+							stoppingList,
+							stats,
+							String.valueOf(i));
+					//launch first node
+					Scheduler.INSTANCE.execute(nb);
+				}
 			}
 		}
 		

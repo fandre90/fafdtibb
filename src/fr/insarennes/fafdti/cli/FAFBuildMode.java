@@ -50,6 +50,7 @@ public class FAFBuildMode {
 	public static final String GAINMIN = "gainmin";
 	public static final String PERCENTBAGGING = "percent";
 	public static final String THREADS = "threads";
+	public static final String LIMITMODE = "limitmode";
 
 	public static Options opts;
 
@@ -65,6 +66,7 @@ public class FAFBuildMode {
 	public static final String DEFAULT_GAINMIN = "10e-3";
 	public static final String DEFAULT_MAXDEPTH = Integer.MAX_VALUE + "";
 	public static final String DEFAULT_PERCENTBAGGING = "0.6";
+	public static final String DEFAULT_LIMITMODE = "20";	//Mo
 
 	public static void initOptions() {
 		opts = new Options();
@@ -94,6 +96,8 @@ public class FAFBuildMode {
 				"Set the percentage of data file (between 0 and 1) used to build each trees (optional)");
 		Option o11 = new Option(THREADS.substring(0, 1), THREADS, true,
 				"Set pool size of scheduler (optional)");
+		Option o12 = new Option(LIMITMODE.substring(0, 1), LIMITMODE, true,
+				"Set threshold to pass construction algorithm from mode1 to mode2 (optional)");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -107,6 +111,7 @@ public class FAFBuildMode {
 		opts.addOption(o9);
 		opts.addOption(o10);
 		opts.addOption(o11);
+		opts.addOption(o12);
 	}
 
 	public static void displayHelp() {
@@ -166,12 +171,14 @@ public class FAFBuildMode {
 		String crit = cmdline.getOptionValue(CRITERION, DEFAULT_CRITERION);
 		String percent = cmdline.getOptionValue(PERCENTBAGGING,
 				DEFAULT_PERCENTBAGGING);
+		String limitmode = cmdline.getOptionValue(LIMITMODE,
+				DEFAULT_LIMITMODE);
 		int intbagging = Integer.parseInt(bagging);
 		int intmaxdepth = Integer.parseInt(maxdepth);
 		int intminex = Integer.parseInt(minex);
 		double doublegainmin = Double.parseDouble(gainmin);
 		double doublepercent = Double.parseDouble(percent);
-
+		double doublelimitmode = Double.parseDouble(limitmode);
 		// verification des bornes des différents paramètres rentrés par
 		// l'utilisateur
 		if (intbagging < 1) {
@@ -199,6 +206,11 @@ public class FAFBuildMode {
 					+ "> must be a double between 0.0 (excluded) and 1.0");
 			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 		}
+		if (doublelimitmode <= 0.0) {
+			log.error("Paramater <" + PERCENTBAGGING
+					+ "> must be a double greater than 0.0");
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
+		}
 
 		// construction des critères d'arrêt
 		List<StoppingCriterion> stopping = new ArrayList<StoppingCriterion>();
@@ -210,6 +222,10 @@ public class FAFBuildMode {
 		Criterion criterion = null;
 		if (crit.equals(ENTROPY))
 			criterion = new EntropyCriterion();
+		else if (crit.equals(GINI)){
+			log.error("Criterion <" + crit + "> not implemented yet !");
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
+		}
 		else {
 			log.error("Criterion <" + crit + "> not recognized");
 			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
@@ -228,7 +244,7 @@ public class FAFBuildMode {
 		// on lance le launcher
 		try {
 			new Launcher(names + ".names", data + ".data", workingdir, out,
-					stopping, criterion, intbagging, doublepercent, comment);
+					stopping, criterion, intbagging, doublepercent, comment, doublelimitmode);
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			log.error("File " + names + "malformed.");
 			log.error(e.getMessage());

@@ -1,6 +1,13 @@
 package fr.insarennes.fafdti;
 
+import java.io.IOException;
 import java.util.Arrays;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
+import fr.insarennes.fafdti.builder.DotNamesInfo;
 /**
  * Classe utilitaire
  */
@@ -26,5 +33,15 @@ public class Util {
 		}
 		Arrays.sort(res);
 		return res;
+	}
+	public static double getSize(String path){
+		double size = 0;
+		try {
+			FileSystem fileSystem = FileSystem.get(new Configuration());
+			size = fileSystem.getFileStatus(new Path(path)).getLen();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		return size;
 	}
 }

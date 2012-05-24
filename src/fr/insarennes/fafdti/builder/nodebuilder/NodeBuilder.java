@@ -27,12 +27,12 @@ public abstract class NodeBuilder {
 	protected static Logger log = Logger.getLogger(NodeBuilder.class);
 
 	protected Criterion criterion;
-	protected DotNamesInfo dotNames;
+	protected DotNamesInfo namesInfo;
 	protected StatBuilder stats;
 
 	//First node constructor
 	public NodeBuilder(DotNamesInfo featureSpec, Criterion criterion, StatBuilder stats){
-		this.dotNames = featureSpec;
+		this.namesInfo = featureSpec;
 		this.criterion = criterion;
 		this.stats = stats;
 	}

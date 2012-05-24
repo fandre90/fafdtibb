@@ -61,4 +61,17 @@ public class NodeBuilderFast extends  NodeBuilder implements INodeBuilder{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+
+	@Override
+	public ScoredDistributionVector computeDistribution(Path dataPath) {
+		throw new UnsupportedOperationException(this.getClass().getName()+" cannot compute distribution with Path");
+	}
+
+
+	@Override
+	public ScoredDistributionVector computeDistribution(String[][] data) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

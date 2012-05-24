@@ -28,6 +28,7 @@ import fr.insarennes.fafdti.Pair;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.LabeledExample;
 import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
@@ -54,7 +55,7 @@ import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.tree.LinkedDecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
 
-public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
+public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 	private final String job0outDir = "initial-entropy";
 	private final String job1outDir = "discrete-text-questions";
 	private final String job2outDir = "continuous-questions";
@@ -64,99 +65,103 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	private Path workingDir;
 	private String id;
 	private Path inputDataPath;
-	//root constructor
-	public NodeBuilderFat(DotNamesInfo featureSpec, 
-			Criterion criterion, StatBuilder stats) {
+
+	// root constructor
+	public NodeBuilderFat(DotNamesInfo featureSpec, Criterion criterion,
+			StatBuilder stats) {
 		super(featureSpec, criterion, stats);
 	}
-	
-	public QuestionScoreLeftDistribution buildNode(Path dataPath, ScoredDistributionVector parentDistribution, Path workDir, String id) throws IOException, InterruptedException, ClassNotFoundException, FAFException {
+
+	public QuestionScoreLeftDistribution buildNode(Path dataPath,
+			ScoredDistributionVector parentDistribution, Path workDir, String id)
+			throws IOException, InterruptedException, ClassNotFoundException,
+			FAFException {
 		this.workingDir = workDir;
 		this.id = id;
 		this.inputDataPath = dataPath;
-		//log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
-		//JOB0
-		if(parentDistribution==null){
-			log.info("NodeFat "+id+ " : launching step0...");
+		// log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
+		// JOB0
+		// FIXME This is not necessary anymore
+		if (parentDistribution == null) {
+			log.info("NodeFat " + id + " : launching step0...");
 			Job job0 = setupJob0();
 			job0.waitForCompletion(false);
-			//****//
-			while(!job0.isSuccessful()){
-				log.info("NodeFat "+id+ " : RE-launching step0...");
+			// ****//
+			while (!job0.isSuccessful()) {
+				log.info("NodeFat " + id + " : RE-launching step0...");
 				deleteDir(job0outDir);
 				job0 = setupJob0();
 				job0.waitForCompletion(false);
 			}
-			//****//
-			//get initial distribution
+			// ****//
+			// get initial distribution
 			parentDistribution = readParentDistribution();
 			stats.setTotalEx(parentDistribution.getTotal());
 		}
-		log.debug("parentDist = "+parentDistribution.toString());
-		//JOB1
+		log.debug("parentDist = " + parentDistribution.toString());
+		// JOB1
 		Job job1 = setupJob1(parentDistribution);
-		log.info("NodeFat "+id+ " : launching step1...");
+		log.info("NodeFat " + id + " : launching step1...");
 		job1.waitForCompletion(false);
-		//****//
-		while(!job1.isSuccessful()){
-			log.info("NodeFat "+id+ " : RE-launching step1...");
+		// ****//
+		while (!job1.isSuccessful()) {
+			log.info("NodeFat " + id + " : RE-launching step1...");
 			deleteDir(job1outDir);
 			job1 = setupJob1(parentDistribution);
 			job1.waitForCompletion(false);
 		}
-		//****//
-		//JOB2
+		// ****//
+		// JOB2
 		Job job2 = setupJob2(parentDistribution);
-		log.info("NodeFat "+id+ " : launching step2...");
+		log.info("NodeFat " + id + " : launching step2...");
 		job2.waitForCompletion(false);
-		//****//
-		while(!job2.isSuccessful()){
-			log.info("NodeFat "+id+ " : RE-launching step2...");
+		// ****//
+		while (!job2.isSuccessful()) {
+			log.info("NodeFat " + id + " : RE-launching step2...");
 			deleteDir(job2outDir);
 			job2 = setupJob2(parentDistribution);
 			job2.waitForCompletion(false);
 		}
-		//****//
-		//JOB3
+		// ****//
+		// JOB3
 		Job job3 = setupJob3();
-		log.info("NodeFat "+id+ " : launching step3...");
+		log.info("NodeFat " + id + " : launching step3...");
 		job3.waitForCompletion(false);
-		//****//
-		while(!job3.isSuccessful()){
-			log.info("NodeFat "+id+ " : RE-launching step3...");
+		// ****//
+		while (!job3.isSuccessful()) {
+			log.info("NodeFat " + id + " : RE-launching step3...");
 			deleteDir(job3outDir);
 			job3 = setupJob3();
 			job3.waitForCompletion(false);
 		}
-		//****//
-		//get best question	
+		// ****//
+		// get best question
 		qLeftDistribution = readBestQuestion();
 		return qLeftDistribution;
 	}
-	public Pair<Path,Path> getSplitPath() throws IOException {
-		//JOB4
+
+	public Pair<Path, Path> getSplitPath() throws IOException {
+		// JOB4
 		// Old API
 		JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
-		log.info("Thread "+id+ " : launching step4...");
+		log.info("Thread " + id + " : launching step4...");
 		RunningJob rj4 = JobClient.runJob(job4Conf);
-		//****//
-		while(!rj4.isSuccessful()){
-			log.info("Thread "+id+ " : RE-launching step4...");
+		// ****//
+		while (!rj4.isSuccessful()) {
+			log.info("Thread " + id + " : RE-launching step4...");
 			deleteDir(job4outDir);
 			job4Conf = setupJob4(qLeftDistribution.getQuestion());
 			rj4 = JobClient.runJob(job4Conf);
 		}
 		Path p = new Path(this.workingDir, job4outDir);
-		return new Pair<Path,Path>(new Path(p,"left"),new Path(p,"right"));
+		return new Pair<Path, Path>(new Path(p, "left"), new Path(p, "right"));
 	}
 
-	
-	
-	//***************setup JOB methods********************//
-	
+	// ***************setup JOB methods********************//
+
 	private Job setupJob0() throws IOException {
 		Configuration conf = new Configuration();
-		dotNames.toConf(conf);
+		namesInfo.toConf(conf);
 		criterion.toConf(conf);
 		Job job = new Job(conf, "Initial entropy calculation");
 		job.setOutputKeyClass(Text.class);
@@ -166,7 +171,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		job.setReducerClass(Step0Red.class);
 
 		job.setJarByClass(this.getClass());
-		
+
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		FileInputFormat.addInputPath(job, inputDataPath);
@@ -178,7 +183,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	private Job setupJob1(ScoredDistributionVector parentDistribution)
 			throws IOException {
 		Configuration conf = new Configuration();
-		dotNames.toConf(conf);
+		namesInfo.toConf(conf);
 		criterion.toConf(conf);
 		parentDistribution.toConf(conf);
 		Job job = new Job(conf, "Discrete and text questions generation");
@@ -201,7 +206,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	private Job setupJob2(ScoredDistributionVector parentDistribution)
 			throws IOException {
 		Configuration conf = new Configuration();
-		dotNames.toConf(conf);
+		namesInfo.toConf(conf);
 		criterion.toConf(conf);
 		parentDistribution.toConf(conf);
 		Job job = new Job(conf, "Continuous questions generation");
@@ -224,7 +229,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 
 	private Job setupJob3() throws IOException {
 		Configuration conf = new Configuration();
-		dotNames.toConf(conf);
+		namesInfo.toConf(conf);
 		criterion.toConf(conf);
 		Job job = new Job(conf, "Best question selection");
 
@@ -234,7 +239,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		job.setOutputValueClass(QuestionScoreLeftDistribution.class);
 
 		job.setMapperClass(Step3Map.class);
-		//job.setCombinerClass(Step3Red.class);
+		// job.setCombinerClass(Step3Red.class);
 		job.setReducerClass(Step3Red.class);
 
 		job.setInputFormatClass(TextInputFormat.class);
@@ -248,7 +253,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		FileOutputFormat.setOutputPath(job, outputDir);
 		return job;
 	}
-	
+
 	/*
 	 * private Job setupJob4(Question bestQuestion) throws IOException {
 	 * Configuration conf = new Configuration(); bestQuestion.toConf(conf); Job
@@ -268,7 +273,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	 * Path(workingDir, job4outDir); FileOutputFormat.setOutputPath(job,
 	 * outputDir); return job; }
 	 */
-	
+
 	@SuppressWarnings("deprecation")
 	private JobConf setupJob4(Question bestQuestion) throws IOException {
 		JobConf jobConf = new JobConf(NodeBuilder.class);
@@ -287,9 +292,9 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		return jobConf;
 	}
 
-	//****************Reading results utils methods********//
-	
-	private FSDataInputStream getPartNonEmpty(Path inputDir) throws IOException{
+	// ****************Reading results utils methods********//
+
+	private FSDataInputStream getPartNonEmpty(Path inputDir) throws IOException {
 		Configuration conf = new Configuration();
 		FileSystem fileSystem;
 		fileSystem = FileSystem.get(conf);
@@ -297,22 +302,23 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		FSDataInputStream in = null;
 		for (int i = 0; i < files.length; i++) {
 			Path tmp = files[i].getPath();
-			if (tmp.getName().startsWith("part") && fileSystem.getFileStatus(tmp).getLen() > 0)
-					in = fileSystem.open(tmp);
+			if (tmp.getName().startsWith("part")
+					&& fileSystem.getFileStatus(tmp).getLen() > 0)
+				in = fileSystem.open(tmp);
 		}
-		if(in == null){
+		if (in == null) {
 			log.warn("No non-empty part file found");
 			return null;
 		}
 		return in;
 	}
-	
+
 	private String readFileFirstLine(Path inputDir) throws IOException {
 		FSDataInputStream in = getPartNonEmpty(inputDir);
-		
-		if(in==null)
+
+		if (in == null)
 			return "";
-		
+
 		LineReader lr = new LineReader(in);
 		Text line = new Text();
 		lr.readLine(line);
@@ -322,7 +328,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	private QuestionScoreLeftDistribution readBestQuestion() throws IOException {
 		Path path = new Path(workingDir, job3outDir);
 		String line = readFileFirstLine(path);
-		if(line.trim().equals("")){
+		if (line.trim().equals("")) {
 			log.warn("No best question generated");
 			return null;
 		}
@@ -336,11 +342,13 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		String tokens[] = line.split("\\s+");
 		return new ScoredDistributionVector(tokens[tokens.length - 1]);
 	}
+
 	@Override
 	public Pair<String[][], String[][]> getSplitData() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 	@Override
 	public void cleanUp() {
 		deleteDir(job0outDir);
@@ -349,17 +357,17 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		deleteDir(job3outDir);
 		deleteDir(job4outDir);
 	}
-	
-	protected void deleteDir(String dir){
+
+	protected void deleteDir(String dir) {
 		FileSystem fs = null;
 		try {
 			fs = FileSystem.get(new Configuration());
-			fs.delete(new Path(workingDir,dir), true);
+			fs.delete(new Path(workingDir, dir), true);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+
 	}
 
 	@Override
@@ -371,8 +379,39 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	@Override
 	public QuestionScoreLeftDistribution buildNode(String[][] data,
 			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException, FAFException {
-		throw new UnsupportedOperationException(this.getClass().getName()+" cannot build node with String[][]");
+			throws IOException, InterruptedException, ClassNotFoundException,
+			FAFException {
+		throw new UnsupportedOperationException(this.getClass().getName()
+				+ " cannot build node with String[][]");
 	}
-	
+
+	@Override
+	public ScoredDistributionVector computeDistribution(Path dataPath)
+			throws IOException, InterruptedException, ClassNotFoundException {
+		ScoredDistributionVector parentDistribution = new ScoredDistributionVector(
+				namesInfo.numOfLabel());
+		log.info("NodeFat " + id + " : launching step0...");
+		Job job0 = setupJob0();
+		job0.waitForCompletion(false);
+		// ****//
+		while (!job0.isSuccessful()) {
+			log.info("NodeFat " + id + " : RE-launching step0...");
+			deleteDir(job0outDir);
+			job0 = setupJob0();
+			job0.waitForCompletion(false);
+		}
+		// ****//
+		// get initial distribution
+		parentDistribution = readParentDistribution();
+		stats.setTotalEx(parentDistribution.getTotal());
+		log.debug("parentDist = " + parentDistribution.toString());
+		return parentDistribution;
+	}
+
+	@Override
+	public ScoredDistributionVector computeDistribution(String[][] data) {
+		throw new UnsupportedOperationException(this.getClass().getName()
+				+ " cannot compute distribution with String[][]");
+	}
+
 }

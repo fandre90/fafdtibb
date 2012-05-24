@@ -19,6 +19,8 @@ public interface INodeBuilder {
 			ScoredDistributionVector parentDistribution, Path workDir, String id)
 			throws IOException, InterruptedException, ClassNotFoundException, FAFException;
 
+	public ScoredDistributionVector computeDistribution(Path dataPath) throws IOException, InterruptedException, ClassNotFoundException;
+	public ScoredDistributionVector computeDistribution(String[][] data);
 	public Pair<Path, Path> getSplitPath() throws IOException;
 
 	public Pair<String[][], String[][]> getSplitData();

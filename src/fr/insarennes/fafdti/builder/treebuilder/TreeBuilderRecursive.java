@@ -116,6 +116,16 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			String id = parentInfos.getBaggingId() + "-"
 					+ Integer.toString(stats.getNextId());
 			Path wd = new Path(this.workingDir, id);
+			// Start by computing parent distribution
+			// if was not computed before
+			if(parentDistribution == null) {
+				if (buildMode == BuildMode.MODEFAT)
+					parentDistribution = this.nodeBuilder.computeDistribution(
+							this.inputDataPath);
+				else
+					parentDistribution = this.nodeBuilder.computeDistribution(
+							this.inputData);
+			}
 			QuestionScoreLeftDistribution qLeftDistribution = null;
 			if (buildMode == BuildMode.MODEFAT)
 				qLeftDistribution = this.nodeBuilder.buildNode(

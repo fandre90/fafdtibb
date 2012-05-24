@@ -12,7 +12,7 @@ public class Scheduler implements IScheduler {
 	/** le singleton */
 	private final ThreadPoolExecutor pool;
 	
-	public final Scheduler INSTANCE = new Scheduler();
+	public static final Scheduler INSTANCE = new Scheduler();
 	private Scheduler() {
 		pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(DEFAULT_POOL_SIZE);
 	}
@@ -31,7 +31,10 @@ public class Scheduler implements IScheduler {
 
 	@Override
 	public void execute(Runnable command) {
-		// TODO Auto-generated method stub
-		
+		pool.execute(command);
+	}
+	
+	public void shutdown() {
+		pool.shutdown();
 	}
 }

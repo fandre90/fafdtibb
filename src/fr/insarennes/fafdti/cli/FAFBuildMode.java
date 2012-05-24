@@ -158,7 +158,7 @@ public class FAFBuildMode {
 						+ "> must be an integer greater or equal than 1");
 				System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
 			} else {
-				Scheduler.setPoolSize(sint);
+				Scheduler.INSTANCE.setPoolSize(sint);
 			}
 		}
 
@@ -240,7 +240,7 @@ public class FAFBuildMode {
 		comment.put(XmlConst.MINEX, minex);
 		comment.put(XmlConst.GAINMIN, gainmin);
 		comment.put(XmlConst.BAGGING, bagging);
-		comment.put(XmlConst.THREADS, String.valueOf(Scheduler.getPoolSize()));
+		comment.put(XmlConst.THREADS, String.valueOf(Scheduler.INSTANCE.getPoolSize()));
 		// on lance le launcher
 		try {
 			new Launcher(names + ".names", data + ".data", workingdir, out,

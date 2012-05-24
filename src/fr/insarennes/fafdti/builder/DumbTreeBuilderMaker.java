@@ -13,10 +13,12 @@ public class DumbTreeBuilderMaker implements ITreeBuilderMaker {
 			String workingDir, Criterion criterion,
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilder nodeBuilder, String inputData,
-			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderMaker tbMaker) {
+			ParentInfos parentInfos,
+			ScoredDistributionVector parentDistribution,
+			ITreeBuilderMaker tbMaker, IScheduler scheduler) {
 		return new TreeBuilderRecursive(featureSpec, workingDir, criterion,
 				nodeSetter, stopping, stats, nodeBuilder, inputData,
-				parentInfos, parentDistribution, tbMaker);
+				parentInfos, parentDistribution, tbMaker, scheduler);
 	}
 
 	@Override
@@ -24,10 +26,12 @@ public class DumbTreeBuilderMaker implements ITreeBuilderMaker {
 			String workingDir, Criterion criterion,
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilder nodeBuilder, String[][] inputData,
-			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderMaker tbMaker) {
+			ParentInfos parentInfos,
+			ScoredDistributionVector parentDistribution,
+			ITreeBuilderMaker tbMaker, IScheduler scheduler) {
 		return new TreeBuilderRecursive(featureSpec, workingDir, criterion,
 				nodeSetter, stopping, stats, nodeBuilder, inputData,
-				parentInfos, parentDistribution, tbMaker);
+				parentInfos, parentDistribution, tbMaker, scheduler);
 	}
 
 	@Override
@@ -35,11 +39,12 @@ public class DumbTreeBuilderMaker implements ITreeBuilderMaker {
 			String workingDir, Criterion criterion,
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilder nodeBuilder, String baggingId,
-			String inputDataPath, ITreeBuilderMaker tbMaker) {
+			String inputDataPath, ITreeBuilderMaker tbMaker,
+			IScheduler scheduler) {
 		// TODO Auto-generated method stub
 		return new TreeBuilderRecursive(featureSpec, workingDir, criterion,
 				nodeSetter, stopping, stats, nodeBuilder, baggingId,
-				inputDataPath, tbMaker);
+				inputDataPath, tbMaker, scheduler);
 	}
 
 }

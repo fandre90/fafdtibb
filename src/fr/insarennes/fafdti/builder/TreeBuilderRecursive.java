@@ -41,12 +41,14 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	protected INodeBuilder nodeBuilder;
 	protected BuildMode buildMode;
 	protected ITreeBuilderMaker tbMaker;
-
+	protected IScheduler scheduler;
+	
 	// factorizer constructor
 	private TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			INodeBuilder nodeBuilder, ITreeBuilderMaker tbMaker) {
+			INodeBuilder nodeBuilder, ITreeBuilderMaker tbMaker, 
+			IScheduler scheduler) {
 		this.featureSpec = featureSpec;
 		this.workingDir = new Path(workingDir);
 		this.criterion = criterion;
@@ -55,6 +57,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		this.stats = stats;
 		this.nodeBuilder = nodeBuilder;
 		this.tbMaker = tbMaker;
+		this.scheduler = scheduler;
 	}
 
 	// root constructor
@@ -62,9 +65,9 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
 			INodeBuilder nodeBuilder, String baggingId, String inputDataPath,
-			ITreeBuilderMaker tbMaker) {
+			ITreeBuilderMaker tbMaker, IScheduler scheduler) {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
-				nodeBuilder, tbMaker);
+				nodeBuilder, tbMaker, scheduler);
 		this.parentInfos = new ParentInfos(0, "launcher", baggingId);
 
 	}
@@ -76,9 +79,10 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			INodeBuilder nodeBuilder, String inputDataPath,
 			ParentInfos parentInfos,
 			ScoredDistributionVector parentDistribution,
-			ITreeBuilderMaker tbMaker) {
+			ITreeBuilderMaker tbMaker,
+			IScheduler scheduler) {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
-				nodeBuilder, tbMaker);
+				nodeBuilder, tbMaker, scheduler);
 		this.inputDataPath = new Path(inputDataPath);
 		this.parentInfos = parentInfos;
 		this.parentDistribution = parentDistribution;
@@ -91,9 +95,9 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			INodeBuilder nodeBuilder, String[][] inputData,
 			ParentInfos parentInfos,
 			ScoredDistributionVector parentDistribution,
-			ITreeBuilderMaker tbMaker) {
+			ITreeBuilderMaker tbMaker, IScheduler scheduler) {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
-				nodeBuilder, tbMaker);
+				nodeBuilder, tbMaker, scheduler);
 		this.inputData = inputData;
 		this.parentInfos = parentInfos;
 		this.parentDistribution = parentDistribution;
@@ -163,20 +167,20 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				treeBuilderLeft = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.yesSetter(), stopping, stats, nodeBuilder,
-								datas.getFirst(), pInfos, parentDistribution, null);
+								datas.getFirst(), pInfos, parentDistribution, null, null);
 				treeBuilderRight = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.noSetter(), stopping, stats, nodeBuilder,
-								datas.getSecond(), pInfos, parentDistribution, null);
+								datas.getSecond(), pInfos, parentDistribution, null, null);
 			} else {
 				treeBuilderLeft = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.yesSetter(), stopping, stats, nodeBuilder,
-								datapaths.getFirst().toString(), pInfos, parentDistribution, null);
+								datapaths.getFirst().toString(), pInfos, parentDistribution, null, null);
 				treeBuilderRight = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.noSetter(), stopping, stats, nodeBuilder,
-								datapaths.getSecond().toString(), pInfos, parentDistribution, null);
+								datapaths.getSecond().toString(), pInfos, parentDistribution, null, null);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

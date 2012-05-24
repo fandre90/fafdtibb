@@ -114,7 +114,7 @@ public class Launcher implements Observer {
 				LimitModeTreeBuilderMaker tbm = new LimitModeTreeBuilderMaker(limitmode);
 				NodeBuilderFat nbf = new NodeBuilderFat(this.dotNamesInfo, criterion, stats);
 				Runnable tb = tbm.makeTreeBuilder(this.dotNamesInfo, outputDir, criterion, roots.get(i).getNodeSetter(), stoppingList, 
-						stats, nbf, String.valueOf(i), data, tbm);
+						stats, nbf, String.valueOf(i), data, tbm, null);
 				//launch first node
 				Scheduler.INSTANCE.execute(tb);
 			}

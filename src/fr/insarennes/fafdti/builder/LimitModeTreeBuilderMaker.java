@@ -34,13 +34,13 @@ public class LimitModeTreeBuilderMaker implements ITreeBuilderMaker {
 			String workingDir, Criterion criterion,
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilder nodeBuilder, String inputData,
-			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderMaker tbMaker) {
+			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderMaker tbMaker, IScheduler scheduler) {
 		double currentSize = Util.getSize(inputData);
 		Runnable treeBuilder = null;
 		if (currentSize > sizeLimit) {
 			treeBuilder = new TreeBuilderRecursive(featureSpec, workingDir, criterion,
 					nodeSetter, stopping, stats, nodeBuilder, inputData,
-					parentInfos, parentDistribution, tbMaker);
+					parentInfos, parentDistribution, tbMaker, scheduler);
 		} else {
 			treeBuilder = new TreeBuildRunMapper();
 		}
@@ -53,7 +53,7 @@ public class LimitModeTreeBuilderMaker implements ITreeBuilderMaker {
 			String workingDir, Criterion criterion,
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilder nodeBuilder, String[][] inputData,
-			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderMaker tbMaker) {
+			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderMaker tbMaker, IScheduler scheduler) {
 		throw new UnsupportedOperationException(
 				"This TreeBuilderMaker can only be used with input path");
 	}
@@ -63,12 +63,12 @@ public class LimitModeTreeBuilderMaker implements ITreeBuilderMaker {
 			String workingDir, Criterion criterion,
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilder nodeBuilder, String baggingId,
-			String inputDataPath, ITreeBuilderMaker tbMaker) {
+			String inputDataPath, ITreeBuilderMaker tbMaker, IScheduler scheduler) {
 		double currentSize = Util.getSize(inputDataPath);
 		Runnable treeBuilder = null;
 		if (currentSize > sizeLimit) {
 			treeBuilder = new TreeBuilderRecursive(featureSpec, workingDir, criterion,
-					nodeSetter, stopping, stats, nodeBuilder, baggingId, inputDataPath, tbMaker);
+					nodeSetter, stopping, stats, nodeBuilder, baggingId, inputDataPath, tbMaker, scheduler);
 		} else {
 			treeBuilder = new TreeBuildRunMapper();
 		}

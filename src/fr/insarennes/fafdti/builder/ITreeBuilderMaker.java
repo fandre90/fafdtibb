@@ -18,7 +18,9 @@ public interface ITreeBuilderMaker {
 			INodeBuilder nodeBuilder,
 			String inputData,
 			ParentInfos parentInfos, 
-			ScoredDistributionVector parentDistribution, ITreeBuilderMaker tbMaker);
+			ScoredDistributionVector parentDistribution, 
+			ITreeBuilderMaker tbMaker,
+			IScheduler scheduler);
 	
 	public Runnable makeTreeBuilder(DotNamesInfo featureSpec,
 			String workingDir,
@@ -29,7 +31,9 @@ public interface ITreeBuilderMaker {
 			INodeBuilder nodeBuilder,
 			String[][] inputData,
 			ParentInfos parentInfos, 
-			ScoredDistributionVector parentDistribution, ITreeBuilderMaker tbMaker);
+			ScoredDistributionVector parentDistribution,
+			ITreeBuilderMaker tbMaker,
+			IScheduler scheduler);
 	
 	public Runnable makeTreeBuilder(DotNamesInfo featureSpec, 
 			String workingDir,
@@ -39,5 +43,6 @@ public interface ITreeBuilderMaker {
 			StatBuilder stats,
 			INodeBuilder nodeBuilder,
 			String baggingId,
-			String inputDataPath, ITreeBuilderMaker tbMaker);
+			String inputDataPath, ITreeBuilderMaker tbMaker,
+			IScheduler scheduler);
 }

@@ -1,11 +1,9 @@
-/**
- * Classe utilitaire
- */
-
 package fr.insarennes.fafdti;
 
 import java.util.Arrays;
-
+/**
+ * Classe utilitaire
+ */
 public class Util {
 
 	public static int[] substractVectStat(int[] vect, int[] vectToSub) {

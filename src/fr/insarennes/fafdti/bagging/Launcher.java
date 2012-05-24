@@ -1,11 +1,3 @@
-/**
- * Classe permettant de lancer le processus de construction d'un {@link BaggingTrees}
- * De plus, lorsque ceci est fini, on check le résultat et on l'exporte en xml.
- * 
- * Remarque : on peut construire un arbre de décision ordinaire en précisant le nombre
- * d'arbre à construire égal à 1 (dans ce cas on ne fera plus de bagging).
- */
-
 package fr.insarennes.fafdti.bagging;
 
 import java.io.File;
@@ -42,7 +34,13 @@ import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
 import fr.insarennes.fafdti.visitors.XmlConst;
 import fr.insarennes.fafdti.visitors.XmlExporter;
-
+/**
+ * Classe permettant de lancer le processus de construction d'un {@link BaggingTrees}
+ * De plus, lorsque ceci est fini, on check le résultat et on l'exporte en xml.
+ * 
+ * Remarque : on peut construire un arbre de décision ordinaire en précisant le nombre
+ * d'arbre à construire égal à 1 (dans ce cas on ne fera plus de bagging).
+ */
 
 public class Launcher implements Observer {
 		private Logger log = Logger.getLogger(Launcher.class);

@@ -1,6 +1,3 @@
-/** Classe permettant d'exporter un arbre de décision dans un fichier xml
- */
-
 package fr.insarennes.fafdti.visitors;
 
 import java.io.File;
@@ -51,7 +48,8 @@ import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.DecisionTreeVisitor;
 import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
-
+/** Classe permettant d'exporter un arbre de décision dans un fichier xml
+ */
 public class XmlExporter implements DecisionTreeVisitor {
 	Logger log;
 	BaggingTrees baggingTrees;

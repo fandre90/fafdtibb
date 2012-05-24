@@ -1,7 +1,3 @@
-/**
- * Classe servant à initialiser log4j
- */
-
 package fr.insarennes.fafdti.cli;
 
 import java.io.File;

@@ -1,7 +1,3 @@
-/** Classe servant à interroger un arbre de décision à partir d'un 
- * {@link QuestionExample}
- */
-
 package fr.insarennes.fafdti.visitors;
 
 import java.util.HashMap;
@@ -14,7 +10,9 @@ import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.DecisionTreeVisitor;
 import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
-
+/** Classe servant à interroger un arbre de décision à partir d'un 
+ * {@link QuestionExample}
+ */
 public class Interrogator implements DecisionTreeVisitor {
 
 	private QuestionExample qExample;

@@ -1,8 +1,6 @@
+package fr.insarennes.fafdti;
 /** Classe mère de toutes les exceptions levées par FAFDTIBB
  */
-
-package fr.insarennes.fafdti;
-
 public class FAFException extends Exception{
 
 	/**

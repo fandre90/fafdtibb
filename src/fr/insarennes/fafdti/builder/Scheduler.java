@@ -1,12 +1,10 @@
-/** Classe encapsulant un pool de thread permettant de contrôler le nombre maximum
- * de thread s'exécutant dans la jvm.
- */
-
 package fr.insarennes.fafdti.builder;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-
+/** Classe encapsulant un pool de thread permettant de contrôler le nombre maximum
+ * de thread s'exécutant dans la jvm.
+ */
 
 public class Scheduler{
 	

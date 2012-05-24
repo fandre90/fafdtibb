@@ -1,9 +1,3 @@
-/**
- * Classe servant à construire le rapport html d'une campagne de test
- * à partir des résultat du {@link QueryStater} et des informations de construction
- * de l'arbre
- */
-
 package fr.insarennes.fafdti.cli;
 
 import java.io.FileWriter;
@@ -18,7 +12,11 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.visitors.XmlConst;
-
+/**
+ * Classe servant à construire le rapport html d'une campagne de test
+ * à partir des résultat du {@link QueryStater} et des informations de construction
+ * de l'arbre
+ */
 public class HtmlStater {
 	private static Logger log = Logger.getLogger(HtmlStater.class);
 	Map<String, String> buildopts;

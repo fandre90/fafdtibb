@@ -1,17 +1,15 @@
+package fr.insarennes.fafdti.tree;
+
+import fr.insarennes.fafdti.builder.Question;
 /** Classe DecisionTreeQuestion implémentant DecisionTree
  * Cette classe représente un noeud binaire de l'arbre de décision
  * Elle encapsule la question attachée à ce noeud et une référence vers chacun de ses fils
  */
 
-package fr.insarennes.fafdti.tree;
-
-import fr.insarennes.fafdti.builder.Question;
-
-
 public class DecisionTreeQuestion implements DecisionTree {
-	private DecisionTree yesTree;
-	private DecisionTree noTree;
-	private Question question;
+	protected DecisionTree yesTree;
+	protected DecisionTree noTree;
+	protected Question question;
 
 	public DecisionTreeQuestion(Question q){
 		yesTree = new DecisionTreePending();

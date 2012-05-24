@@ -1,10 +1,8 @@
-/** Classe implémentant un chronomètre
- */
-
 package fr.insarennes.fafdti;
 
 import java.util.Date;
-
+/** Classe implémentant un chronomètre
+ */
 public class Chrono {
 	private Date startTime;
 	private long passedTimeInMilliseconds;

@@ -1,8 +1,3 @@
-/** Point d'entrée du mode utilitaire de FAFDTIBB
- * 
- * On peut soit exporter un arbre sous format DOT, soit sous format PNG
- */
-
 package fr.insarennes.fafdti.cli;
 
 import java.io.IOException;
@@ -25,7 +20,10 @@ import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.tree.ImportXML;
 import fr.insarennes.fafdti.visitors.GraphicExporter;
-
+/** Point d'entrée du mode utilitaire de FAFDTIBB
+ * 
+ * On peut soit exporter un arbre sous format DOT, soit sous format PNG
+ */
 public class FAFUtilsMode {
 	
 	static Logger log = Logger.getLogger(FAFUtilsMode.class);

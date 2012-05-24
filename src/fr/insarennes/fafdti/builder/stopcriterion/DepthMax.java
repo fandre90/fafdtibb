@@ -1,10 +1,8 @@
-/** Classe encapsulant le critère de profondeur maximale de construction de l'arbre
- */
-
 package fr.insarennes.fafdti.builder.stopcriterion;
 
 import org.apache.log4j.Logger;
-
+/** Classe encapsulant le critère de profondeur maximale de construction de l'arbre
+ */
 public class DepthMax implements StoppingCriterion {
 
 	private static Logger log = Logger.getLogger(DepthMax.class);

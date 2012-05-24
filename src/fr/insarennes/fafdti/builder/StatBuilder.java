@@ -1,11 +1,3 @@
-/**
- * Classe représentant l'objet commun que possède tous les threads d'un même arbre
- * C'est un objet partagé avec des accès concurrent qui permet entre autre de savoir
- * quand est-ce que le processus de construction est totalement terminé.
- * Il permet aussi de récupérer un identifiant unique dans l'arbre ou encore de
- * savoir quel pourcentage d'exemples a déjà été classifié.
- */
-
 package fr.insarennes.fafdti.builder;
 
 import java.util.Observable;
@@ -13,7 +5,13 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
-
+/**
+ * Classe représentant l'objet commun que possède tous les threads d'un même arbre
+ * C'est un objet partagé avec des accès concurrent qui permet entre autre de savoir
+ * quand est-ce que le processus de construction est totalement terminé.
+ * Il permet aussi de récupérer un identifiant unique dans l'arbre ou encore de
+ * savoir quel pourcentage d'exemples a déjà été classifié.
+ */
 public class StatBuilder extends Observable{
 	
 	private static Logger log = Logger.getLogger(StatBuilder.class);

@@ -1,15 +1,13 @@
-/**
- * Classe encapsulant une liste de DecisionTree utilisée pour représenter la structure
- * de données util à l'algorithme de bagging
- */
-
 package fr.insarennes.fafdti.bagging;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import fr.insarennes.fafdti.tree.DecisionTree;
-
+/**
+ * Classe encapsulant une liste de DecisionTree utilisée pour représenter la structure
+ * de données util à l'algorithme de bagging
+ */
 public class BaggingTrees {
 
 	private List<DecisionTree> trees;

@@ -1,8 +1,3 @@
-/** Classe permettant à partir d'un arbre dans un fichier xml de générer sa
- * représentation interne sous forme de {@link DecisionTree} ainsi que de récupérer
- * les paramètres qui ont servi à sa construction
- */
-
 package fr.insarennes.fafdti.tree;
 
 import java.io.File;
@@ -32,7 +27,10 @@ import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.visitors.GraphicExporter;
 import fr.insarennes.fafdti.visitors.XmlConst;
 import fr.insarennes.fafdti.visitors.XmlExporter;
-
+/** Classe permettant à partir d'un arbre dans un fichier xml de générer sa
+ * représentation interne sous forme de {@link DecisionTree} ainsi que de récupérer
+ * les paramètres qui ont servi à sa construction
+ */
 public class ImportXML {
 
 	private Logger log;

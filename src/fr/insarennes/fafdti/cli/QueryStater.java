@@ -1,6 +1,3 @@
-/** Classe effectuant la campagne de test sur l'entrée standard
- */
-
 package fr.insarennes.fafdti.cli;
 
 import java.io.BufferedReader;
@@ -23,7 +20,8 @@ import fr.insarennes.fafdti.hadoop.Step1Map;
 import fr.insarennes.fafdti.tree.ImportXML;
 import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.visitors.QuestionExample;
-
+/** Classe effectuant la campagne de test sur l'entrée standard
+ */
 public class QueryStater {
 	
 	private static Logger log = Logger.getLogger(QueryStater.class);

@@ -1,11 +1,9 @@
-/** Visiteur permettant de compter le nombre de sous-arbre en construction à partir d'une
- * racine donnée ou simplement de vérifier qu'un arbre est complètement construit
- */
-
 package fr.insarennes.fafdti.visitors;
 
 import fr.insarennes.fafdti.tree.*;
-
+/** Visiteur permettant de compter le nombre de sous-arbre en construction à partir d'une
+ * racine donnée ou simplement de vérifier qu'un arbre est complètement construit
+ */
 public class Checker implements DecisionTreeVisitor{
 	protected int nbPending;
 	protected boolean visitAllAnyway;

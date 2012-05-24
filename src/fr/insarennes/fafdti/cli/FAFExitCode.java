@@ -1,9 +1,7 @@
-/**
-	Codes de sortie de FAFDTIBB
-*/
-
 package fr.insarennes.fafdti.cli;
-
+/**
+Codes de sortie de FAFDTIBB
+*/
 public class FAFExitCode {
 	public static final int EXIT_SUCCESS = 0;
 	public static final int EXIT_ERROR = 1;

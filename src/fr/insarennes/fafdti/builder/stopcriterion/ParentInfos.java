@@ -1,10 +1,8 @@
+package fr.insarennes.fafdti.builder.stopcriterion;
 /**
  * Classe encapsulant différentes informations utiles à la construction d'un DecisionTree
  * sur son parent (tel que la hauteur de son parent ou son identifiant)
  */
-
-package fr.insarennes.fafdti.builder.stopcriterion;
-
 public class ParentInfos {
 
 	private int depth;

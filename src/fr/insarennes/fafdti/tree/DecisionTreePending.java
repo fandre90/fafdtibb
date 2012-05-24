@@ -1,12 +1,10 @@
+package fr.insarennes.fafdti.tree;
+
+import fr.insarennes.fafdti.visitors.InvalidCallException;
 /** Classe représentant un arbre en cours de construction
  * Cette classe est utilisé pour assigner les fils d'un noeud en attendant qu'il
  * soit effectivement construit et affecté par le DecisionNodeSetter
  */
-
-package fr.insarennes.fafdti.tree;
-
-import fr.insarennes.fafdti.visitors.InvalidCallException;
-
 public class DecisionTreePending implements DecisionTree {
 
 	@Override

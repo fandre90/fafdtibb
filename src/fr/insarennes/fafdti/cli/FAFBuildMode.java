@@ -1,7 +1,3 @@
-/**
- * Point d'entrée du mode de construction de FAFDTIBB
- */
-
 package fr.insarennes.fafdti.cli;
 
 import java.io.PrintWriter;
@@ -29,7 +25,9 @@ import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
 import fr.insarennes.fafdti.builder.stopcriterion.GainMin;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.visitors.XmlConst;
-
+/**
+ * Point d'entrée du mode de construction de FAFDTIBB
+ */
 public class FAFBuildMode {
 
 	static Logger log = Logger.getLogger(FAFBuildMode.class);

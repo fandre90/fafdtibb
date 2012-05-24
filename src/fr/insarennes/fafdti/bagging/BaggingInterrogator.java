@@ -1,8 +1,3 @@
-/** Classe permettant d'interroger un {@link BaggingTrees}
- * Cette classe interroge chaque arbre du {@link BaggingTrees} puis fait la moyenne
- * des résultats
- */
-
 package fr.insarennes.fafdti.bagging;
 
 import java.util.ArrayList;
@@ -19,7 +14,10 @@ import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
 import fr.insarennes.fafdti.visitors.Interrogator;
 import fr.insarennes.fafdti.visitors.QuestionExample;
-
+/** Classe permettant d'interroger un {@link BaggingTrees}
+ * Cette classe interroge chaque arbre du {@link BaggingTrees} puis fait la moyenne
+ * des résultats
+ */
 public class BaggingInterrogator {
 	
 	private static Logger log = Logger.getLogger(BaggingInterrogator.class);

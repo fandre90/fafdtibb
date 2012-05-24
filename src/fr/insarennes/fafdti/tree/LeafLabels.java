@@ -1,9 +1,3 @@
-/** Classe encapsulant la distribution calculée attachée à un {@link DecisionTreeLeaf}
- * Une distribution est forcemment composée d'une (ou plusieurs) classes associées
- * à leur probabilités respectives (la somme de celles-ci devant obligatoirement être
- * égal (ou très proche) de 1)
- */
-
 package fr.insarennes.fafdti.tree;
 
 import java.util.HashMap;
@@ -13,7 +7,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import fr.insarennes.fafdti.FAFException;
-
+/** Classe encapsulant la distribution calculée attachée à un {@link DecisionTreeLeaf}
+ * Une distribution est forcemment composée d'une (ou plusieurs) classes associées
+ * à leur probabilités respectives (la somme de celles-ci devant obligatoirement être
+ * égal (ou très proche) de 1)
+ */
 public class LeafLabels {
 	//si la somme fait moins de 0.9 (90%) , il y a visiblement une erreur de calcul
 	public static final double EPSILON_VALIDATION_PROBABILITY_COMPUTATION = 0.1;

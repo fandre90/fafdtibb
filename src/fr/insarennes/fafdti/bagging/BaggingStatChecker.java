@@ -1,14 +1,12 @@
-/** Classe permettant de checker et de construire une liste de stats (nb noeuds, nb feuilles)
- * pour chaque arbre d'un {@link BaggingTrees}
- */
-
 package fr.insarennes.fafdti.bagging;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import fr.insarennes.fafdti.visitors.StatChecker;
-
+/** Classe permettant de checker et de construire une liste de stats (nb noeuds, nb feuilles)
+ * pour chaque arbre d'un {@link BaggingTrees}
+ */
 public class BaggingStatChecker {
 
 	private BaggingTrees trees;

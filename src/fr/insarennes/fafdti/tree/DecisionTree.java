@@ -1,9 +1,7 @@
+package fr.insarennes.fafdti.tree;
 /** Interface DecisionTree
  * Un DecisionTree peut être un noeud ou une feuille
  */
-
-package fr.insarennes.fafdti.tree;
-
 public interface DecisionTree {
 	
 	/** Méthode de visite

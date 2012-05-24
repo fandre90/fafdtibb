@@ -1,10 +1,3 @@
-/**
- * Classe qui construit un noeud (ou une feuille) et fait l'appel récursif.
- * On note qu'une fois la construciton finie, dans le cas où c'est un noeud, le thread
- * lance 2 autres threads puis fini ; ses fils seront assigné grâce au mécanisme
- * de DecisionNodeSetter.
- */
-
 package fr.insarennes.fafdti.builder;
 
 import java.io.IOException;
@@ -55,7 +48,13 @@ import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
 import fr.insarennes.fafdti.tree.DecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
-
+import fr.insarennes.fafdti.tree.LinkedDecisionTreeQuestion;
+/**
+ * Classe qui construit un noeud (ou une feuille) et fait l'appel récursif.
+ * On note qu'une fois la construciton finie, dans le cas où c'est un noeud, le thread
+ * lance 2 autres threads puis fini ; ses fils seront assigné grâce au mécanisme
+ * de DecisionNodeSetter.
+ */
 public class NodeBuilder implements Runnable, StopCriterionUtils {
 	
 	protected static Logger log = Logger.getLogger(NodeBuilder.class);
@@ -265,7 +264,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		stats.incrementPending();
 		//construction du noeud
 		Question question = qLeftDistribution.getQuestion();
-		DecisionTreeQuestion dtq = new DecisionTreeQuestion(question);
+		LinkedDecisionTreeQuestion dtq = new LinkedDecisionTreeQuestion(question, this.workingDir);
 		try {
 			nodeSetter.set(dtq);
 		} catch (CannotOverwriteTreeException e) {

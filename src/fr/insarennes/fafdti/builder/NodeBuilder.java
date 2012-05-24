@@ -469,7 +469,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 	}
 
 	//****************Reading results utils methods********//
-	
+
 	private FSDataInputStream getPartNonEmpty(Path inputDir) throws IOException{
 		Configuration conf = new Configuration();
 		FileSystem fileSystem;
@@ -478,7 +478,8 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		FSDataInputStream in = null;
 		for (int i = 0; i < files.length; i++) {
 			Path tmp = files[i].getPath();
-			if (tmp.getName().startsWith("part") && fileSystem.getFileStatus(tmp).getLen() > 0)
+			if (tmp.getName().startsWith("part")
+					&& fileSystem.getFileStatus(tmp).getLen() > 0)
 					in = fileSystem.open(tmp);
 		}
 		if(in == null){
@@ -493,7 +494,7 @@ public class NodeBuilder implements Runnable, StopCriterionUtils {
 		
 		if(in==null)
 			return "";
-		
+
 		LineReader lr = new LineReader(in);
 		Text line = new Text();
 		lr.readLine(line);

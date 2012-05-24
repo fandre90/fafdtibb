@@ -211,6 +211,10 @@ public class DotNamesInfo extends HadoopConfStockable {
 		return labelsArray.length;
 	}
 
+	public int numOfAttr() {
+		return  this.attributeSpec.size();
+	}
+
 	public AttrSpec getAttrSpec(int col) {
 		return (AttrSpec) this.attributeSpec.get(col).clone();
 	}

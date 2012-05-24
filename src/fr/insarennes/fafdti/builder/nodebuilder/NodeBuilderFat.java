@@ -349,10 +349,6 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 		deleteDir(job3outDir);
 		deleteDir(job4outDir);
 	}
-	@Override
-	public QuestionScoreLeftDistribution buildNode(String[][] data) {
-		throw new UnsupportedOperationException(this.getClass().getName()+" cannot build node with String[][]");
-	}
 	
 	protected void deleteDir(String dir){
 		FileSystem fs = null;
@@ -370,6 +366,13 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder{
 	public String getId() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public QuestionScoreLeftDistribution buildNode(String[][] data,
+			ScoredDistributionVector parentDistribution, Path workDir, String id)
+			throws IOException, InterruptedException, ClassNotFoundException {
+		throw new UnsupportedOperationException(this.getClass().getName()+" cannot build node with String[][]");
 	}
 	
 }

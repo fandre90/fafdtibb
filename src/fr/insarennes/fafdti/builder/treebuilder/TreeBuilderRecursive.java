@@ -121,7 +121,8 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				qLeftDistribution = this.nodeBuilder.buildNode(
 						this.inputDataPath, parentDistribution, wd, id);
 			else
-				qLeftDistribution = this.nodeBuilder.buildNode(this.inputData);
+				qLeftDistribution = this.nodeBuilder.buildNode(
+						this.inputData, parentDistribution, wd, id);
 			// compute right distribution from left one
 			rightDistribution = parentDistribution
 					.computeRightDistribution(qLeftDistribution

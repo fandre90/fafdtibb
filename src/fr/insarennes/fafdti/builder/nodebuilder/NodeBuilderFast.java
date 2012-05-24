@@ -37,11 +37,6 @@ public class NodeBuilderFast extends  NodeBuilder implements INodeBuilder{
 		// TODO Auto-generated method stub
 		
 	}
-	@Override
-	public QuestionScoreLeftDistribution buildNode(String[][] data) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public QuestionScoreLeftDistribution buildNode(Path dataPath,
@@ -53,6 +48,15 @@ public class NodeBuilderFast extends  NodeBuilder implements INodeBuilder{
 
 	@Override
 	public String getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public QuestionScoreLeftDistribution buildNode(String[][] data,
+			ScoredDistributionVector parentDistribution, Path workDir, String id)
+			throws IOException, InterruptedException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		return null;
 	}

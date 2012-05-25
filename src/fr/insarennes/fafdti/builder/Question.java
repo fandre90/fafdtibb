@@ -330,6 +330,10 @@ public class Question extends HadoopConfStockable implements
 		return this.ask(example.getValue(col));
 	}
 
+	public boolean ask(String[] example) throws FAFException {
+		return this.ask(example[col]);
+	}
+	
 	public boolean ask(String value) throws FAFException {
 		boolean res = false;
 		switch(this.type) {

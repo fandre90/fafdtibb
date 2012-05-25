@@ -21,7 +21,7 @@ public class TestTreeBuilderMapper {
 	public static void main(String[] args) throws ParseException, IOException {
 		JobConf jobConf = new JobConf(MapperTreeBuilder.class);
 		DotNamesInfo namesInfo = new DotNamesInfo(
-				new Path("/home/fabien/Bureau/Hadoop/data_test/in/adult.names"),
+				new Path("/home/fabien/Bureau/Hadoop/data_test/in/test1.names"),
 				FileSystem.get(jobConf));
 		namesInfo.toConf(jobConf);
 		jobConf.setOutputKeyClass(NullWritable.class);
@@ -29,7 +29,7 @@ public class TestTreeBuilderMapper {
 		jobConf.setMapperClass(MapperTreeBuilder.class);
 		jobConf.setInputFormat(WholeTextInputFormat.class);
 		org.apache.hadoop.mapred.FileInputFormat.setInputPaths(jobConf,
-				"/home/fabien/Bureau/Hadoop/data_test/in/adult.data");
+				"/home/fabien/Bureau/Hadoop/data_test/in/test1.data");
 		jobConf.setOutputFormat(SplitExampleMultipleOutputFormat.class);
 		org.apache.hadoop.mapred.FileOutputFormat.setOutputPath(jobConf,
 				new Path("/home/fabien/Bureau/Hadoop/data_test/out3"));

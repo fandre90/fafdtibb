@@ -192,19 +192,22 @@ public class NodeBuilderFast implements INodeBuilder {
 
 	@Override
 	public Pair<String[][], String[][]> getSplitData() throws FAFException {
+		System.out.println("Split: " + bestQuestion);
+		System.out.println("Distribution: " + bestSLDist);
 		ArrayList<String[]> leftDatabaseList = new ArrayList<String[]>();
 		ArrayList<String[]> rightDatabaseList = new ArrayList<String[]>();
 		for (String[] example : database) {
-			QuestionExample qExample = new QuestionExample(
-					Arrays.asList(example));
-			if (bestQuestion.ask(qExample)) {
+			if (bestQuestion.ask(example)) {
 				leftDatabaseList.add(example);
 			} else {
+				System.out.println(Arrays.toString(example));
 				rightDatabaseList.add(example);
 			}
 		}
 		String[][] leftDatabase = stringArrayArrayListToArray(leftDatabaseList);
 		String[][] rightDatabase = stringArrayArrayListToArray(rightDatabaseList);
+		System.out.println("Database : " + this.database.length + 
+				" Left: " + leftDatabase.length + " Right: " + rightDatabase.length);
 		return new Pair<String[][], String[][]>(leftDatabase,
 				rightDatabase);
 	}

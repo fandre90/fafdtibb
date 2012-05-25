@@ -14,6 +14,7 @@ import fr.insarennes.fafdti.Pair;
 import fr.insarennes.fafdti.Util;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
@@ -49,12 +50,12 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	protected BuildMode buildMode;
 	protected ITreeBuilderMaker tbMaker;
 	protected IScheduler scheduler;
-	
+
 	// factorizer constructor
 	private TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			INodeBuilder nodeBuilder, ITreeBuilderMaker tbMaker, 
+			INodeBuilder nodeBuilder, ITreeBuilderMaker tbMaker,
 			IScheduler scheduler) {
 		this.featureSpec = featureSpec;
 		this.workingDir = new Path(workingDir);
@@ -86,8 +87,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			INodeBuilder nodeBuilder, String inputDataPath,
 			ParentInfos parentInfos,
 			ScoredDistributionVector parentDistribution,
-			ITreeBuilderMaker tbMaker,
-			IScheduler scheduler) {
+			ITreeBuilderMaker tbMaker, IScheduler scheduler) {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
 				nodeBuilder, tbMaker, scheduler);
 		this.inputDataPath = new Path(inputDataPath);
@@ -118,20 +118,20 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			Path wd = new Path(this.workingDir, id);
 			// Start by computing parent distribution
 			// if was not computed before
-			if(parentDistribution == null) {
+			if (parentDistribution == null) {
 				if (buildMode == BuildMode.MODEFAT)
-					parentDistribution = this.nodeBuilder.computeDistribution(
-							this.inputDataPath);
+					parentDistribution = this.nodeBuilder
+							.computeDistribution(this.inputDataPath);
 				else
-					parentDistribution = this.nodeBuilder.computeDistribution(
-							this.inputData);
+					parentDistribution = this.nodeBuilder
+							.computeDistribution(this.inputData);
 			}
 			if (buildMode == BuildMode.MODEFAT)
 				qLeftDistribution = this.nodeBuilder.buildNode(
 						this.inputDataPath, parentDistribution, wd, id);
 			else
-				qLeftDistribution = this.nodeBuilder.buildNode(
-						this.inputData, parentDistribution, wd, id);
+				qLeftDistribution = this.nodeBuilder.buildNode(this.inputData,
+						parentDistribution, wd, id);
 			// compute right distribution from left one
 			rightDistribution = parentDistribution
 					.computeRightDistribution(qLeftDistribution
@@ -182,28 +182,31 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			Runnable treeBuilderRight;
 			ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1, nodeBuilder.getId(),
 					 parentInfos.getBaggingId());
+			ScoredDistributionVector leftDistribution = qLeftDistribution.getScoreLeftDistribution().getDistribution();
 			if (datapaths == null) {
 				Pair<String[][], String[][]> datas = nodeBuilder.getSplitData();
 				treeBuilderLeft = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.yesSetter(), stopping, stats, nodeBuilder,
-								datas.getFirst(), pInfos, parentDistribution, tbMaker, scheduler);
+								dtq.noSetter(), stopping, stats, nodeBuilder,
+								datas.getFirst(), pInfos, leftDistribution, tbMaker, scheduler);
 				treeBuilderRight = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.noSetter(), stopping, stats, nodeBuilder,
-								datas.getSecond(), pInfos, parentDistribution, tbMaker, scheduler);
+								datas.getSecond(), pInfos, rightDistribution, tbMaker, scheduler);
 			} else {
 				treeBuilderLeft = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.yesSetter(), stopping, stats, nodeBuilder,
-								datapaths.getFirst().toString(), pInfos, parentDistribution, tbMaker, scheduler);
+								datapaths.getFirst().toString(), pInfos, leftDistribution, tbMaker, scheduler);
 				treeBuilderRight = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.noSetter(), stopping, stats, nodeBuilder,
-								datapaths.getSecond().toString(), pInfos, parentDistribution, tbMaker, scheduler);
+								datapaths.getSecond().toString(), pInfos, rightDistribution, tbMaker, scheduler);
 			}
-			scheduler.execute(treeBuilderLeft);
+			System.out.println("Left: " + leftDistribution);
+			System.out.println("Right: " + rightDistribution);
 			scheduler.execute(treeBuilderRight);
+			scheduler.execute(treeBuilderLeft);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -212,7 +215,6 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			e.printStackTrace();
 		}
 	}
-
 
 	private void leafMaker() {
 		log.log(Level.INFO, "Making a distribution leaf...");

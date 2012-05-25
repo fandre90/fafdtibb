@@ -20,6 +20,7 @@ import org.apache.hadoop.util.LineReader;
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.nodebuilder.FastNodeBuilderFactory;
 import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFast;
 import fr.insarennes.fafdti.builder.scheduler.DumbScheduler;
 import fr.insarennes.fafdti.builder.scheduler.IScheduler;
@@ -28,8 +29,8 @@ import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
 import fr.insarennes.fafdti.builder.stopcriterion.GainMin;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
-import fr.insarennes.fafdti.builder.treebuilder.DumbTreeBuilderMaker;
-import fr.insarennes.fafdti.builder.treebuilder.ITreeBuilderMaker;
+import fr.insarennes.fafdti.builder.treebuilder.DumbTreeBuilderFactory;
+import fr.insarennes.fafdti.builder.treebuilder.ITreeBuilderFactory;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
 import fr.insarennes.fafdti.builder.Question;
@@ -62,28 +63,28 @@ public class MapperTreeBuilder extends MapReduceBase implements
 			OutputCollector<NullWritable, Text> output, Reporter reporter)
 			throws IOException {
 		System.out.println("Mapper started");
+		StatBuilder stats = new StatBuilder(1);
 		DecisionTreeHolder treeHolder = new DecisionTreeHolder();
 		Criterion criterion = new EntropyCriterion();
-		NodeBuilderFast nodeBuilder = new NodeBuilderFast(
-				new EntropyCriterion(), namesInfo);
+		FastNodeBuilderFactory nodeBuilderFactory = new FastNodeBuilderFactory(
+				new EntropyCriterion(), namesInfo, stats);
 		String[][] database = parseDatabase(value.toString());
-		DumbTreeBuilderMaker treeBuilderMaker = new DumbTreeBuilderMaker();
+		DumbTreeBuilderFactory treeBuilderMaker = new DumbTreeBuilderFactory();
 		IScheduler scheduler = new DumbScheduler();
 		DecisionNodeSetter nodeSetter = treeHolder.getNodeSetter();
 		List<StoppingCriterion> stopCriteria = new ArrayList<StoppingCriterion>();
-		stopCriteria.add(new DepthMax(10));
+		stopCriteria.add(new DepthMax(11));
 		stopCriteria.add(new ExampleMin(1));
 		stopCriteria.add(new GainMin(0.00001));
-		StatBuilder stats = new StatBuilder(1);
 		ParentInfos pInfos = new ParentInfos(0, "0", "0");
 		Runnable treeBuilder = treeBuilderMaker.makeTreeBuilder(namesInfo, "/",
-				criterion, nodeSetter, stopCriteria, stats, nodeBuilder, database, pInfos, null, treeBuilderMaker,
+				criterion, nodeSetter, stopCriteria, stats, nodeBuilderFactory, database, pInfos, null, treeBuilderMaker,
 				scheduler);
 		treeBuilder.run();
 		BaggingTrees treeBag = new BaggingTrees(1);
 		try {
 			treeBag.setTree(0, treeHolder.getRoot());
-			XmlExporter xmlExporter = new XmlExporter(treeBag, "/home/fabien/Bureau/Hadoop/data_test/toto.xml", 
+			XmlExporter xmlExporter = new XmlExporter(treeBag, "/home/fabien/Bureau/Hadoop/data_test/adult", 
 					new HashMap<String, String>(), namesInfo);
 			xmlExporter.launch();
 			System.out.println("XML Export done.");

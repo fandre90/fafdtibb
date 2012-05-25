@@ -19,6 +19,8 @@ import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
+import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilderFactory;
+import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFat;
 import fr.insarennes.fafdti.builder.scheduler.IScheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
@@ -46,16 +48,17 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	protected QuestionScoreLeftDistribution qLeftDistribution;
 	protected ScoredDistributionVector rightDistribution;
 	protected StatBuilder stats;
+	protected INodeBuilderFactory nodeBuilderFactory;
 	protected INodeBuilder nodeBuilder;
 	protected BuildMode buildMode;
-	protected ITreeBuilderMaker tbMaker;
+	protected ITreeBuilderFactory tbMaker;
 	protected IScheduler scheduler;
 
 	// factorizer constructor
 	private TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			INodeBuilder nodeBuilder, ITreeBuilderMaker tbMaker,
+			INodeBuilderFactory nodeBuilderFactory, ITreeBuilderFactory tbMaker,
 			IScheduler scheduler) {
 		this.featureSpec = featureSpec;
 		this.workingDir = new Path(workingDir);
@@ -63,7 +66,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		this.nodeSetter = nodeSetter;
 		this.stopping = stopping;
 		this.stats = stats;
-		this.nodeBuilder = nodeBuilder;
+		this.nodeBuilderFactory = nodeBuilderFactory;
 		this.tbMaker = tbMaker;
 		this.scheduler = scheduler;
 	}
@@ -72,10 +75,10 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	public TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			INodeBuilder nodeBuilder, String baggingId, String inputDataPath,
-			ITreeBuilderMaker tbMaker, IScheduler scheduler) {
+			INodeBuilderFactory nodeBuilderFactory, String baggingId, String inputDataPath,
+			ITreeBuilderFactory tbMaker, IScheduler scheduler) {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
-				nodeBuilder, tbMaker, scheduler);
+				nodeBuilderFactory, tbMaker, scheduler);
 		this.parentInfos = new ParentInfos(0, "launcher", baggingId);
 
 	}
@@ -84,12 +87,12 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	public TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			INodeBuilder nodeBuilder, String inputDataPath,
+			INodeBuilderFactory nodeBuilderFactory, String inputDataPath,
 			ParentInfos parentInfos,
 			ScoredDistributionVector parentDistribution,
-			ITreeBuilderMaker tbMaker, IScheduler scheduler) {
+			ITreeBuilderFactory tbMaker, IScheduler scheduler) {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
-				nodeBuilder, tbMaker, scheduler);
+				nodeBuilderFactory, tbMaker, scheduler);
 		this.inputDataPath = new Path(inputDataPath);
 		this.parentInfos = parentInfos;
 		this.parentDistribution = parentDistribution;
@@ -99,39 +102,48 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	public TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			INodeBuilder nodeBuilder, String[][] inputData,
+			INodeBuilderFactory nodeBuilderFactory, String[][] inputData,
 			ParentInfos parentInfos,
 			ScoredDistributionVector parentDistribution,
-			ITreeBuilderMaker tbMaker, IScheduler scheduler) {
+			ITreeBuilderFactory tbMaker, IScheduler scheduler) {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
-				nodeBuilder, tbMaker, scheduler);
+				nodeBuilderFactory, tbMaker, scheduler);
 		this.inputData = inputData;
 		this.parentInfos = parentInfos;
 		this.parentDistribution = parentDistribution;
 		this.buildMode = BuildMode.MODEFAST;
 	}
 
+	private void initNodeBuilder() {
+		String id = parentInfos.getBaggingId() + "-"
+				+ Integer.toString(stats.getNextId());
+		Path wd = new Path(this.workingDir, id);
+		try {
+			if (buildMode == BuildMode.MODEFAT) {
+				this.nodeBuilder = nodeBuilderFactory.
+					makeNodeBuilder(inputDataPath, parentDistribution, id, wd);
+			} else {
+					this.nodeBuilder = nodeBuilderFactory.
+						makeNodeBuilder(inputData, parentDistribution, id);
+			}
+		} catch (FAFException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public void run() {
+		initNodeBuilder();
 		try {
 			String id = parentInfos.getBaggingId() + "-"
 					+ Integer.toString(stats.getNextId());
 			Path wd = new Path(this.workingDir, id);
-			// Start by computing parent distribution
-			// if was not computed before
+			// Get parent distribution from newly built node builder
+			// if it was not passed to the constructor
 			if (parentDistribution == null) {
-				if (buildMode == BuildMode.MODEFAT)
-					parentDistribution = this.nodeBuilder
-							.computeDistribution(this.inputDataPath);
-				else
-					parentDistribution = this.nodeBuilder
-							.computeDistribution(this.inputData);
+				parentDistribution = nodeBuilder.getDistribution();
 			}
-			if (buildMode == BuildMode.MODEFAT)
-				qLeftDistribution = this.nodeBuilder.buildNode(
-						this.inputDataPath, parentDistribution, wd, id);
-			else
-				qLeftDistribution = this.nodeBuilder.buildNode(this.inputData,
-						parentDistribution, wd, id);
+			qLeftDistribution = nodeBuilder.buildNode();
 			// compute right distribution from left one
 			rightDistribution = parentDistribution
 					.computeRightDistribution(qLeftDistribution
@@ -172,7 +184,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			nodeSetter.set(dtq);
 		} catch (CannotOverwriteTreeException e) {
 			log.log(Level.ERROR,
-					"NodeBuilder tries to overwrite a DecisionTree through NodeSetter with Question node");
+					"TreeBuilder tries to overwrite a DecisionTree through NodeSetter with Question node");
 			log.log(Level.ERROR, e.getMessage());
 		}
 
@@ -187,26 +199,28 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				Pair<String[][], String[][]> datas = nodeBuilder.getSplitData();
 				treeBuilderLeft = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.noSetter(), stopping, stats, nodeBuilder,
+								dtq.yesSetter(), stopping, stats, nodeBuilderFactory,
 								datas.getFirst(), pInfos, leftDistribution, tbMaker, scheduler);
 				treeBuilderRight = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.noSetter(), stopping, stats, nodeBuilder,
+								dtq.noSetter(), stopping, stats, nodeBuilderFactory,
 								datas.getSecond(), pInfos, rightDistribution, tbMaker, scheduler);
 			} else {
 				treeBuilderLeft = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.yesSetter(), stopping, stats, nodeBuilder,
+								dtq.yesSetter(), stopping, stats, nodeBuilderFactory,
 								datapaths.getFirst().toString(), pInfos, leftDistribution, tbMaker, scheduler);
 				treeBuilderRight = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.noSetter(), stopping, stats, nodeBuilder,
+								dtq.noSetter(), stopping, stats, nodeBuilderFactory,
 								datapaths.getSecond().toString(), pInfos, rightDistribution, tbMaker, scheduler);
 			}
 			System.out.println("Left: " + leftDistribution);
 			System.out.println("Right: " + rightDistribution);
-			scheduler.execute(treeBuilderRight);
+			System.out.println("**Left");
 			scheduler.execute(treeBuilderLeft);
+			System.out.println("**Right");
+			scheduler.execute(treeBuilderRight);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

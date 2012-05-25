@@ -9,23 +9,24 @@ import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
+import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilderFactory;
 import fr.insarennes.fafdti.builder.scheduler.IScheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.tree.DecisionNodeSetter;
 
-public interface ITreeBuilderMaker {
+public interface ITreeBuilderFactory {
 	public Runnable makeTreeBuilder(DotNamesInfo featureSpec,
 			String workingDir,
 			Criterion criterion,
 			DecisionNodeSetter nodeSetter, 
 			List<StoppingCriterion> stopping,
 			StatBuilder stats,
-			INodeBuilder nodeBuilder,
+			INodeBuilderFactory nodeBuilderFactory,
 			String inputData,
 			ParentInfos parentInfos, 
 			ScoredDistributionVector parentDistribution, 
-			ITreeBuilderMaker tbMaker,
+			ITreeBuilderFactory tbMaker,
 			IScheduler scheduler);
 	
 	public Runnable makeTreeBuilder(DotNamesInfo featureSpec,
@@ -34,11 +35,11 @@ public interface ITreeBuilderMaker {
 			DecisionNodeSetter nodeSetter, 
 			List<StoppingCriterion> stopping,
 			StatBuilder stats,
-			INodeBuilder nodeBuilder,
+			INodeBuilderFactory nodeBuilderFactory,
 			String[][] inputData,
 			ParentInfos parentInfos, 
 			ScoredDistributionVector parentDistribution,
-			ITreeBuilderMaker tbMaker,
+			ITreeBuilderFactory tbMaker,
 			IScheduler scheduler);
 	
 	public Runnable makeTreeBuilder(DotNamesInfo featureSpec, 
@@ -47,8 +48,8 @@ public interface ITreeBuilderMaker {
 			DecisionNodeSetter nodeSetter, 
 			List<StoppingCriterion> stopping,
 			StatBuilder stats,
-			INodeBuilder nodeBuilder,
+			INodeBuilderFactory nodeBuilderFactory,
 			String baggingId,
-			String inputDataPath, ITreeBuilderMaker tbMaker,
+			String inputDataPath, ITreeBuilderFactory tbMaker,
 			IScheduler scheduler);
 }

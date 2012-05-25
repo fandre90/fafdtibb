@@ -31,7 +31,7 @@ import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFast;
 import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFat;
 import fr.insarennes.fafdti.builder.scheduler.Scheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
-import fr.insarennes.fafdti.builder.treebuilder.LimitModeTreeBuilderMaker;
+import fr.insarennes.fafdti.builder.treebuilder.LimitModeTreeBuilderFactory;
 import fr.insarennes.fafdti.cli.FAFExitCode;
 import fr.insarennes.fafdti.tree.DecisionTree;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;
@@ -111,7 +111,7 @@ public class Launcher implements Observer {
 				String data = datasplit.get(i);
 				//NodeBuilder creation
 				roots.add(i, new DecisionTreeHolder());
-				LimitModeTreeBuilderMaker tbm = new LimitModeTreeBuilderMaker(limitmode);
+				LimitModeTreeBuilderFactory tbm = new LimitModeTreeBuilderFactory(limitmode);
 				NodeBuilderFat nbf = new NodeBuilderFat(this.dotNamesInfo, criterion, stats);
 				Runnable tb = tbm.makeTreeBuilder(this.dotNamesInfo, outputDir, criterion, roots.get(i).getNodeSetter(), stoppingList, 
 						stats, nbf, String.valueOf(i), data, tbm, null);

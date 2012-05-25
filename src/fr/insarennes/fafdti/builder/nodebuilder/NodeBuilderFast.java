@@ -1,4 +1,5 @@
 package fr.insarennes.fafdti.builder.nodebuilder;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -33,36 +34,53 @@ import fr.insarennes.fafdti.visitors.QuestionExample;
 import fr.insarennes.fafdti.Pair;
 
 public class NodeBuilderFast implements INodeBuilder {
-	private Criterion criterion;
-	private DotNamesInfo namesInfo;
 
 	private String[][] database;
-	private ScoredDistributionVector parentDist;
+	private Criterion criterion;
+	private DotNamesInfo namesInfo;
 	private String id;
+	private ScoredDistributionVector parentDistribution;
 	private Question bestQuestion;
 	private ScoreLeftDistribution bestSLDist;
-	private Map<Question, ScoredDistributionVector> questionDistribution = new HashMap<Question, ScoredDistributionVector>();
+	private Map<Question, ScoredDistributionVector> questionDistribution;
 
-	public NodeBuilderFast(Criterion criterion, DotNamesInfo namesInfo) {
+	/*
+	 * Make it thread safe private String[][] database; private
+	 * ScoredDistributionVector parentDist; private String id; private Question
+	 * bestQuestion; private ScoreLeftDistribution bestSLDist; private
+	 * Map<Question, ScoredDistributionVector> questionDistribution = new
+	 * HashMap<Question, ScoredDistributionVector>();
+	 */
+
+	public NodeBuilderFast(Criterion criterion, DotNamesInfo namesInfo,
+			String[][] database, ScoredDistributionVector parentDistribution,
+			String id) throws FAFException {
 		this.criterion = criterion;
 		this.namesInfo = namesInfo;
-		this.bestQuestion = null;
+		this.id = id;
+		this.database = database;
+		this.questionDistribution = new HashMap<Question, ScoredDistributionVector>();
+		if(parentDistribution == null) {
+			parentDistribution = new ScoredDistributionVector(
+					namesInfo.numOfLabel());
+			for (String[] example : database) {
+				String label = example[example.length - 1];
+				parentDistribution.incrStat(namesInfo.indexOfLabel(label));
+			}
+			parentDistribution.rate(criterion);
+		}
+		this.parentDistribution = parentDistribution;
 	}
 
 	@Override
-	public QuestionScoreLeftDistribution buildNode(String[][] data,
-			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException,
-			FAFException {
-		System.out.println("Database size: " + data.length);
-		// TODO Auto-generated method stub
+	public QuestionScoreLeftDistribution buildNode() throws IOException,
+			InterruptedException, ClassNotFoundException, FAFException {
+		System.out.println("Database size: " + database.length);
 		// Set database and parent distribution
-		this.database = data;
-		this.id = id;
 		if (parentDistribution == null) {
 			throw new NullArgumentException("parentDistribution cannot be null");
 		}
-		this.parentDist = parentDistribution;
+		QuestionScoreLeftDistribution bestQSLDist = null;
 		// Iterate over all continuous attributes
 		for (int i = 0; i < namesInfo.numOfAttr(); ++i) {
 			AttrType attrType = namesInfo.getAttrSpec(i).getType();
@@ -72,20 +90,12 @@ public class NodeBuilderFast implements INodeBuilder {
 		}
 		// Iterate over all examples of the database to
 		// generate discrete and text question
-		for (String[] example : this.database) {
+		for (String[] example : database) {
 			generateDiscreteTextQuestions(example);
 		}
 		computeQuestionDistribution();
 		System.out.println("Question: " + bestQuestion);
 		return new QuestionScoreLeftDistribution(bestQuestion, bestSLDist);
-	}
-
-	@Override
-	public QuestionScoreLeftDistribution buildNode(Path dataPath,
-			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException {
-		throw new UnsupportedOperationException(this.getClass().getName()
-				+ " cannot build nodes from input path");
 	}
 
 	private void generateDiscreteTextQuestions(String[] example)
@@ -112,7 +122,6 @@ public class NodeBuilderFast implements INodeBuilder {
 				} else {
 					Set<FGram> fGramSet = GramGenerator.generateAllNFGram(
 							textAttr, words);
-					System.out.println(fGramSet);
 					for (FGram fGram : fGramSet) {
 						Question q = new Question(i, attrType, fGram);
 						addQuestion(q, labelIndex);
@@ -122,7 +131,8 @@ public class NodeBuilderFast implements INodeBuilder {
 		}
 	}
 
-	private void generateContinuousQuestion(int attrIdx) throws FAFException {
+	private void generateContinuousQuestion(int attrIdx)
+			throws FAFException {
 		SortedMap<Double, ScoredDistributionVector> valueDistMap = new TreeMap<Double, ScoredDistributionVector>();
 		for (String[] example : database) {
 			double curValue = Double.parseDouble(example[attrIdx]);
@@ -137,7 +147,7 @@ public class NodeBuilderFast implements INodeBuilder {
 			curDist.incrStat(namesInfo.indexOfLabel(label));
 		}
 		ThresholdComputer thresholdComputer = new ThresholdComputer(namesInfo,
-				parentDist, criterion);
+				parentDistribution, criterion);
 		if (valueDistMap.size() >= 2) {
 			Pair<Double, ScoreLeftDistribution> p = thresholdComputer
 					.computeThreshold(valueDistMap);
@@ -166,7 +176,7 @@ public class NodeBuilderFast implements INodeBuilder {
 			Question q = e.getKey();
 			ScoredDistributionVector leftDist = e.getValue();
 			leftDist.rate(criterion);
-			ScoredDistributionVector rightDist = parentDist
+			ScoredDistributionVector rightDist = parentDistribution
 					.computeRightDistribution(leftDist);
 			rightDist.rate(criterion);
 			ScoreLeftDistribution sLDist = new ScoreLeftDistribution(leftDist,
@@ -177,10 +187,9 @@ public class NodeBuilderFast implements INodeBuilder {
 
 	private void bestQuestionCandidate(Question q, ScoreLeftDistribution sLDist) {
 		// System.out.println("Candidate: " + q + " " + sLDist.getScore());
-		if (this.bestSLDist == null
-				|| sLDist.getScore() < this.bestSLDist.getScore()) {
-			bestQuestion = q;
+		if (bestQuestion == null || sLDist.getScore() < bestSLDist.getScore()) {
 			bestSLDist = sLDist;
+			bestQuestion = q;
 		}
 	}
 
@@ -193,23 +202,21 @@ public class NodeBuilderFast implements INodeBuilder {
 	@Override
 	public Pair<String[][], String[][]> getSplitData() throws FAFException {
 		System.out.println("Split: " + bestQuestion);
-		System.out.println("Distribution: " + bestSLDist);
 		ArrayList<String[]> leftDatabaseList = new ArrayList<String[]>();
 		ArrayList<String[]> rightDatabaseList = new ArrayList<String[]>();
 		for (String[] example : database) {
 			if (bestQuestion.ask(example)) {
 				leftDatabaseList.add(example);
 			} else {
-				System.out.println(Arrays.toString(example));
+				//System.out.println(Arrays.toString(example));
 				rightDatabaseList.add(example);
 			}
 		}
-		String[][] leftDatabase = stringArrayArrayListToArray(leftDatabaseList);
-		String[][] rightDatabase = stringArrayArrayListToArray(rightDatabaseList);
-		System.out.println("Database : " + this.database.length + 
-				" Left: " + leftDatabase.length + " Right: " + rightDatabase.length);
-		return new Pair<String[][], String[][]>(leftDatabase,
-				rightDatabase);
+		String[][] leftDatabase = stringArrayArrayListToArrayArray(leftDatabaseList);
+		String[][] rightDatabase = stringArrayArrayListToArrayArray(rightDatabaseList);
+		System.out.println("Database : " + database.length + " Left: "
+				+ leftDatabase.length + " Right: " + rightDatabase.length);
+		return new Pair<String[][], String[][]>(leftDatabase, rightDatabase);
 	}
 
 	@Override
@@ -223,26 +230,11 @@ public class NodeBuilderFast implements INodeBuilder {
 	}
 
 	@Override
-	public ScoredDistributionVector computeDistribution(Path dataPath)
-			throws IOException, InterruptedException, ClassNotFoundException {
-		throw new UnsupportedOperationException(this.getClass().getName()
-				+ " cannot computeEntropy from input path");
+	public ScoredDistributionVector getDistribution() throws FAFException {
+		return this.parentDistribution;
 	}
 
-	@Override
-	public ScoredDistributionVector computeDistribution(String[][] data)
-			throws FAFException {
-		ScoredDistributionVector parentDist = new ScoredDistributionVector(
-				namesInfo.numOfLabel());
-		for (String[] example : data) {
-			String label = example[example.length - 1];
-			parentDist.incrStat(namesInfo.indexOfLabel(label));
-		}
-		parentDist.rate(criterion);
-		return parentDist;
-	}
-
-	public static String[][] stringArrayArrayListToArray(
+	public static String[][] stringArrayArrayListToArrayArray(
 			ArrayList<String[]> arrayList) {
 		String[][] array = new String[arrayList.size()][];
 		for (int i = 0; i < arrayList.size(); ++i) {
@@ -250,5 +242,4 @@ public class NodeBuilderFast implements INodeBuilder {
 		}
 		return array;
 	}
-
 }

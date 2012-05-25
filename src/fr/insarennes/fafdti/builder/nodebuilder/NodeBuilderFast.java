@@ -33,12 +33,9 @@ import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 import fr.insarennes.fafdti.Pair;
 
-public class NodeBuilderFast implements INodeBuilder {
+public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 
 	private String[][] database;
-	private Criterion criterion;
-	private DotNamesInfo namesInfo;
-	private String id;
 	private ScoredDistributionVector parentDistribution;
 	private Question bestQuestion;
 	private ScoreLeftDistribution bestSLDist;
@@ -55,9 +52,7 @@ public class NodeBuilderFast implements INodeBuilder {
 	public NodeBuilderFast(Criterion criterion, DotNamesInfo namesInfo,
 			String[][] database, ScoredDistributionVector parentDistribution,
 			String id) throws FAFException {
-		this.criterion = criterion;
-		this.namesInfo = namesInfo;
-		this.id = id;
+		super(namesInfo, criterion, id);
 		this.database = database;
 		this.questionDistribution = new HashMap<Question, ScoredDistributionVector>();
 		if(parentDistribution == null) {

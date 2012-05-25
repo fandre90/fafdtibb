@@ -28,12 +28,12 @@ public abstract class NodeBuilder {
 
 	protected Criterion criterion;
 	protected DotNamesInfo namesInfo;
-	protected StatBuilder stats;
+	protected String id;
 
 	//First node constructor
-	public NodeBuilder(DotNamesInfo featureSpec, Criterion criterion, StatBuilder stats){
-		this.namesInfo = featureSpec;
+	public NodeBuilder(DotNamesInfo namesInfo, Criterion criterion, String id){
+		this.namesInfo = namesInfo;
 		this.criterion = criterion;
-		this.stats = stats;
+		this.id = id;
 	}
 }

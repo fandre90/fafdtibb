@@ -1,5 +1,7 @@
 package fr.insarennes.fafdti.builder.nodebuilder;
 
+import java.io.IOException;
+
 import org.apache.hadoop.fs.Path;
 
 import fr.insarennes.fafdti.builder.Criterion;
@@ -11,13 +13,10 @@ public class FatNodeBuilderFactory implements INodeBuilderFactory {
 
 	private Criterion criterion;
 	private DotNamesInfo namesInfo;
-	private StatBuilder stats;
 	
-	public FatNodeBuilderFactory(Criterion criterion, DotNamesInfo namesInfo,
-			StatBuilder stats) {
+	public FatNodeBuilderFactory(Criterion criterion, DotNamesInfo namesInfo) {
 		this.criterion = criterion;
 		this.namesInfo = namesInfo;
-		this.stats = stats;
 	}
 
 	@Override
@@ -29,8 +28,9 @@ public class FatNodeBuilderFactory implements INodeBuilderFactory {
 
 	@Override
 	public INodeBuilder makeNodeBuilder(Path dataPath,
-			ScoredDistributionVector parentDistribution, String id, Path workdir) {
-		return new NodeBuilderFat(namesInfo, criterion, stats);
+			ScoredDistributionVector parentDistribution, String id, Path workdir) throws IOException, InterruptedException, ClassNotFoundException {
+		return new NodeBuilderFat(criterion, namesInfo, dataPath, parentDistribution,
+				id, workdir);
 	}
 
 }

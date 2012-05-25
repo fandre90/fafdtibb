@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -65,23 +66,15 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 	private Path workingDir;
 	private String id;
 	private Path inputDataPath;
+	private ScoredDistributionVector parentDistribution;
 
 	// root constructor
-	public NodeBuilderFat(DotNamesInfo featureSpec, Criterion criterion,
-			StatBuilder stats) {
-		super(featureSpec, criterion, stats);
-	}
-
-	public QuestionScoreLeftDistribution buildNode(Path dataPath,
-			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException,
-			FAFException {
-		this.workingDir = workDir;
-		this.id = id;
-		this.inputDataPath = dataPath;
-		// log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
-		// JOB0
-		// FIXME This is not necessary anymore
+	public NodeBuilderFat(Criterion criterion, DotNamesInfo namesInfo,
+			Path inputDataPath, ScoredDistributionVector parentDistribution,
+			String id, Path workingDir) throws IOException, InterruptedException, ClassNotFoundException {
+		super(namesInfo, criterion, id);
+		this.inputDataPath = inputDataPath;
+		this.workingDir = workingDir;
 		if (parentDistribution == null) {
 			log.info("NodeFat " + id + " : launching step0...");
 			Job job0 = setupJob0();
@@ -96,8 +89,20 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 			// ****//
 			// get initial distribution
 			parentDistribution = readParentDistribution();
-			stats.setTotalEx(parentDistribution.getTotal());
+			// FIXME : Move stats in TreeBuilder
+			// stats.setTotalEx(parentDistribution.getTotal());
 		}
+		this.parentDistribution = parentDistribution;
+	}
+
+	public QuestionScoreLeftDistribution buildNode()
+			throws IOException, InterruptedException, ClassNotFoundException,
+			FAFException {
+		// Set database and parent distribution
+		if (parentDistribution == null) {
+			throw new NullArgumentException("parentDistribution cannot be null");
+		}
+		// log.info("Thread "+id+" starting (launched by "+parentInfos.getId()+")");
 		log.debug("parentDist = " + parentDistribution.toString());
 		// JOB1
 		Job job1 = setupJob1(parentDistribution);
@@ -138,23 +143,6 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 		// get best question
 		qLeftDistribution = readBestQuestion();
 		return qLeftDistribution;
-	}
-
-	public Pair<Path, Path> getSplitPath() throws IOException {
-		// JOB4
-		// Old API
-		JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
-		log.info("Thread " + id + " : launching step4...");
-		RunningJob rj4 = JobClient.runJob(job4Conf);
-		// ****//
-		while (!rj4.isSuccessful()) {
-			log.info("Thread " + id + " : RE-launching step4...");
-			deleteDir(job4outDir);
-			job4Conf = setupJob4(qLeftDistribution.getQuestion());
-			rj4 = JobClient.runJob(job4Conf);
-		}
-		Path p = new Path(this.workingDir, job4outDir);
-		return new Pair<Path, Path>(new Path(p, "left"), new Path(p, "right"));
 	}
 
 	// ***************setup JOB methods********************//
@@ -345,8 +333,25 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 
 	@Override
 	public Pair<String[][], String[][]> getSplitData() {
-		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public Pair<Path, Path> getSplitPath() throws IOException {
+		// JOB4
+		// Old API
+		JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
+		log.info("Thread " + id + " : launching step4...");
+		RunningJob rj4 = JobClient.runJob(job4Conf);
+		// ****//
+		while (!rj4.isSuccessful()) {
+			log.info("Thread " + id + " : RE-launching step4...");
+			deleteDir(job4outDir);
+			job4Conf = setupJob4(qLeftDistribution.getQuestion());
+			rj4 = JobClient.runJob(job4Conf);
+		}
+		Path p = new Path(this.workingDir, job4outDir);
+		return new Pair<Path, Path>(new Path(p, "left"), new Path(p, "right"));
 	}
 
 	@Override
@@ -372,46 +377,13 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 
 	@Override
 	public String getId() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.id;
 	}
 
 	@Override
-	public QuestionScoreLeftDistribution buildNode(String[][] data,
-			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException,
-			FAFException {
-		throw new UnsupportedOperationException(this.getClass().getName()
-				+ " cannot build node with String[][]");
-	}
-
-	@Override
-	public ScoredDistributionVector computeDistribution(Path dataPath)
-			throws IOException, InterruptedException, ClassNotFoundException {
-		ScoredDistributionVector parentDistribution = new ScoredDistributionVector(
-				namesInfo.numOfLabel());
-		log.info("NodeFat " + id + " : launching step0...");
-		Job job0 = setupJob0();
-		job0.waitForCompletion(false);
-		// ****//
-		while (!job0.isSuccessful()) {
-			log.info("NodeFat " + id + " : RE-launching step0...");
-			deleteDir(job0outDir);
-			job0 = setupJob0();
-			job0.waitForCompletion(false);
-		}
-		// ****//
-		// get initial distribution
-		parentDistribution = readParentDistribution();
-		stats.setTotalEx(parentDistribution.getTotal());
-		log.debug("parentDist = " + parentDistribution.toString());
-		return parentDistribution;
-	}
-
-	@Override
-	public ScoredDistributionVector computeDistribution(String[][] data) {
-		throw new UnsupportedOperationException(this.getClass().getName()
-				+ " cannot compute distribution with String[][]");
+	public ScoredDistributionVector getDistribution() throws IOException,
+			InterruptedException, ClassNotFoundException, FAFException {
+		return this.parentDistribution;
 	}
 
 }

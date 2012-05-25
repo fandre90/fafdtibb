@@ -49,7 +49,8 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 					nodeSetter, stopping, stats, nodeBuilderFactory, inputData,
 					parentInfos, parentDistribution, tbMaker, scheduler);
 		} else {
-			treeBuilder = new TreeBuildRunMapper();
+			treeBuilder = new TreeBuildRunMapper(featureSpec, workingDir, 
+					criterion, nodeSetter, stopping, stats, inputData, parentInfos);
 		}
 		return treeBuilder;
 	}
@@ -77,7 +78,8 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 			treeBuilder = new TreeBuilderRecursive(featureSpec, workingDir, criterion,
 					nodeSetter, stopping, stats, nodeBuilderFactory, baggingId, inputDataPath, tbMaker, scheduler);
 		} else {
-			treeBuilder = new TreeBuildRunMapper();
+			treeBuilder = new TreeBuildRunMapper(featureSpec, workingDir, 
+					criterion, nodeSetter, stopping, stats, inputDataPath);
 		}
 		return treeBuilder;
 	}

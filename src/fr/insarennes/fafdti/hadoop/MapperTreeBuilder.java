@@ -1,4 +1,5 @@
 package fr.insarennes.fafdti.hadoop;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,16 +45,27 @@ public class MapperTreeBuilder extends MapReduceBase implements
 		Mapper<Object, Text, NullWritable, Text> {
 
 	DotNamesInfo namesInfo;
+	List<StoppingCriterion> stopCriteria;
+	ParentInfos parentInfos;
+	Criterion criterion;
 
 	@Override
 	public void configure(JobConf jobConf) {
 		try {
 			namesInfo = DotNamesInfo.fromConf(jobConf);
+			parentInfos = ParentInfos.fromConf(jobConf);
+			// FIXME
+			DepthMax dmax = DepthMax.fromConf(jobConf);
+			ExampleMin exmin = ExampleMin.fromConf(jobConf);
+			GainMin gmin = GainMin.fromConf(jobConf);
+			stopCriteria = new ArrayList<StoppingCriterion>();
+			stopCriteria.add(dmax);
+			stopCriteria.add(exmin);
+			stopCriteria.add(gmin);
+			criterion = Criterion.fromConf(jobConf);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -67,37 +79,32 @@ public class MapperTreeBuilder extends MapReduceBase implements
 		DecisionTreeHolder treeHolder = new DecisionTreeHolder();
 		Criterion criterion = new EntropyCriterion();
 		FastNodeBuilderFactory nodeBuilderFactory = new FastNodeBuilderFactory(
-				new EntropyCriterion(), namesInfo, stats);
+				new EntropyCriterion(), namesInfo);
 		String[][] database = parseDatabase(value.toString());
 		DumbTreeBuilderFactory treeBuilderMaker = new DumbTreeBuilderFactory();
 		IScheduler scheduler = new DumbScheduler();
 		DecisionNodeSetter nodeSetter = treeHolder.getNodeSetter();
-		List<StoppingCriterion> stopCriteria = new ArrayList<StoppingCriterion>();
-		stopCriteria.add(new DepthMax(11));
-		stopCriteria.add(new ExampleMin(1));
-		stopCriteria.add(new GainMin(0.00001));
-		ParentInfos pInfos = new ParentInfos(0, "0", "0");
 		Runnable treeBuilder = treeBuilderMaker.makeTreeBuilder(namesInfo, "/",
-				criterion, nodeSetter, stopCriteria, stats, nodeBuilderFactory, database, pInfos, null, treeBuilderMaker,
-				scheduler);
+				criterion, nodeSetter, stopCriteria, stats, nodeBuilderFactory,
+				database, parentInfos, null, treeBuilderMaker, scheduler);
 		treeBuilder.run();
 		BaggingTrees treeBag = new BaggingTrees(1);
 		try {
 			treeBag.setTree(0, treeHolder.getRoot());
-			XmlExporter xmlExporter = new XmlExporter(treeBag, "/home/fabien/Bureau/Hadoop/data_test/adult", 
+			XmlExporter xmlExporter = new XmlExporter(treeBag,
 					new HashMap<String, String>(), namesInfo);
-			xmlExporter.launch();
+			String xmlTree = xmlExporter.exportToString();
+			output.collect(NullWritable.get(), new Text());
 			System.out.println("XML Export done.");
 		} catch (FAFException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("Surprisingly mapper has not crashed");
 	}
 
 	public String[][] parseDatabase(String databaseContents) throws IOException {
 		ArrayList<String[]> databaseList = new ArrayList<String[]>();
-		for(String line: databaseContents.split("\n")) {
+		for (String line : databaseContents.split("\n")) {
 			databaseList.add(parseExample(line));
 		}
 		String[][] database = new String[databaseList.size()][];
@@ -106,7 +113,7 @@ public class MapperTreeBuilder extends MapReduceBase implements
 		}
 		return database;
 	}
-	
+
 	private String[] parseExample(String example) {
 		example = example.substring(0, example.length() - 1);
 		String[] tokens = example.split(",");

@@ -136,7 +136,7 @@ public class FAFUtilsMode {
 	public static void makeDot(CommandLine cmdline){
 		log.log(Level.INFO, "Starting makedot");
 		
-		ImportXML importer = new ImportXML(cmdline.getOptionValue(IN));
+		ImportXML importer = new ImportXML(cmdline.getOptionValue(IN) + ".xml");
 		try {
 			importer.launch();
 		} catch (FAFException e1) {

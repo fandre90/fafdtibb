@@ -5,6 +5,8 @@ import java.io.Serializable;
 
 import org.apache.hadoop.conf.Configuration;
 
+import fr.insarennes.fafdti.IHadoopConfStockable;
+
 // Static Java Interface
 // http://stackoverflow.com/questions/512877/why-cant-i-define-a-static-method-in-a-java-interface
 
@@ -15,7 +17,7 @@ import org.apache.hadoop.conf.Configuration;
 // Static + Generics
 // http://stackoverflow.com/questions/936377/static-method-in-a-generic-class
 
-public abstract class HadoopConfStockable implements Serializable {
+public abstract class HadoopConfStockable implements Serializable, IHadoopConfStockable {
 
 	// public static <T> T fromConf(Configuration conf, String keySuffix);
 

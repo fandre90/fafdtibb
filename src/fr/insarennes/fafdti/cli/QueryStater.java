@@ -16,8 +16,6 @@ import org.apache.log4j.Logger;
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingInterrogator;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
-import fr.insarennes.fafdti.hadoop.Step1Map;
-import fr.insarennes.fafdti.tree.ImportXML;
 import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 /** Classe effectuant la campagne de test sur l'entrée standard

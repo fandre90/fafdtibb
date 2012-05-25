@@ -286,9 +286,9 @@ public class Launcher implements Observer {
 		log.info("-------------------");
 		// export xml
 		comment.put(XmlConst.TIME, String.valueOf(timer) + "minutes");
-		XmlExporter xml = new XmlExporter(result, outXml, comment,
+		XmlExporter xml = new XmlExporter(result, comment,
 				this.dotNamesInfo);
-		xml.launch();
+		xml.exportToFile(outXml);
 		log.info("Tree resulting exports in " + outXml + ".xml");
 	}
 }

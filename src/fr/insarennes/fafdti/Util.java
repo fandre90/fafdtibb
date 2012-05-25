@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -44,6 +46,7 @@ public class Util {
 		}
 		return size;
 	}
+
 	public static double getSize(Path path){
 		double size = 0;
 		try {
@@ -53,5 +56,19 @@ public class Util {
 			e1.printStackTrace();
 		}
 		return size;
+	}
+	
+	public static Path getPartNonEmptyPath(Path inputDir) throws IOException {
+		Configuration conf = new Configuration();
+		FileSystem fileSystem;
+		fileSystem = FileSystem.get(conf);
+		FileStatus[] files = fileSystem.listStatus(inputDir);
+		for (int i = 0; i < files.length; i++) {
+			Path tmp = files[i].getPath();
+			if (tmp.getName().startsWith("part")
+					&& fileSystem.getFileStatus(tmp).getLen() > 0)
+				return tmp;
+		}
+		return null;
 	}
 }

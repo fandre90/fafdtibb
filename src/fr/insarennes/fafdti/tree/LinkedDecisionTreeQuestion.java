@@ -20,10 +20,17 @@ public class LinkedDecisionTreeQuestion extends DecisionTreeQuestion {
 		nbPendingDone = 0;
 		this.nodeBuilder = nodeBuilder;
 	}
+
 	private void tryDelDir(){
 		if(nbPendingDone==2)
-			this.nodeBuilder.cleanUp();
+			(new Thread() {
+				public void run() {
+					nodeBuilder.cleanUp();
+				}
+			}).start();
 	}
+
+	
 	public DecisionNodeSetter yesSetter(){
 		return new DecisionNodeSetter() {
 			public void set(DecisionTree node) throws CannotOverwriteTreeException{

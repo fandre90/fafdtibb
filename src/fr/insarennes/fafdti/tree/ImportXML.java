@@ -50,7 +50,7 @@ public class ImportXML {
 			DocumentBuilder constructeur = fabrique.newDocumentBuilder();
 			
 			// lecture du contenu d'un fichier XML avec DOM
-			File xml = new File(filename+".xml");
+			File xml = new File(filename);
 			doc = constructeur.parse(xml);
 			
 		} catch(Exception e){

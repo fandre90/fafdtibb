@@ -12,13 +12,10 @@ public class FastNodeBuilderFactory implements INodeBuilderFactory {
 
 	private Criterion criterion;
 	private DotNamesInfo namesInfo;
-	private StatBuilder stats;
-	
-	public FastNodeBuilderFactory(Criterion criterion, DotNamesInfo namesInfo,
-			StatBuilder stats) {
+
+	public FastNodeBuilderFactory(Criterion criterion, DotNamesInfo namesInfo) {
 		this.criterion = criterion;
 		this.namesInfo = namesInfo;
-		this.stats = stats;
 	}
 
 	@Override

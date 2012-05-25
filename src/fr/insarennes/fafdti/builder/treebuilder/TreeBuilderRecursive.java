@@ -80,7 +80,8 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
 				nodeBuilderFactory, tbMaker, scheduler);
 		this.parentInfos = new ParentInfos(0, "launcher", baggingId);
-
+		this.buildMode = BuildMode.MODEFAT;
+		this.inputDataPath = new Path(inputDataPath);
 	}
 
 	// recursive constructor
@@ -144,13 +145,14 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	public void run() {
 		initNodeBuilder();
 		try {
-			String id = parentInfos.getBaggingId() + "-"
+			/*String id = parentInfos.getBaggingId() + "-"
 					+ Integer.toString(stats.getNextId());
-			Path wd = new Path(this.workingDir, id);
+			Path wd = new Path(this.workingDir, id);*/
 			// Get parent distribution from newly built node builder
 			// if it was not passed to the constructor
 			if (parentDistribution == null) {
 				parentDistribution = nodeBuilder.getDistribution();
+				stats.setTotalEx(parentDistribution.getTotal());
 			}
 			qLeftDistribution = nodeBuilder.buildNode();
 			// compute right distribution from left one

@@ -97,7 +97,7 @@ public class FAFQueryMode {
 			//Importer bagging trees
 			String xmlInput = cmdline.getOptionValue(IN);
 			BaggingTrees trees = null;
-			ImportXML importer = new ImportXML(xmlInput);
+			ImportXML importer = new ImportXML(xmlInput+".xml");
 			try {
 				importer.launch();
 			} catch (FAFException e) {
@@ -138,7 +138,7 @@ public class FAFQueryMode {
 			log.log(Level.INFO, qExample.toString());
 			
 			//On construit l'arbre à partir du fichier d'entrée
-			ImportXML importer = new ImportXML(cmdline.getOptionValue(IN));
+			ImportXML importer = new ImportXML(cmdline.getOptionValue(IN) + ".xml");
 			try {
 				importer.launch();
 			} catch (FAFException e) {

@@ -26,6 +26,7 @@ import org.apache.log4j.Level;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Pair;
+import fr.insarennes.fafdti.Util;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.LabeledExample;
 import fr.insarennes.fafdti.builder.Question;
@@ -64,7 +65,6 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 	private final String job4outDir = "split";
 	private QuestionScoreLeftDistribution qLeftDistribution;
 	private Path workingDir;
-	private String id;
 	private Path inputDataPath;
 	private ScoredDistributionVector parentDistribution;
 
@@ -283,21 +283,15 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 	// ****************Reading results utils methods********//
 
 	private FSDataInputStream getPartNonEmpty(Path inputDir) throws IOException {
-		Configuration conf = new Configuration();
-		FileSystem fileSystem;
-		fileSystem = FileSystem.get(conf);
-		FileStatus[] files = fileSystem.listStatus(inputDir);
-		FSDataInputStream in = null;
-		for (int i = 0; i < files.length; i++) {
-			Path tmp = files[i].getPath();
-			if (tmp.getName().startsWith("part")
-					&& fileSystem.getFileStatus(tmp).getLen() > 0)
-				in = fileSystem.open(tmp);
-		}
-		if (in == null) {
+		Path path = Util.getPartNonEmptyPath(inputDir);
+		if (path == null) {
 			log.warn("No non-empty part file found");
 			return null;
 		}
+		Configuration conf = new Configuration();
+		FileSystem fileSystem;
+		fileSystem = FileSystem.get(conf);
+		FSDataInputStream in = fileSystem.open(path);
 		return in;
 	}
 
@@ -356,11 +350,13 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 
 	@Override
 	public void cleanUp() {
+		/*
 		deleteDir(job0outDir);
 		deleteDir(job1outDir);
 		deleteDir(job2outDir);
 		deleteDir(job3outDir);
 		deleteDir(job4outDir);
+		*/
 	}
 
 	protected void deleteDir(String dir) {

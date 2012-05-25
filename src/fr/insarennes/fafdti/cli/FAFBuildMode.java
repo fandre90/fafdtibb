@@ -181,6 +181,7 @@ public class FAFBuildMode {
 		double doublegainmin = Double.parseDouble(gainmin);
 		double doublepercent = Double.parseDouble(percent);
 		double doublelimitmode = Double.parseDouble(limitmode);
+		doublelimitmode*=1000000;
 		// verification des bornes des différents paramètres rentrés par
 		// l'utilisateur
 		if (intbagging < 1) {

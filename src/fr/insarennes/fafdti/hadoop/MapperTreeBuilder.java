@@ -94,7 +94,7 @@ public class MapperTreeBuilder extends MapReduceBase implements
 			XmlExporter xmlExporter = new XmlExporter(treeBag,
 					new HashMap<String, String>(), namesInfo);
 			String xmlTree = xmlExporter.exportToString();
-			output.collect(NullWritable.get(), new Text());
+			output.collect(NullWritable.get(), new Text(xmlTree));
 			System.out.println("XML Export done.");
 		} catch (FAFException e) {
 			// TODO Auto-generated catch block

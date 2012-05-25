@@ -4,12 +4,14 @@ import java.awt.Stroke;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TextOutputFormat;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Util;
@@ -37,33 +39,48 @@ public class TreeBuildRunMapper implements Runnable {
 	private String inputData;
 	private ParentInfos parentInfos;
 	private Path outputPath;
-	public TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
+
+	private TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
 			String inputData) {
-		this(namesInfo, workingDir, criterion, nodeSetter, stopping,
-				stats, inputData, null);
+		this.namesInfo = namesInfo;
+		this.workingDir = workingDir;
+		this.criterion = criterion;
+		this.nodeSetter = nodeSetter;
+		this.stopping = stopping;
+		this.stats = stats;
+		this.inputData = inputData;
+
+	}
+
+	public TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
+			Criterion criterion, DecisionNodeSetter nodeSetter,
+			List<StoppingCriterion> stopping, StatBuilder stats,
+			String inputData, String baggingId) {
+		this(namesInfo, workingDir, criterion, nodeSetter, stopping, stats,
+				inputData);
+		ParentInfos parentInfos = new ParentInfos(0, "launcher", baggingId
+				+ "-fast");
+		this.parentInfos = parentInfos;
+		String id = parentInfos.getBaggingId() + "-"
+				+ Integer.toString(stats.getNextId());
+		this.outputPath = new Path(this.workingDir, id);
 	}
 
 	public TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
 			String inputData, ParentInfos parentInfos) {
-
-		this.namesInfo = namesInfo;
-		this.workingDir = workingDir;
+		this(namesInfo, workingDir, criterion, nodeSetter, stopping, stats,
+				inputData);
+		if(parentInfos == null) {
+			throw new NullArgumentException("parentInfos muts not be null");
+		}
+		this.parentInfos = parentInfos;
 		String id = parentInfos.getBaggingId() + "-"
 				+ Integer.toString(stats.getNextId());
 		this.outputPath = new Path(this.workingDir, id);
-		this.criterion = criterion;
-		this.nodeSetter = nodeSetter;
-		this.stopping = stopping;
-		this.stats = stats;
-		this.inputData = inputData;
-		if(parentInfos == null) {
-			parentInfos = new ParentInfos(0, "launcher", "fast-mapper");
-		}
-		this.parentInfos = parentInfos;
 	}
 
 	@Override
@@ -74,6 +91,7 @@ public class TreeBuildRunMapper implements Runnable {
 			JobClient.runJob(jobConf);
 			DecisionTree dt = readTree();
 			nodeSetter.set(dt);
+			stats.decrementPending();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -88,7 +106,7 @@ public class TreeBuildRunMapper implements Runnable {
 		namesInfo.toConf(jobConf);
 		parentInfos.toConf(jobConf);
 		criterion.toConf(jobConf);
-		for(StoppingCriterion stop : stopping) {
+		for (StoppingCriterion stop : stopping) {
 			stop.toConf(jobConf);
 		}
 		jobConf.setOutputKeyClass(NullWritable.class);
@@ -97,16 +115,16 @@ public class TreeBuildRunMapper implements Runnable {
 		jobConf.setInputFormat(WholeTextInputFormat.class);
 		org.apache.hadoop.mapred.FileInputFormat.setInputPaths(jobConf,
 				inputData);
-		jobConf.setOutputFormat(SplitExampleMultipleOutputFormat.class);
+		jobConf.setOutputFormat(TextOutputFormat.class);
 
 		org.apache.hadoop.mapred.FileOutputFormat.setOutputPath(jobConf,
-			outputPath);
+				outputPath);
 		return jobConf;
 	}
 
 	private DecisionTree readTree() throws IOException, FAFException {
-		ImportXML importXML = new ImportXML(
-				Util.getPartNonEmptyPath(outputPath).toString());
+		ImportXML importXML = new ImportXML(Util
+				.getPartNonEmptyPath(outputPath).toString());
 		importXML.launch();
 		BaggingTrees treeBag = importXML.getResult();
 		return treeBag.getTree(0);

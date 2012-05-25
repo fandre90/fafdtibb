@@ -9,6 +9,10 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -42,6 +46,7 @@ public class ImportXML {
 		log = Logger.getLogger(ImportXML.class);
 		listTree = new ArrayList<DecisionTree>();
 		buildopts = new HashMap<String, String>();
+		Path inputPath = new Path(filename);
 		try{
 			// création d'une fabrique de documents
 			DocumentBuilderFactory fabrique = DocumentBuilderFactory.newInstance();
@@ -50,9 +55,11 @@ public class ImportXML {
 			DocumentBuilder constructeur = fabrique.newDocumentBuilder();
 			
 			// lecture du contenu d'un fichier XML avec DOM
-			File xml = new File(filename);
-			doc = constructeur.parse(xml);
-			
+			Configuration conf = new Configuration();
+			FileSystem fileSystem;
+			fileSystem = FileSystem.get(conf);
+			FSDataInputStream in = fileSystem.open(inputPath);
+			doc = constructeur.parse(in);
 		} catch(Exception e){
 			log.error(e.getMessage());
 		}

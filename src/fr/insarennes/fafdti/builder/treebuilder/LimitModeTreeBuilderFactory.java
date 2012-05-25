@@ -3,6 +3,7 @@ package fr.insarennes.fafdti.builder.treebuilder;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.Util;
 import fr.insarennes.fafdti.builder.Criterion;
@@ -14,12 +15,14 @@ import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilderFactory;
 import fr.insarennes.fafdti.builder.scheduler.IScheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
+import fr.insarennes.fafdti.cli.FAFBuildMode;
 import fr.insarennes.fafdti.tree.DecisionNodeSetter;
 
 public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 
 	private double sizeLimit;
-
+	private static Logger log = Logger.getLogger(LimitModeTreeBuilderFactory.class);
+	
 	public LimitModeTreeBuilderFactory(double sizeLimit) {
 		this.sizeLimit = sizeLimit;
 	}
@@ -49,6 +52,7 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 					nodeSetter, stopping, stats, nodeBuilderFactory, inputData,
 					parentInfos, parentDistribution, tbMaker, scheduler);
 		} else {
+			log.info("Switching to fast mode");
 			treeBuilder = new TreeBuildRunMapper(featureSpec, workingDir, 
 					criterion, nodeSetter, stopping, stats, inputData, parentInfos);
 		}
@@ -78,8 +82,9 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 			treeBuilder = new TreeBuilderRecursive(featureSpec, workingDir, criterion,
 					nodeSetter, stopping, stats, nodeBuilderFactory, baggingId, inputDataPath, tbMaker, scheduler);
 		} else {
+			log.info("Switching to fast mode for root");
 			treeBuilder = new TreeBuildRunMapper(featureSpec, workingDir, 
-					criterion, nodeSetter, stopping, stats, inputDataPath);
+					criterion, nodeSetter, stopping, stats, inputDataPath, baggingId);
 		}
 		return treeBuilder;
 	}

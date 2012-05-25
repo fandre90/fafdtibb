@@ -161,6 +161,7 @@ public class FAFUtilsMode {
 	}
 	public static void main(String[] args) {
 		LoggerManager.setupLogger();
+		CarBanner.printCar();
 		
 		initOptions();
 		

@@ -128,6 +128,7 @@ public class FAFBuildMode {
 
 	public static void main(String[] args) {
 		LoggerManager.setupLogger();
+		CarBanner.printCar();
 
 		initOptions();
 

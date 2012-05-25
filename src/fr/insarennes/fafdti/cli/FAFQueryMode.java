@@ -77,6 +77,7 @@ public class FAFQueryMode {
 	
 	public static void main(String[] args) {
 		LoggerManager.setupLogger();
+		CarBanner.printCar();
 		
 		initOptions();
 		

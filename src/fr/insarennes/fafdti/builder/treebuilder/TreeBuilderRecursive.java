@@ -126,7 +126,6 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 					parentDistribution = this.nodeBuilder.computeDistribution(
 							this.inputData);
 			}
-			QuestionScoreLeftDistribution qLeftDistribution = null;
 			if (buildMode == BuildMode.MODEFAT)
 				qLeftDistribution = this.nodeBuilder.buildNode(
 						this.inputDataPath, parentDistribution, wd, id);
@@ -188,22 +187,27 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				treeBuilderLeft = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.yesSetter(), stopping, stats, nodeBuilder,
-								datas.getFirst(), pInfos, parentDistribution, null, null);
+								datas.getFirst(), pInfos, parentDistribution, tbMaker, scheduler);
 				treeBuilderRight = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.noSetter(), stopping, stats, nodeBuilder,
-								datas.getSecond(), pInfos, parentDistribution, null, null);
+								datas.getSecond(), pInfos, parentDistribution, tbMaker, scheduler);
 			} else {
 				treeBuilderLeft = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.yesSetter(), stopping, stats, nodeBuilder,
-								datapaths.getFirst().toString(), pInfos, parentDistribution, null, null);
+								datapaths.getFirst().toString(), pInfos, parentDistribution, tbMaker, scheduler);
 				treeBuilderRight = tbMaker
 						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
 								dtq.noSetter(), stopping, stats, nodeBuilder,
-								datapaths.getSecond().toString(), pInfos, parentDistribution, null, null);
+								datapaths.getSecond().toString(), pInfos, parentDistribution, tbMaker, scheduler);
 			}
+			scheduler.execute(treeBuilderLeft);
+			scheduler.execute(treeBuilderRight);
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FAFException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -20,10 +20,10 @@ public interface INodeBuilder {
 			throws IOException, InterruptedException, ClassNotFoundException, FAFException;
 
 	public ScoredDistributionVector computeDistribution(Path dataPath) throws IOException, InterruptedException, ClassNotFoundException;
-	public ScoredDistributionVector computeDistribution(String[][] data);
+	public ScoredDistributionVector computeDistribution(String[][] data) throws FAFException;
 	public Pair<Path, Path> getSplitPath() throws IOException;
 
-	public Pair<String[][], String[][]> getSplitData();
+	public Pair<String[][], String[][]> getSplitData() throws FAFException;
 
 	public void cleanUp();
 

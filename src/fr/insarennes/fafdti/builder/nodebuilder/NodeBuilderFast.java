@@ -1,77 +1,251 @@
 package fr.insarennes.fafdti.builder.nodebuilder;
-
 import java.io.IOException;
-import java.util.List;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.mapreduce.Mapper.Context;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.Pair;
+import fr.insarennes.fafdti.builder.namesinfo.AttrSpec;
+import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 import fr.insarennes.fafdti.builder.Criterion;
-import fr.insarennes.fafdti.builder.ScoredDistributionVector;
-import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
-import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
-import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
+import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
+import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.namesinfo.TextAttrSpec;
+import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.GramType;
+import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
-import fr.insarennes.fafdti.tree.DecisionNodeSetter;
+import fr.insarennes.fafdti.visitors.QuestionExample;
+import fr.insarennes.fafdti.Pair;
 
-public class NodeBuilderFast extends  NodeBuilder implements INodeBuilder{
-	//root constructor
-	public NodeBuilderFast(DotNamesInfo featureSpec, Criterion criterion, StatBuilder stats) {
-		super(featureSpec, criterion, stats);
+public class NodeBuilderFast implements INodeBuilder {
+	private Criterion criterion;
+	private DotNamesInfo namesInfo;
+
+	private String[][] database;
+	private ScoredDistributionVector parentDist;
+	private String id;
+	private Question bestQuestion;
+	private ScoreLeftDistribution bestSLDist;
+	private Map<Question, ScoredDistributionVector> questionDistribution = new HashMap<Question, ScoredDistributionVector>();
+
+	public NodeBuilderFast(Criterion criterion, DotNamesInfo namesInfo) {
+		this.criterion = criterion;
+		this.namesInfo = namesInfo;
+		this.bestQuestion = null;
 	}
 
-
 	@Override
-	public Pair<Path, Path> getSplitPath() throws IOException {
+	public QuestionScoreLeftDistribution buildNode(String[][] data,
+			ScoredDistributionVector parentDistribution, Path workDir, String id)
+			throws IOException, InterruptedException, ClassNotFoundException,
+			FAFException {
+		System.out.println("Database size: " + data.length);
 		// TODO Auto-generated method stub
-		return null;
-	}
-	@Override
-	public Pair<String[][], String[][]> getSplitData() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	@Override
-	public void cleanUp() {
-		// TODO Auto-generated method stub
-		
+		// Set database and parent distribution
+		this.database = data;
+		this.id = id;
+		if (parentDistribution == null) {
+			throw new NullArgumentException("parentDistribution cannot be null");
+		}
+		this.parentDist = parentDistribution;
+		// Iterate over all continuous attributes
+		for (int i = 0; i < namesInfo.numOfAttr(); ++i) {
+			AttrType attrType = namesInfo.getAttrSpec(i).getType();
+			if (attrType == AttrType.CONTINUOUS) {
+				generateContinuousQuestion(i);
+			}
+		}
+		// Iterate over all examples of the database to
+		// generate discrete and text question
+		for (String[] example : this.database) {
+			generateDiscreteTextQuestions(example);
+		}
+		computeQuestionDistribution();
+		System.out.println("Question: " + bestQuestion);
+		return new QuestionScoreLeftDistribution(bestQuestion, bestSLDist);
 	}
 
 	@Override
 	public QuestionScoreLeftDistribution buildNode(Path dataPath,
 			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException, FAFException {
-		throw new UnsupportedOperationException(this.getClass().getName()+" cannot build node with Path");
+			throws IOException, InterruptedException, ClassNotFoundException {
+		throw new UnsupportedOperationException(this.getClass().getName()
+				+ " cannot build nodes from input path");
 	}
 
+	private void generateDiscreteTextQuestions(String[] example)
+			throws FAFException, IOException, InterruptedException {
+		// Parse example
+		int labelIndex = namesInfo.indexOfLabel(example[example.length - 1]);
+		// Generate all text and discrete questions
+		for (int i = 0; i < example.length - 1; ++i) {
+			AttrSpec attrSpec = namesInfo.getAttrSpec(i);
+			AttrType attrType = attrSpec.getType();
+			if (attrType == AttrType.DISCRETE) {
+				Question q = new Question(i, attrType, example[i]);
+				addQuestion(q, labelIndex);
+			} else if (attrType == AttrType.TEXT) {
+				String[] words = example[i].split("\\s+");
+				TextAttrSpec textAttr = (TextAttrSpec) attrSpec;
+				if (textAttr.getExpertType() == GramType.SGRAM) {
+					Set<SGram> sGramSet = GramGenerator.generateSGram(textAttr,
+							words);
+					for (SGram sGram : sGramSet) {
+						Question q = new Question(i, attrType, sGram);
+						addQuestion(q, labelIndex);
+					}
+				} else {
+					Set<FGram> fGramSet = GramGenerator.generateAllNFGram(
+							textAttr, words);
+					System.out.println(fGramSet);
+					for (FGram fGram : fGramSet) {
+						Question q = new Question(i, attrType, fGram);
+						addQuestion(q, labelIndex);
+					}
+				}
+			}
+		}
+	}
+
+	private void generateContinuousQuestion(int attrIdx) throws FAFException {
+		SortedMap<Double, ScoredDistributionVector> valueDistMap = new TreeMap<Double, ScoredDistributionVector>();
+		for (String[] example : database) {
+			double curValue = Double.parseDouble(example[attrIdx]);
+			ScoredDistributionVector curDist = null;
+			if (valueDistMap.containsKey(curValue)) {
+				curDist = valueDistMap.get(curValue);
+			} else {
+				curDist = new ScoredDistributionVector(namesInfo.numOfLabel());
+				valueDistMap.put(curValue, curDist);
+			}
+			String label = example[example.length - 1];
+			curDist.incrStat(namesInfo.indexOfLabel(label));
+		}
+		ThresholdComputer thresholdComputer = new ThresholdComputer(namesInfo,
+				parentDist, criterion);
+		if (valueDistMap.size() >= 2) {
+			Pair<Double, ScoreLeftDistribution> p = thresholdComputer
+					.computeThreshold(valueDistMap);
+			double threshold = p.getFirst();
+			ScoreLeftDistribution sLDist = p.getSecond();
+			AttrSpec attrSpec = namesInfo.getAttrSpec(attrIdx);
+			AttrType attrType = attrSpec.getType();
+			Question q = new Question(attrIdx, attrType, threshold);
+			bestQuestionCandidate(q, sLDist);
+		}
+	}
+
+	private void addQuestion(Question q, int labelIndex) {
+		// Modify distribution of the generated question
+		if (!questionDistribution.containsKey(q)) {
+			questionDistribution.put(q,
+					new ScoredDistributionVector(namesInfo.numOfLabel()));
+		}
+		ScoredDistributionVector dist = questionDistribution.get(q);
+		dist.incrStat(labelIndex);
+	}
+
+	private void computeQuestionDistribution() {
+		for (Map.Entry<Question, ScoredDistributionVector> e : questionDistribution
+				.entrySet()) {
+			Question q = e.getKey();
+			ScoredDistributionVector leftDist = e.getValue();
+			leftDist.rate(criterion);
+			ScoredDistributionVector rightDist = parentDist
+					.computeRightDistribution(leftDist);
+			rightDist.rate(criterion);
+			ScoreLeftDistribution sLDist = new ScoreLeftDistribution(leftDist,
+					rightDist);
+			bestQuestionCandidate(q, sLDist);
+		}
+	}
+
+	private void bestQuestionCandidate(Question q, ScoreLeftDistribution sLDist) {
+		// System.out.println("Candidate: " + q + " " + sLDist.getScore());
+		if (this.bestSLDist == null
+				|| sLDist.getScore() < this.bestSLDist.getScore()) {
+			bestQuestion = q;
+			bestSLDist = sLDist;
+		}
+	}
+
+	@Override
+	public fr.insarennes.fafdti.Pair<Path, Path> getSplitPath()
+			throws IOException {
+		return null;
+	}
+
+	@Override
+	public Pair<String[][], String[][]> getSplitData() throws FAFException {
+		ArrayList<String[]> leftDatabaseList = new ArrayList<String[]>();
+		ArrayList<String[]> rightDatabaseList = new ArrayList<String[]>();
+		for (String[] example : database) {
+			QuestionExample qExample = new QuestionExample(
+					Arrays.asList(example));
+			if (bestQuestion.ask(qExample)) {
+				leftDatabaseList.add(example);
+			} else {
+				rightDatabaseList.add(example);
+			}
+		}
+		String[][] leftDatabase = stringArrayArrayListToArray(leftDatabaseList);
+		String[][] rightDatabase = stringArrayArrayListToArray(rightDatabaseList);
+		return new Pair<String[][], String[][]>(leftDatabase,
+				rightDatabase);
+	}
+
+	@Override
+	public void cleanUp() {
+		// We need to do nothing here
+	}
 
 	@Override
 	public String getId() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.id;
 	}
-
 
 	@Override
-	public QuestionScoreLeftDistribution buildNode(String[][] data,
-			ScoredDistributionVector parentDistribution, Path workDir, String id)
-			throws IOException, InterruptedException, ClassNotFoundException, FAFException {
-		// TODO Auto-generated method stub
-		return null;
+	public ScoredDistributionVector computeDistribution(Path dataPath)
+			throws IOException, InterruptedException, ClassNotFoundException {
+		throw new UnsupportedOperationException(this.getClass().getName()
+				+ " cannot computeEntropy from input path");
 	}
-
 
 	@Override
-	public ScoredDistributionVector computeDistribution(Path dataPath) {
-		throw new UnsupportedOperationException(this.getClass().getName()+" cannot compute distribution with Path");
+	public ScoredDistributionVector computeDistribution(String[][] data)
+			throws FAFException {
+		ScoredDistributionVector parentDist = new ScoredDistributionVector(
+				namesInfo.numOfLabel());
+		for (String[] example : data) {
+			String label = example[example.length - 1];
+			parentDist.incrStat(namesInfo.indexOfLabel(label));
+		}
+		parentDist.rate(criterion);
+		return parentDist;
 	}
 
-
-	@Override
-	public ScoredDistributionVector computeDistribution(String[][] data) {
-		// TODO Auto-generated method stub
-		return null;
+	public static String[][] stringArrayArrayListToArray(
+			ArrayList<String[]> arrayList) {
+		String[][] array = new String[arrayList.size()][];
+		for (int i = 0; i < arrayList.size(); ++i) {
+			array[i] = arrayList.get(i);
+		}
+		return array;
 	}
+
 }

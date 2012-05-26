@@ -20,7 +20,7 @@ import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.Step1Map;
 import fr.insarennes.fafdti.hadoop.Step1Red;
-import fr.insarennes.fafdti.hadoop.Step2Map;
+import fr.insarennes.fafdti.hadoop.NewStep2Map;
 import fr.insarennes.fafdti.hadoop.Step2Red;
 
 
@@ -47,7 +47,7 @@ public class TestStep2 {
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(ContinuousAttrLabelPair.class);
 
-		job.setMapperClass(Step2Map.class);
+		job.setMapperClass(NewStep2Map.class);
 		job.setReducerClass(Step2Red.class);
 
 		job.setInputFormatClass(TextInputFormat.class);

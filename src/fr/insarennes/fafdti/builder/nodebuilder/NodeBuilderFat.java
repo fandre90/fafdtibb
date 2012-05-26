@@ -44,12 +44,15 @@ import fr.insarennes.fafdti.hadoop.Step0Map;
 import fr.insarennes.fafdti.hadoop.Step0Red;
 import fr.insarennes.fafdti.hadoop.Step1Map;
 import fr.insarennes.fafdti.hadoop.Step1Red;
-import fr.insarennes.fafdti.hadoop.Step2Map;
+import fr.insarennes.fafdti.hadoop.NewStep2Map;
+import fr.insarennes.fafdti.hadoop.NewStep2Red;
+import fr.insarennes.fafdti.hadoop.NewStep2Combiner;
 import fr.insarennes.fafdti.hadoop.Step2Red;
 import fr.insarennes.fafdti.hadoop.Step3Map;
 import fr.insarennes.fafdti.hadoop.Step3Red;
 import fr.insarennes.fafdti.hadoop.Step4Map;
 import fr.insarennes.fafdti.hadoop.Step4Red;
+import fr.insarennes.fafdti.hadoop.WritableDoubleScoredDistributionVectorSortedMap;
 import fr.insarennes.fafdti.tree.CannotOverwriteTreeException;
 import fr.insarennes.fafdti.tree.DecisionNodeSetter;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
@@ -199,12 +202,13 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 		parentDistribution.toConf(conf);
 		Job job = new Job(conf, "Continuous questions generation");
 		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(ContinuousAttrLabelPair.class);
+		job.setOutputValueClass(WritableDoubleScoredDistributionVectorSortedMap.class);
 
 		job.setJarByClass(this.getClass());
 
-		job.setMapperClass(Step2Map.class);
-		job.setReducerClass(Step2Red.class);
+		job.setMapperClass(NewStep2Map.class);
+		job.setCombinerClass(NewStep2Combiner.class);
+		job.setReducerClass(NewStep2Red.class);
 
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
@@ -264,7 +268,8 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 
 	@SuppressWarnings("deprecation")
 	private JobConf setupJob4(Question bestQuestion) throws IOException {
-		JobConf jobConf = new JobConf(NodeBuilder.class);
+		JobConf jobConf = new JobConf(NodeBuilderFat.class);
+		jobConf.setJobName("Input file splitting");
 		bestQuestion.toConf(jobConf);
 		jobConf.setOutputKeyClass(Text.class);
 		jobConf.setOutputValueClass(LabeledExample.class);

@@ -16,6 +16,8 @@ public class ThresholdComputer {
 	private ScoredDistributionVector parentDistribution;
 	private DotNamesInfo namesInfo;
 
+	public static final double EPSILON = 10e-9;
+	
 	public ThresholdComputer(DotNamesInfo namesInfo, ScoredDistributionVector
 			parentDistribution, Criterion criterion) {
 		this.criterion = criterion;
@@ -82,5 +84,10 @@ public class ThresholdComputer {
 		}
 		return new Pair<Double, ScoreLeftDistribution>(
 				bestThreshold, bestScoreLeftDist);
+	}
+	
+	public static double normalizeValue(double value, double threshold) {
+		double a = 1.0 / threshold;
+		return Math.floor(value * a) / a;
 	}
 }

@@ -269,7 +269,9 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 		jobConf.setOutputKeyClass(Text.class);
 		jobConf.setOutputValueClass(LabeledExample.class);
 		jobConf.setMapperClass(Step4Map.class);
-		jobConf.setReducerClass(Step4Red.class);
+		//jobConf.setReducerClass(Step4Red.class);
+		// Map-only job. Force number of reducers to zero
+		jobConf.setNumReduceTasks(0);
 		jobConf.setInputFormat(org.apache.hadoop.mapred.TextInputFormat.class);
 		org.apache.hadoop.mapred.FileInputFormat.setInputPaths(jobConf,
 				inputDataPath);

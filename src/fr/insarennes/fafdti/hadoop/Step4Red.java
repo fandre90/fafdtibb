@@ -1,6 +1,7 @@
 package fr.insarennes.fafdti.hadoop;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.hadoop.io.NullWritable;
@@ -10,19 +11,34 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.LabeledExample;
 import fr.insarennes.fafdti.builder.Question;
+import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.stopcriterion.DepthMax;
+import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
+import fr.insarennes.fafdti.builder.stopcriterion.GainMin;
+import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
+import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 
 @SuppressWarnings("deprecation")
 public class Step4Red extends MapReduceBase implements
 	Reducer<Text, LabeledExample, Text, LabeledExample> {
+	Logger log;
+
+	@Override
+	public void configure(JobConf jobConf) {
+		log = Logger.getLogger(Step1Map.class);
+	}
 
 	@Override
 	public void reduce(Text key, Iterator<LabeledExample> values,
 			OutputCollector<Text, LabeledExample> output, Reporter reporter)
 			throws IOException {
+		log.info("Step4 Reducer Instanciated");
 		while(values.hasNext()) {
 			output.collect(key, values.next());
 		}

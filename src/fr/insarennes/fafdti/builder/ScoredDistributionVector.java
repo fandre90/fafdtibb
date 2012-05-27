@@ -115,6 +115,14 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		this.total += otherSDV.total;
 	}
 
+	public void reset() {
+		this.hasMoreThanOneNonEmptyLabel = false;
+		this.total = 0;
+		this.score = 0;
+		for(int i=0; i<distributionVector.length; ++i) {
+			distributionVector[i] = 0;
+		}
+	}
 	public ScoredDistributionVector computeRightDistribution(
 			ScoredDistributionVector leftDistribution) {
 		int vectLen = this.distributionVector.length;

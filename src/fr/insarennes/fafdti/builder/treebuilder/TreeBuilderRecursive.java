@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.Pair;
-import fr.insarennes.fafdti.Util;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;

@@ -1,5 +1,6 @@
 package fr.insarennes.fafdti.builder.treebuilder;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
@@ -27,7 +28,7 @@ public interface ITreeBuilderFactory {
 			ParentInfos parentInfos, 
 			ScoredDistributionVector parentDistribution, 
 			ITreeBuilderFactory tbMaker,
-			IScheduler scheduler);
+			IScheduler scheduler) throws IOException;
 	
 	public Runnable makeTreeBuilder(DotNamesInfo featureSpec,
 			String workingDir,
@@ -40,7 +41,7 @@ public interface ITreeBuilderFactory {
 			ParentInfos parentInfos, 
 			ScoredDistributionVector parentDistribution,
 			ITreeBuilderFactory tbMaker,
-			IScheduler scheduler);
+			IScheduler scheduler) throws IOException;
 	
 	public Runnable makeTreeBuilder(DotNamesInfo featureSpec, 
 			String workingDir,
@@ -51,5 +52,5 @@ public interface ITreeBuilderFactory {
 			INodeBuilderFactory nodeBuilderFactory,
 			String baggingId,
 			String inputDataPath, ITreeBuilderFactory tbMaker,
-			IScheduler scheduler);
+			IScheduler scheduler) throws IOException;
 }

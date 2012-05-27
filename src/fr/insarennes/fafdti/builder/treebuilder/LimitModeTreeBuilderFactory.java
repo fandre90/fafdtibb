@@ -1,11 +1,12 @@
 package fr.insarennes.fafdti.builder.treebuilder;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
-import fr.insarennes.fafdti.Util;
+import fr.insarennes.fafdti.FSUtils;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.StatBuilder;
@@ -22,9 +23,11 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 
 	private double sizeLimit;
 	private static Logger log = Logger.getLogger(LimitModeTreeBuilderFactory.class);
+	private FSUtils fsUtils;
 	
-	public LimitModeTreeBuilderFactory(double sizeLimit) {
+	public LimitModeTreeBuilderFactory(double sizeLimit) throws IOException {
 		this.sizeLimit = sizeLimit;
+		this.fsUtils = new FSUtils();
 	}
 /*
 	public TreeBuilderRecursive(DotNamesInfo featureSpec, 
@@ -44,8 +47,8 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 			String workingDir, Criterion criterion,
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilderFactory nodeBuilderFactory, String inputData,
-			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderFactory tbMaker, IScheduler scheduler) {
-		double currentSize = Util.getSize(inputData);
+			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderFactory tbMaker, IScheduler scheduler) throws IOException {
+		double currentSize = fsUtils.getSize(new Path(inputData));
 		Runnable treeBuilder = null;
 		if (currentSize > sizeLimit) {
 			treeBuilder = new TreeBuilderRecursive(featureSpec, workingDir, criterion,
@@ -75,8 +78,8 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 			String workingDir, Criterion criterion,
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilderFactory nodeBuilderFactory, String baggingId,
-			String inputDataPath, ITreeBuilderFactory tbMaker, IScheduler scheduler) {
-		double currentSize = Util.getSize(inputDataPath);
+			String inputDataPath, ITreeBuilderFactory tbMaker, IScheduler scheduler) throws IOException {
+		double currentSize = fsUtils.getSize(new Path(inputDataPath));
 		Runnable treeBuilder = null;
 		if (currentSize > sizeLimit) {
 			treeBuilder = new TreeBuilderRecursive(featureSpec, workingDir, criterion,

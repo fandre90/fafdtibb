@@ -24,7 +24,9 @@ public class NewStep2Red
 		extends
 		ReducerBase<IntWritable, WritableDoubleScoredDistributionVectorSortedMap, Question, ScoreLeftDistribution> {
 
-	protected ScoredDistributionVector parentDistribution;
+	private ScoredDistributionVector parentDistribution;
+	private Question bestEmittedQuestion;
+	private ScoreLeftDistribution bestSLDist;
 
 	@Override
 	protected void setup(Context context) throws IOException,
@@ -35,26 +37,37 @@ public class NewStep2Red
 
 	}
 
-	protected void reduce(IntWritable col,
-			Iterable<WritableDoubleScoredDistributionVectorSortedMap> valueDistMaps, Context context)
-			throws IOException, InterruptedException {
-		ValueDistributionMapAggregator valueDistMapAgg = 
-				new ValueDistributionMapAggregator();
+	protected void reduce(
+			IntWritable col,
+			Iterable<WritableDoubleScoredDistributionVectorSortedMap> valueDistMaps,
+			Context context) throws IOException, InterruptedException {
+		ValueDistributionMapAggregator valueDistMapAgg = new ValueDistributionMapAggregator();
 		try {
 			valueDistMapAgg.aggregateAll(valueDistMaps);
-			WritableDoubleScoredDistributionVectorSortedMap aggregatedMap = 
-					valueDistMapAgg.getAggregatedMap();
-			if(aggregatedMap.size() >= 2) {
-				ThresholdComputer thresholdComputer = 
-						new ThresholdComputer(fs, parentDistribution, criterion);
-				Pair<Double, ScoreLeftDistribution> p = 
-						thresholdComputer.computeThreshold(aggregatedMap);
-				Question question = new Question(col.get(), AttrType.CONTINUOUS,
-						p.getFirst());
-				context.write(question, p.getSecond());
+			WritableDoubleScoredDistributionVectorSortedMap aggregatedMap = valueDistMapAgg
+					.getAggregatedMap();
+			if (aggregatedMap.size() >= 2) {
+				ThresholdComputer thresholdComputer = new ThresholdComputer(fs,
+						parentDistribution, criterion);
+				Pair<Double, ScoreLeftDistribution> p = thresholdComputer
+						.computeThreshold(aggregatedMap);
+				Question question = new Question(col.get(),
+						AttrType.CONTINUOUS, p.getFirst());
+				writeIfBestQuestion(context, question, p.getSecond());
 			}
 		} catch (FAFException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void writeIfBestQuestion(Context context, Question q,
+			ScoreLeftDistribution sLDist) throws IOException,
+			InterruptedException {
+		if (bestEmittedQuestion == null
+				|| sLDist.getScore() < bestSLDist.getScore()) {
+			bestEmittedQuestion = (Question) q.clone();
+			bestSLDist = (ScoreLeftDistribution) sLDist.clone();
+			context.write(q, sLDist);
 		}
 	}
 }

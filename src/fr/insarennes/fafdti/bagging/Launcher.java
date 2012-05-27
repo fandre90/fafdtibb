@@ -3,6 +3,7 @@ package fr.insarennes.fafdti.bagging;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,7 +22,6 @@ import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.Chrono;
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.Util;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.ParseException;
 import fr.insarennes.fafdti.builder.StatBuilder;
@@ -77,7 +77,7 @@ public class Launcher implements Observer {
 			String xmlOutput, List<StoppingCriterion> stoppingList,
 			Criterion criterion, int nbBagging, double baggingPercent,
 			Map<String, String> comment, double limitmode)
-			throws ParseException {
+			throws ParseException, IOException {
 		// attributes initialization
 		this.roots = new ArrayList<DecisionTreeHolder>(nbBagging);
 		this.outXml = xmlOutput;
@@ -126,6 +126,20 @@ public class Launcher implements Observer {
 		}
 	}
 
+    /** Génère une liste triée d'entiers aléatoires compris entre 0 et max
+     * @param size la taille de la liste a générée
+     * @param max le max
+     * @return la liste générée
+     */
+    public static int[] getSortedRandomIntList(int size, int max){
+            int[] res = new int[size];
+            for(int i=0 ; i<size ; i++){
+                    res[i] = (int)(Math.random() * max); 
+            }
+            Arrays.sort(res);
+            return res;
+    }
+
 	private List<String> splitData(String inputData, String outputDir,
 			FileSystem filesystem) {
 		List<String> res = new ArrayList<String>();
@@ -173,7 +187,7 @@ public class Launcher implements Observer {
 					inputData.lastIndexOf(File.separatorChar) + 1,
 					inputData.lastIndexOf('.'));
 			for (int i = 0; i < nbBagging; i++) {
-				lines[i] = Util.getSortedRandomIntList(nbLines, total);
+				lines[i] = getSortedRandomIntList(nbLines, total);
 				FSDataOutputStream fw = null;
 				try {
 					Path p = new Path(path, data + i + ".data");

@@ -1,5 +1,6 @@
 package fr.insarennes.fafdti.cli;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -252,6 +253,8 @@ public class FAFBuildMode {
 			log.error("File " + names + "malformed.");
 			log.error(e.getMessage());
 			System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
+		} catch (IOException e) {
+			log.error(e.getMessage());
 		}
 	}
 }

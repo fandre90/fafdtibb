@@ -14,7 +14,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextOutputFormat;
 
 import fr.insarennes.fafdti.FAFException;
-import fr.insarennes.fafdti.Util;
+import fr.insarennes.fafdti.FSUtils;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.StatBuilder;
@@ -39,11 +39,12 @@ public class TreeBuildRunMapper implements Runnable {
 	private String inputData;
 	private ParentInfos parentInfos;
 	private Path outputPath;
-
+	private FSUtils fsUtils;
+	
 	private TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			String inputData) {
+			String inputData) throws IOException {
 		this.namesInfo = namesInfo;
 		this.workingDir = workingDir;
 		this.criterion = criterion;
@@ -51,13 +52,14 @@ public class TreeBuildRunMapper implements Runnable {
 		this.stopping = stopping;
 		this.stats = stats;
 		this.inputData = inputData;
+		this.fsUtils = new FSUtils();
 
 	}
 
 	public TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			String inputData, String baggingId) {
+			String inputData, String baggingId) throws IOException {
 		this(namesInfo, workingDir, criterion, nodeSetter, stopping, stats,
 				inputData);
 		ParentInfos parentInfos = new ParentInfos(0, "launcher", baggingId
@@ -71,7 +73,7 @@ public class TreeBuildRunMapper implements Runnable {
 	public TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			String inputData, ParentInfos parentInfos) {
+			String inputData, ParentInfos parentInfos) throws IOException {
 		this(namesInfo, workingDir, criterion, nodeSetter, stopping, stats,
 				inputData);
 		if(parentInfos == null) {
@@ -123,7 +125,7 @@ public class TreeBuildRunMapper implements Runnable {
 	}
 
 	private DecisionTree readTree() throws IOException, FAFException {
-		ImportXML importXML = new ImportXML(Util
+		ImportXML importXML = new ImportXML(fsUtils
 				.getPartNonEmptyPath(outputPath).toString());
 		importXML.launch();
 		BaggingTrees treeBag = importXML.getResult();

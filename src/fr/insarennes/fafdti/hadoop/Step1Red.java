@@ -17,7 +17,9 @@ import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 public class Step1Red extends
 		ReducerBase<Question, IntWritable, Question, ScoreLeftDistribution> {
 
-	protected ScoredDistributionVector parentDistribution;
+	private ScoredDistributionVector parentDistribution;
+	private Question bestEmittedQuestion;
+	private ScoreLeftDistribution bestSLDist;
 
 	@Override
 	protected void setup(Context context) throws IOException,
@@ -33,11 +35,9 @@ public class Step1Red extends
 			Context context) throws IOException, InterruptedException {
 		ScoredDistributionVector leftDist = new ScoredDistributionVector(
 				fs.numOfLabel());
-		//System.out.println("Got: " + q + " " + q.hashCode());
 		for (IntWritable i : labelIndexes) {
 			leftDist.incrStat(i.get());
 		}
-		// FIXME We should not need this here
 		ScoredDistributionVector rightDist = this.parentDistribution
 				.computeRightDistribution(leftDist);
 		leftDist.rate(criterion);
@@ -55,6 +55,17 @@ public class Step1Red extends
 		}
 		ScoreLeftDistribution scoreLeftDist = new ScoreLeftDistribution(
 				leftDist, rightDist);
-		context.write(q, scoreLeftDist);
+		writeIfBestQuestion(context, q, scoreLeftDist);
+	}
+	
+	private void writeIfBestQuestion(Context context, Question q,
+			ScoreLeftDistribution sLDist) throws IOException,
+			InterruptedException {
+		if (bestEmittedQuestion == null
+				|| sLDist.getScore() < bestSLDist.getScore()) {
+			bestEmittedQuestion = (Question) q.clone();
+			bestSLDist = (ScoreLeftDistribution) sLDist.clone();
+			context.write(q, sLDist);
+		}
 	}
 }

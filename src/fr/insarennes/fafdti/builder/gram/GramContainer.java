@@ -1,12 +1,11 @@
 package fr.insarennes.fafdti.builder.gram;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.hadoop.io.WritableComparable;
 
-public class GramContainer implements WritableComparable<GramContainer> {
+public class GramContainer implements WritableComparable<GramContainer>, Gram {
 	private FGram fGram;
 	private SGram sGram;
 	private GramType type = null;
@@ -44,6 +43,19 @@ public class GramContainer implements WritableComparable<GramContainer> {
 
 	public SGram getsGram() {
 		return sGram;
+	}
+
+	public Gram getGram() {
+		if(this.type == null) {
+			return null;
+		}
+		switch (this.type) {
+		case FGRAM:
+			return this.fGram;
+		case SGRAM:
+			return this.sGram;
+		}
+		return null;
 	}
 
 	public GramType getType() {

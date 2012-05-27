@@ -29,7 +29,7 @@ public class FatNodeBuilderFactory implements INodeBuilderFactory {
 	@Override
 	public INodeBuilder makeNodeBuilder(Path dataPath,
 			ScoredDistributionVector parentDistribution, String id, Path workdir) throws IOException, InterruptedException, ClassNotFoundException {
-		return new NodeBuilderFat(criterion, namesInfo, dataPath, parentDistribution,
+		return new NodeBuilderFurious(criterion, namesInfo, dataPath, parentDistribution,
 				id, workdir);
 	}
 

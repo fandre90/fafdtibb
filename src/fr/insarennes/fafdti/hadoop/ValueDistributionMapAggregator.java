@@ -2,21 +2,23 @@ package fr.insarennes.fafdti.hadoop;
 
 import java.util.Map;
 
+import org.apache.hadoop.io.DoubleWritable;
+
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 
 public class ValueDistributionMapAggregator {
 
-	private WritableDoubleScoredDistributionVectorSortedMap aggregatedMap;
+	private WritableValueSDVSortedMap aggregatedMap;
 
 	public ValueDistributionMapAggregator() {
-		this.aggregatedMap = new WritableDoubleScoredDistributionVectorSortedMap();
+		this.aggregatedMap = new WritableValueSDVSortedMap();
 	}
 
-	public void aggregate(WritableDoubleScoredDistributionVectorSortedMap map)
+	public void aggregate(WritableValueSDVSortedMap map)
 			throws FAFException {
-		for (Map.Entry<Double, ScoredDistributionVector> entry : map.entrySet()) {
-			double continuousValue = entry.getKey();
+		for (Map.Entry<Value, ScoredDistributionVector> entry : map.entrySet()) {
+			Value continuousValue = entry.getKey();
 			ScoredDistributionVector partDistribution = entry.getValue();
 			if (!aggregatedMap.containsKey(continuousValue)) {
 				aggregatedMap.put(continuousValue,
@@ -30,14 +32,14 @@ public class ValueDistributionMapAggregator {
 	}
 
 	public void aggregateAll(
-			Iterable<WritableDoubleScoredDistributionVectorSortedMap> mapSet)
+			Iterable<WritableValueSDVSortedMap> mapSet)
 			throws FAFException {
-		for (WritableDoubleScoredDistributionVectorSortedMap map : mapSet) {
+		for (WritableValueSDVSortedMap map : mapSet) {
 			aggregate(map);
 		}
 	}
 
-	public WritableDoubleScoredDistributionVectorSortedMap getAggregatedMap() {
+	public WritableValueSDVSortedMap getAggregatedMap() {
 		return aggregatedMap;
 	}
 

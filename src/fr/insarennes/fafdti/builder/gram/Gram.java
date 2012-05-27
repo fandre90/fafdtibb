@@ -3,7 +3,7 @@ package fr.insarennes.fafdti.builder.gram;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
-public abstract class Gram {
-	public abstract boolean query(String textData);
-	public abstract Gram cloneGram();
+public interface Gram {
+	public boolean query(String textData);
+	public Gram cloneGram();
 }

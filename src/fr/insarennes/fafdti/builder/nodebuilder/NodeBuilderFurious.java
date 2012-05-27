@@ -52,7 +52,7 @@ import fr.insarennes.fafdti.hadoop.Step3Map;
 import fr.insarennes.fafdti.hadoop.Step3Red;
 import fr.insarennes.fafdti.hadoop.Step4Map;
 import fr.insarennes.fafdti.hadoop.Step4Red;
-import fr.insarennes.fafdti.hadoop.WritableDoubleScoredDistributionVectorSortedMap;
+import fr.insarennes.fafdti.hadoop.WritableValueSDVSortedMap;
 import fr.insarennes.fafdti.tree.CannotOverwriteTreeException;
 import fr.insarennes.fafdti.tree.DecisionNodeSetter;
 import fr.insarennes.fafdti.tree.DecisionTreeLeaf;
@@ -60,7 +60,7 @@ import fr.insarennes.fafdti.tree.LeafLabels;
 import fr.insarennes.fafdti.tree.LinkedDecisionTreeQuestion;
 import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationException;
 
-public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
+public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 	public final int MAPREDUCE_QUESTION_SELECTION_THRESHOLD = 10 * 1024 * 1024;
 	public final int RELAUNCH_JOB_LIMIT = 5;
 	private final String job0outDir = "initial-entropy";
@@ -76,7 +76,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 	private ScoredDistributionVector parentDistribution;
 
 	// root constructor
-	public NodeBuilderFat(Criterion criterion, DotNamesInfo namesInfo,
+	public NodeBuilderFurious(Criterion criterion, DotNamesInfo namesInfo,
 			Path inputDataPath, ScoredDistributionVector parentDistribution,
 			String id, Path workingDir) throws IOException,
 			InterruptedException, ClassNotFoundException {
@@ -212,7 +212,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 		parentDistribution.toConf(conf);
 		Job job = new Job(conf, "(1.2) Continuous questions generation");
 		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(WritableDoubleScoredDistributionVectorSortedMap.class);
+		job.setOutputValueClass(WritableValueSDVSortedMap.class);
 
 		job.setJarByClass(this.getClass());
 
@@ -389,7 +389,7 @@ public class NodeBuilderFat extends NodeBuilder implements INodeBuilder {
 
 	@SuppressWarnings("deprecation")
 	private JobConf setupJob4(Question bestQuestion) throws IOException {
-		JobConf jobConf = new JobConf(NodeBuilderFat.class);
+		JobConf jobConf = new JobConf(NodeBuilderFurious.class);
 		jobConf.setJobName("(3) Input file splitting");
 		bestQuestion.toConf(jobConf);
 		jobConf.setOutputKeyClass(Text.class);

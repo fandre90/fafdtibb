@@ -29,7 +29,7 @@ import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.FatNodeBuilderFactory;
 import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilder;
 import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFast;
-import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFat;
+import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFurious;
 import fr.insarennes.fafdti.builder.scheduler.Scheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.builder.treebuilder.LimitModeTreeBuilderFactory;

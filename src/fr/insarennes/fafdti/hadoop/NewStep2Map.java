@@ -3,6 +3,7 @@ package fr.insarennes.fafdti.hadoop;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -16,22 +17,25 @@ import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.ThresholdComputer;
 
+
 public class NewStep2Map
 		extends
-		MapperBase<Object, Text, IntWritable, WritableDoubleScoredDistributionVectorSortedMap> {
+		MapperBase<Object, Text, IntWritable, WritableValueSDVSortedMap> {
 
 	ScoredDistributionVector entAndStats;
-	WritableDoubleScoredDistributionVectorSortedMap valueDistMap;
+
+	WritableValueSDVSortedMap valueDistMap;
 	ScoredDistributionVector distribution;
 	IntWritable attrIndex;
 	
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
 		super.setup(context);
-		valueDistMap = new WritableDoubleScoredDistributionVectorSortedMap();
+		valueDistMap = new WritableValueSDVSortedMap();
 		distribution = new ScoredDistributionVector(fs.numOfLabel());
 		attrIndex = new IntWritable();
 	}
+
 
 	protected void map(Object key, Text dataLine, Context context)
 			throws IOException, InterruptedException {
@@ -54,7 +58,7 @@ public class NewStep2Map
 					distribution.reset();
 					distribution.incrStat(labelIndex);
 					valueDistMap.clear();
-					valueDistMap.put(value, distribution);
+					valueDistMap.put(new Value(value), distribution);
 					attrIndex.set(i);
 					context.write(attrIndex, valueDistMap);
 				}

@@ -9,7 +9,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class SGram implements WritableComparable<SGram> {
+public class SGram implements WritableComparable<SGram>, Gram {
 
 
 	private Text firstWord;

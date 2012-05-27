@@ -19,7 +19,7 @@ import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
 import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilderFactory;
-import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFat;
+import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFurious;
 import fr.insarennes.fafdti.builder.scheduler.IScheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
@@ -225,11 +225,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 								dtq.noSetter(), stopping, stats, nodeBuilderFactory,
 								datapaths.getSecond().toString(), pInfos, rightDistribution, tbMaker, scheduler);
 			}
-			System.out.println("Left: " + leftDistribution);
-			System.out.println("Right: " + rightDistribution);
-			System.out.println("**Left");
 			scheduler.execute(treeBuilderLeft);
-			System.out.println("**Right");
 			scheduler.execute(treeBuilderRight);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -260,7 +256,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			dtl = new DecisionTreeLeaf(new LeafLabels(map), sum);
 		} catch (InvalidProbabilityComputationException e) {
 			log.log(Level.ERROR, e.getMessage());
-			System.out.println(parentDistribution.toString());
+			log.error(parentDistribution.toString());
 			System.exit(FAFExitCode.EXIT_ERROR);
 		}
 		try {

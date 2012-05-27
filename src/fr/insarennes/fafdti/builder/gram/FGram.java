@@ -8,7 +8,7 @@ import java.util.Arrays;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class FGram implements WritableComparable<FGram> {
+public class FGram implements WritableComparable<FGram>, Gram {
 
 	Text[] words;
 

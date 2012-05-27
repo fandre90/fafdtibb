@@ -18,6 +18,8 @@ import fr.insarennes.fafdti.Pair;
 import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.nodebuilder.FastNodeBuilderFactory;
+import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
 import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFast;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
 import fr.insarennes.fafdti.builder.ParseException;
@@ -75,17 +77,16 @@ public class TestNodeBuilderFast {
 	@Test
 	public void testDiscreteContinuous() throws IOException, FAFException,
 			InterruptedException, ClassNotFoundException {
-		/*
 		Pair<DotNamesInfo, String[][]> pInfoDb = getNamesInfoAndDatabase(
-				"test1.names", "test1.data");
+				"res/test1.names", "res/test1.data");
 		DotNamesInfo namesInfo = pInfoDb.getFirst();
 		String[][] database = pInfoDb.getSecond();
-		NodeBuilderFast nodeBuilder = new NodeBuilderFast(
-				new EntropyCriterion(), namesInfo);
-		QuestionScoreLeftDistribution qSLD = nodeBuilder.buildNode(database,
-				null, null, null);
+		FastNodeBuilderFactory nodeBuilderFactory = 
+				new FastNodeBuilderFactory(new EntropyCriterion(), namesInfo);
+		INodeBuilder nodeBuilder = nodeBuilderFactory.makeNodeBuilder(database, null, "0-0");
+		QuestionScoreLeftDistribution qSLD = nodeBuilder.buildNode();
 		Question expectedQuestion = new Question(0, AttrType.CONTINUOUS, 0.45);
-		assertEquals(expectedQuestion, qSLD.getQuestion());*/
+		assertEquals(expectedQuestion, qSLD.getQuestion());
 	}
 
 	@Test

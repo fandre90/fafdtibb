@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 
 import fr.insarennes.fafdti.FAFException;
@@ -22,7 +23,7 @@ import fr.insarennes.fafdti.builder.nodebuilder.ThresholdComputer;
 
 public class NewStep2Red
 		extends
-		ReducerBase<IntWritable, WritableDoubleScoredDistributionVectorSortedMap, Question, ScoreLeftDistribution> {
+		ReducerBase<IntWritable, WritableValueSDVSortedMap, Question, ScoreLeftDistribution> {
 
 	private ScoredDistributionVector parentDistribution;
 	private Question bestEmittedQuestion;
@@ -39,12 +40,12 @@ public class NewStep2Red
 
 	protected void reduce(
 			IntWritable col,
-			Iterable<WritableDoubleScoredDistributionVectorSortedMap> valueDistMaps,
+			Iterable<WritableValueSDVSortedMap> valueDistMaps,
 			Context context) throws IOException, InterruptedException {
 		ValueDistributionMapAggregator valueDistMapAgg = new ValueDistributionMapAggregator();
 		try {
 			valueDistMapAgg.aggregateAll(valueDistMaps);
-			WritableDoubleScoredDistributionVectorSortedMap aggregatedMap = valueDistMapAgg
+			WritableValueSDVSortedMap aggregatedMap = valueDistMapAgg
 					.getAggregatedMap();
 			if (aggregatedMap.size() >= 2) {
 				ThresholdComputer thresholdComputer = new ThresholdComputer(fs,

@@ -15,29 +15,30 @@ import org.apache.hadoop.io.Writable;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 
-public class WritableDoubleScoredDistributionVectorSortedMap implements
-		Cloneable, Writable, SortedMap<Double, ScoredDistributionVector> {
+public class WritableValueSDVSortedMap implements
+		Cloneable, Writable, SortedMap<Value, ScoredDistributionVector> {
 
-	private SortedMap<Double, ScoredDistributionVector> map;
+	private SortedMap<Value, ScoredDistributionVector> map;
+	
 
-	public WritableDoubleScoredDistributionVectorSortedMap() {
-		this.map = new TreeMap<Double, ScoredDistributionVector>();
+	public WritableValueSDVSortedMap() {
+		this.map = new TreeMap<Value, ScoredDistributionVector>();
 	}
 
-	public WritableDoubleScoredDistributionVectorSortedMap(
-			SortedMap<Double, ScoredDistributionVector> sortedMap) {
-		this.map = new TreeMap<Double, ScoredDistributionVector>(sortedMap);
+	public WritableValueSDVSortedMap(
+			SortedMap<Value, ScoredDistributionVector> sortedMap) {
+		this.map = new TreeMap<Value, ScoredDistributionVector>(sortedMap);
 	}
 
-	public WritableDoubleScoredDistributionVectorSortedMap(
-			Map<Double, ScoredDistributionVector> map) {
-		this.map = new TreeMap<Double, ScoredDistributionVector>(map);
+	public WritableValueSDVSortedMap(
+			Map<Value, ScoredDistributionVector> map) {
+		this.map = new TreeMap<Value, ScoredDistributionVector>(map);
 	}
 
-	private WritableDoubleScoredDistributionVectorSortedMap makeWritableWithReference(
-			SortedMap<Double, ScoredDistributionVector> sortedMap) {
-		WritableDoubleScoredDistributionVectorSortedMap wrMap = 
-				new WritableDoubleScoredDistributionVectorSortedMap();
+	private WritableValueSDVSortedMap makeWritableWithReference(
+			SortedMap<Value, ScoredDistributionVector> sortedMap) {
+		WritableValueSDVSortedMap wrMap = 
+				new WritableValueSDVSortedMap();
 		wrMap.map = sortedMap;
 		return wrMap;
 	}
@@ -47,7 +48,9 @@ public class WritableDoubleScoredDistributionVectorSortedMap implements
 		int size = in.readInt();
 		map.clear();
 		while (size-- != 0) {
-			double key = in.readDouble();
+			Value key = new Value(); // Yes the key is a value :)
+									 // and the value is its distribution
+			key.readFields(in);
 			ScoredDistributionVector value = new ScoredDistributionVector();
 			value.readFields(in);
 			map.put(key, value);
@@ -57,22 +60,22 @@ public class WritableDoubleScoredDistributionVectorSortedMap implements
 	@Override
 	public void write(DataOutput out) throws IOException {
 		out.writeInt(map.size());
-		for (Map.Entry<Double, ScoredDistributionVector> entry : map.entrySet()) {
-			out.writeDouble(entry.getKey());
+		for (Map.Entry<Value, ScoredDistributionVector> entry : map.entrySet()) {
+			entry.getKey().write(out);
 			entry.getValue().write(out);
 		}
 	}
 
 	@Override
 	public Object clone() {
-	    WritableDoubleScoredDistributionVectorSortedMap wrMap = null;
+	    WritableValueSDVSortedMap wrMap = null;
 	    try {
-	    	wrMap = (WritableDoubleScoredDistributionVectorSortedMap) 
+	    	wrMap = (WritableValueSDVSortedMap) 
 	    			super.clone();
 	    } catch(CloneNotSupportedException cnse) {
 	      	cnse.printStackTrace(System.err);
 	    }
-	    wrMap.map = new TreeMap<Double, ScoredDistributionVector>(this.map);
+	    wrMap.map = new TreeMap<Value, ScoredDistributionVector>(this.map);
 	    return wrMap;
 	}
 
@@ -102,14 +105,14 @@ public class WritableDoubleScoredDistributionVectorSortedMap implements
 	}
 
 	@Override
-	public ScoredDistributionVector put(Double key,
+	public ScoredDistributionVector put(Value key,
 			ScoredDistributionVector value) {
 		return map.put(key, value);
 	}
 
 	@Override
 	public void putAll(
-			Map<? extends Double, ? extends ScoredDistributionVector> map) {
+			Map<? extends Value, ? extends ScoredDistributionVector> map) {
 		this.map.putAll(map);
 	}
 
@@ -124,43 +127,43 @@ public class WritableDoubleScoredDistributionVectorSortedMap implements
 	}
 
 	@Override
-	public Comparator<? super Double> comparator() {
+	public Comparator<? super Value> comparator() {
 		return map.comparator();
 	}
 
 	@Override
-	public Set<java.util.Map.Entry<Double, ScoredDistributionVector>> entrySet() {
+	public Set<java.util.Map.Entry<Value, ScoredDistributionVector>> entrySet() {
 		return map.entrySet();
 	}
 
 	@Override
-	public Double firstKey() {
+	public Value firstKey() {
 		return map.firstKey();
 	}
 
 	@Override
-	public SortedMap<Double, ScoredDistributionVector> headMap(Double toKey) {
+	public SortedMap<Value, ScoredDistributionVector> headMap(Value toKey) {
 		return makeWritableWithReference(this.map.headMap(toKey));
 	}
 
 	@Override
-	public Set<Double> keySet() {
+	public Set<Value> keySet() {
 		return map.keySet();
 	}
 
 	@Override
-	public Double lastKey() {
+	public Value lastKey() {
 		return map.lastKey();
 	}
 
 	@Override
-	public SortedMap<Double, ScoredDistributionVector> subMap(Double fromKey,
-			Double toKey) {
+	public SortedMap<Value, ScoredDistributionVector> subMap(Value fromKey,
+			Value toKey) {
 		return makeWritableWithReference(this.map.subMap(fromKey, toKey));
 	}
 
 	@Override
-	public SortedMap<Double, ScoredDistributionVector> tailMap(Double fromKey) {
+	public SortedMap<Value, ScoredDistributionVector> tailMap(Value fromKey) {
 		return makeWritableWithReference(this.map.tailMap(fromKey));
 	}
 

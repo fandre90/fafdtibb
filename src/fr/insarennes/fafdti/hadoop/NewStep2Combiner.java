@@ -8,11 +8,11 @@ import fr.insarennes.fafdti.FAFException;
 
 public class NewStep2Combiner
 		extends
-		ReducerBase<IntWritable, WritableDoubleScoredDistributionVectorSortedMap, IntWritable, WritableDoubleScoredDistributionVectorSortedMap> {
+		ReducerBase<IntWritable, WritableValueSDVSortedMap, IntWritable, WritableValueSDVSortedMap> {
 
 	protected void reduce(
 			IntWritable col,
-			Iterable<WritableDoubleScoredDistributionVectorSortedMap> valueDistMaps,
+			Iterable<WritableValueSDVSortedMap> valueDistMaps,
 			Context context) throws IOException, InterruptedException {
 		try {
 			ValueDistributionMapAggregator valueDistMapAgg = 

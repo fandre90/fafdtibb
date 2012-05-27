@@ -26,10 +26,6 @@ public class Question extends HadoopConfStockable implements
 	int col;
 	AttrType type;
 	DoubleWritable doubleValue;
-	// !!! NOTE IMPORTANTE :
-	// Chaine représentant :
-	// - valeur d'un attribut discret
-	// - valeur d'un attribut texte
 	Text textValue;
 	GramContainer gramValue;
 

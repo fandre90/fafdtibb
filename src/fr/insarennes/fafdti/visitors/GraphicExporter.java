@@ -38,7 +38,7 @@ public class GraphicExporter implements DecisionTreeVisitor {
 		arcs = new StringBuilder();
 		//on ouvre le flux de sortie
 		try {
-			FileWriter fw = new FileWriter(filename+".dot");
+			FileWriter fw = new FileWriter(filename);
 			out = new PrintWriter(fw);
 			
 		} catch (IOException e) {

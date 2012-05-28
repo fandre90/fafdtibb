@@ -53,15 +53,15 @@ public class FAFUtilsMode {
 		opts_dot = new Options();
 		//mode
 		OptionGroup mode = new OptionGroup();
-		Option o1 = new Option(PNG.substring(0,1), PNG, false, "Make .png from .xml tree");
-		Option o2 = new Option(DOT.substring(0,1), DOT, false, "Make .dot from .xml tree");
+		Option o1 = new Option(PNG.substring(0,1), PNG, false, "Make png from xml tree");
+		Option o2 = new Option(DOT.substring(0,1), DOT, false, "Make dot from xml tree");
 		mode.addOption(o1);
 		mode.addOption(o2);
 		mode.setRequired(true);
 		opts_mode.addOptionGroup(mode);
 		//options pour mode png
-		Option png1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
-		Option png2 = new Option(OUT.substring(0,1), OUT, true, "Set .png filename (optional)");
+		Option png1 = new Option(IN.substring(0,1), IN, true, "Set xml file input tree");
+		Option png2 = new Option(OUT.substring(0,1), OUT, true, "Set png filename (optional)");
 		Option png3 = new Option(DISPLAY.substring(0,1).toUpperCase(), DISPLAY, false, "Display image when generation done if checked (optional)");
 		Option png4 = new Option(INDEX.substring(0,1).toUpperCase(), INDEX, true, "Set the index of tree to be export among every trees in bagging input (optional)");
 		png1.setRequired(true);
@@ -70,8 +70,8 @@ public class FAFUtilsMode {
 		opts_png.addOption(png3);
 		opts_png.addOption(png4);
 		//options pour mode dot
-		Option dot1 = new Option(IN.substring(0,1), IN, true, "Set .xml filename");
-		Option dot2 = new Option(OUT.substring(0,1), OUT, true, "Set .dot filename (optional)");
+		Option dot1 = new Option(IN.substring(0,1), IN, true, "Set xml file input tree");
+		Option dot2 = new Option(OUT.substring(0,1), OUT, true, "Set dot filename (optional)");
 		Option dot3 = new Option(INDEX.substring(0,1).toUpperCase(), INDEX, true, "Set the index of tree to be export among every trees in bagging input (optional)");
 		dot1.setRequired(true);
 		opts_dot.addOption(dot1);
@@ -104,11 +104,20 @@ public class FAFUtilsMode {
 		//on fait le dot
 		makeDot(cmdline);
 		
-		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(IN));
+		String out = cmdline.getOptionValue(OUT);
+		String outdot, outpng = "";
+		if(out==null){
+			String in = cmdline.getOptionValue(IN);
+			outpng = in.substring(0, in.lastIndexOf('.'))+".png";
+			outdot = in.substring(0, in.lastIndexOf('.'))+".dot";
+		}else{
+			outpng = out;
+			outdot = out.substring(0, out.lastIndexOf('.'))+".dot";
+		}
 		//on fait le png à partir du dot
 		if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
 			try {
-				String cmd = "dot -Tpng -o"+out+".png "+out+".dot";
+				String cmd = "dot -Tpng -o"+outpng+" "+outdot;
 				Process p = Runtime.getRuntime().exec(cmd);
 				log.log(Level.DEBUG, cmd);
 				try {
@@ -120,7 +129,7 @@ public class FAFUtilsMode {
 				log.log(Level.INFO, "png export done");
 				//on affiche si demandé
 				if(cmdline.hasOption(DISPLAY))
-					Runtime.getRuntime().exec("display "+out+".png");
+					Runtime.getRuntime().exec("display "+outpng);
 					log.log(Level.DEBUG, "display png done");
 			} catch (IOException e) {
 				log.log(Level.ERROR, "png export needs ImageMagick library installed");
@@ -135,8 +144,8 @@ public class FAFUtilsMode {
 	}
 	public static void makeDot(CommandLine cmdline){
 		log.log(Level.INFO, "Starting makedot");
-		
-		ImportXML importer = new ImportXML(cmdline.getOptionValue(IN) + ".xml");
+		String inxml = cmdline.getOptionValue(IN);
+		ImportXML importer = new ImportXML(inxml);
 		try {
 			importer.launch();
 		} catch (FAFException e1) {
@@ -146,7 +155,9 @@ public class FAFUtilsMode {
 		log.log(Level.INFO, "Xml import done");
 		BaggingTrees bt = importer.getResult();
 		
-		String out = cmdline.getOptionValue(OUT, cmdline.getOptionValue(IN));
+		String out = cmdline.getOptionValue(OUT);
+		if(out==null)
+			out = inxml.substring(0, inxml.lastIndexOf('.'))+".dot";
 		String index = cmdline.getOptionValue(INDEX, DEFAULT_INDEX);
 		int intindex = Integer.parseInt(index);
 		//test du paramètre de la valeur rentrée par l'utilisateur

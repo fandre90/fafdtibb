@@ -73,33 +73,33 @@ public class FAFBuildMode {
 	public static void initOptions() {
 		opts = new Options();
 		Option o1 = new Option(NAMES.substring(0, 1), NAMES, true,
-				"Set .names filename");
+				"Set names file");
 		Option o2 = new Option(DATA.substring(0, 1), DATA, true,
-				"Set .data filename");
+				"Set data file");
 		Option o3 = new Option(OUT.substring(0, 1), OUT, true,
-				"Set output filename (optional)");
+				"Set output file (optional, default=data.xml)");
 		Option o4 = new Option(BAGGING.substring(0, 1), BAGGING, true,
-				"Set number of trees built for bagging (optional)");
+				"Set number of trees built for bagging (optional, default="+DEFAULT_BAGGING+")");
 		Option o5 = new Option(CRITERION.substring(0, 1), CRITERION, true,
-				"Set the criterion used to build the tree (optional)");
+				"Set the criterion used to build the tree (optional, default="+DEFAULT_CRITERION+")");
 		Option o6 = new Option(MAXDEPTH.substring(0, 1).toUpperCase(),
 				MAXDEPTH, true,
-				"Set the maximum number of leaves for one tree (optional)");
+				"Set the maximum number of leaves for one tree (optional, default="+DEFAULT_MAXDEPTH+")");
 		Option o7 = new Option(MINEXBYLEAF.substring(0, 1), MINEXBYLEAF, true,
-				"Set the minimum number of examples by leaf (optional)");
+				"Set the minimum number of examples by leaf (optional, default="+DEFAULT_MINEX+")");
 		Option o8 = new Option(GAINMIN.substring(0, 1), GAINMIN, true,
-				"Set the minimum gain to make a node (optional)");
+				"Set the minimum gain to make a node (optional, default="+DEFAULT_GAINMIN+")");
 		Option o9 = new Option(WORKINGDIR.substring(0, 1), WORKINGDIR, true,
-				"Set the directory where hadoop will work (optional)");
+				"Set the directory where hadoop will work (optional, default="+DEFAULT_WORKING_DIR+")");
 		Option o10 = new Option(
 				PERCENTBAGGING.substring(0, 1),
 				PERCENTBAGGING,
 				true,
-				"Set the percentage of data file (between 0 and 1) used to build each trees (optional)");
+				"Set the percentage of data file (between 0 and 1) used to build each trees (optional, default="+DEFAULT_PERCENTBAGGING+")");
 		Option o11 = new Option(THREADS.substring(0, 1), THREADS, true,
 				"Set pool size of scheduler (optional)");
 		Option o12 = new Option(LIMITMODE.substring(0, 1), LIMITMODE, true,
-				"Set threshold to pass construction algorithm from mode1 to mode2 (optional)");
+				"Set threshold to pass construction algorithm from furious to fast (optional, default="+DEFAULT_LIMITMODE+")");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -145,8 +145,9 @@ public class FAFBuildMode {
 		String data = cmdline.getOptionValue(DATA);
 		String names = cmdline.getOptionValue(NAMES);
 		// si pas de sortie précisée, même nom que le .data par défaut
-		String out = cmdline.getOptionValue(OUT, data);
-
+		String out = cmdline.getOptionValue(OUT);
+		if(out==null)
+			out = names.substring(0, names.lastIndexOf('.'))+".xml";
 		log.log(Level.INFO, "Parsing done");
 		log.log(Level.INFO, "names = " + names);
 		log.log(Level.INFO, "data = " + data);
@@ -246,7 +247,7 @@ public class FAFBuildMode {
 		comment.put(XmlConst.THREADS, String.valueOf(Scheduler.INSTANCE.getPoolSize()));
 		// on lance le launcher
 		try {
-			new Launcher(names + ".names", data + ".data", workingdir, out,
+			new Launcher(names, data, workingdir, out,
 					stopping, criterion, intbagging, doublepercent, comment, doublelimitmode);
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			log.error("File " + names + "malformed.");

@@ -55,9 +55,9 @@ public class FAFQueryMode {
 	
 	public static void initOptions(){
 		opts = new Options();
-		Option o1 = new Option(IN.substring(0, 1), IN, true, "Set .xml filename");
-		Option o2 = new Option(QUESTION.substring(0, 1), QUESTION, true, "Set the question for asking to .xml tree (optional) (default read the standard input and launch a stats campaign)");
-		Option o3 = new Option(OUT.substring(0,1), OUT, true, "Set the .txt filename where write output (default in console) (optional)");
+		Option o1 = new Option(IN.substring(0, 1), IN, true, "Set xml file input tree");
+		Option o2 = new Option(QUESTION.substring(0, 1), QUESTION, true, "Set the question for asking to xml tree (optional) (default read the standard input and launch a stats campaign)");
+		Option o3 = new Option(OUT.substring(0,1), OUT, true, "Set txt file where write output (default in console) or html file where write stats campaign results (optional)");
 		Option o4 = new Option(DETAILS.substring(0,1), DETAILS, false, "Choose to see details of answer (optional)");
 		o1.setRequired(true);
 		opts.addOption(o1);
@@ -97,7 +97,7 @@ public class FAFQueryMode {
 			//Importer bagging trees
 			String xmlInput = cmdline.getOptionValue(IN);
 			BaggingTrees trees = null;
-			ImportXML importer = new ImportXML(xmlInput+".xml");
+			ImportXML importer = new ImportXML(xmlInput);
 			try {
 				importer.launch();
 			} catch (FAFException e) {
@@ -121,9 +121,11 @@ public class FAFQueryMode {
 			log.info(stater.getFastResult());			
 			//Make html output
 			HtmlStater html = new HtmlStater(importer.getBuildingParameters(), stater);
-			String output = cmdline.getOptionValue(OUT, xmlInput);
+			String output = cmdline.getOptionValue(OUT);
+			if(output==null)
+				output = xmlInput.substring(0, xmlInput.lastIndexOf('.'))+".html";
 			html.make(output);
-			log.info("Full report has been generated in "+output+".html");
+			log.info("Full report has been generated in "+output);
 		}
 			
 		//sinon on pose la question normalement
@@ -138,7 +140,7 @@ public class FAFQueryMode {
 			log.log(Level.INFO, qExample.toString());
 			
 			//On construit l'arbre à partir du fichier d'entrée
-			ImportXML importer = new ImportXML(cmdline.getOptionValue(IN) + ".xml");
+			ImportXML importer = new ImportXML(cmdline.getOptionValue(IN));
 			try {
 				importer.launch();
 			} catch (FAFException e) {
@@ -169,7 +171,7 @@ public class FAFQueryMode {
 					System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
 				}
 				PrintWriter pw = new PrintWriter(w);
-				pw.println("###Query on "+cmdline.getOptionValue(IN)+".xml tree###");
+				pw.println("###Query on "+cmdline.getOptionValue(IN)+" tree###");
 				pw.println("##With question :");
 				pw.print(qExample.toString());
 				pw.println("#Answer is :");

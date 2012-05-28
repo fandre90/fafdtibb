@@ -114,7 +114,7 @@ public class XmlExporter implements DecisionTreeVisitor {
 		FSDataOutputStream file = null;
 		try {
 			fs = FileSystem.get(new Configuration());
-			file = fs.create(new Path(filename+".xml"));
+			file = fs.create(new Path(filename));
 			Result res = new StreamResult(file);
 			finish(res);
 			file.flush();

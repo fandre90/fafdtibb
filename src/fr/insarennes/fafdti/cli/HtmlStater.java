@@ -36,7 +36,7 @@ public class HtmlStater {
 	private void launch(){
 		Writer writer = null;
 		try {
-			writer = new FileWriter(output+".html");
+			writer = new FileWriter(output);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			e.printStackTrace();

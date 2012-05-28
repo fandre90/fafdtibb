@@ -18,10 +18,10 @@ import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
-import fr.insarennes.fafdti.hadoop.Step1Map;
-import fr.insarennes.fafdti.hadoop.Step1Red;
-import fr.insarennes.fafdti.hadoop.NewStep2Map;
-import fr.insarennes.fafdti.hadoop.Step2Red;
+import fr.insarennes.fafdti.hadoop.OldStep2Red;
+import fr.insarennes.fafdti.hadoop.veryfurious.Step11Map;
+import fr.insarennes.fafdti.hadoop.veryfurious.Step11Red;
+import fr.insarennes.fafdti.hadoop.veryfurious.Step12Map;
 
 
 public class TestStep2 {
@@ -47,8 +47,8 @@ public class TestStep2 {
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(ContinuousAttrLabelPair.class);
 
-		job.setMapperClass(NewStep2Map.class);
-		job.setReducerClass(Step2Red.class);
+		job.setMapperClass(Step12Map.class);
+		job.setReducerClass(OldStep2Red.class);
 
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);

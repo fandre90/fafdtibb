@@ -1,6 +1,7 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.furious;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DoubleWritable;
@@ -12,13 +13,21 @@ import org.apache.hadoop.mapreduce.Mapper.Context;
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
+import fr.insarennes.fafdti.builder.gram.FGram;
+import fr.insarennes.fafdti.builder.gram.GramType;
+import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.builder.namesinfo.AttrSpec;
 import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.builder.namesinfo.TextAttrSpec;
+import fr.insarennes.fafdti.builder.nodebuilder.GramGenerator;
 import fr.insarennes.fafdti.builder.nodebuilder.ThresholdComputer;
+import fr.insarennes.fafdti.hadoop.MapperBase;
+import fr.insarennes.fafdti.hadoop.Value;
+import fr.insarennes.fafdti.hadoop.WritableValueSDVSortedMap;
 
 
-public class NewStep2Map
+public class Step1Map
 		extends
 		MapperBase<Object, Text, IntWritable, WritableValueSDVSortedMap> {
 
@@ -27,13 +36,15 @@ public class NewStep2Map
 	WritableValueSDVSortedMap valueDistMap;
 	ScoredDistributionVector distribution;
 	IntWritable attrIndex;
-	
+	Value value;
+
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
 		super.setup(context);
 		valueDistMap = new WritableValueSDVSortedMap();
 		distribution = new ScoredDistributionVector(fs.numOfLabel());
 		attrIndex = new IntWritable();
+		value = new Value();
 	}
 
 
@@ -51,22 +62,39 @@ public class NewStep2Map
 				lineTokens[i] = lineTokens[i].trim();
 				AttrSpec attrSpec = fs.getAttrSpec(i);
 				AttrType attrType = attrSpec.getType();
+				distribution.reset();
+				distribution.incrStat(labelIndex);
+				valueDistMap.clear();
+				attrIndex.set(i);
 				if (attrType == AttrType.CONTINUOUS) {
-					double value = ThresholdComputer.normalizeValue(
+					double normDouble = ThresholdComputer.normalizeValue(
 							Double.parseDouble(lineTokens[i]),
 							ThresholdComputer.EPSILON);
-					distribution.reset();
-					distribution.incrStat(labelIndex);
-					valueDistMap.clear();
-					valueDistMap.put(new Value(value), distribution);
-					attrIndex.set(i);
-					context.write(attrIndex, valueDistMap);
+					value.set(normDouble);
+					valueDistMap.put(value, distribution);
+
+				} else if (attrType == AttrType.DISCRETE) {
+					value.set(lineTokens[i]);
+					valueDistMap.put(value, distribution);
+				} else if (attrType == AttrType.TEXT) {
+					TextAttrSpec textAttr = (TextAttrSpec) attrSpec;
+					String[] words = lineTokens[i].split("\\s+");
+					if(textAttr.getExpertType() == GramType.SGRAM) {
+						Set<SGram> sGramSet = GramGenerator.generateSGram(textAttr, words);
+						for(SGram sGram: sGramSet) {
+							valueDistMap.put(new Value(sGram), distribution);
+						}
+					} else {
+						Set<FGram> fGramSet = GramGenerator.generateAllNFGram(textAttr, words);
+						for(FGram fGram: fGramSet) {
+							valueDistMap.put(new Value(fGram), distribution);
+						}
+					}
 				}
+				context.write(attrIndex, valueDistMap);
 			}
 		} catch (FAFException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
 }

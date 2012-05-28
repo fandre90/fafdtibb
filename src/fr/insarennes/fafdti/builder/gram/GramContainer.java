@@ -3,9 +3,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class GramContainer implements WritableComparable<GramContainer>, Gram {
+import fr.insarennes.fafdti.builder.Question;
+
+public class GramContainer implements WritableComparable<GramContainer>, Cloneable {
 	private FGram fGram;
 	private SGram sGram;
 	private GramType type = null;
@@ -113,6 +117,25 @@ public class GramContainer implements WritableComparable<GramContainer>, Gram {
 		GramContainer other = (GramContainer) obj;
 		return this.compareTo(other) == 0;
 	}
+	
+	@Override
+	public Object clone() {
+	    GramContainer newGramContainer = null;
+	    try {
+	    	newGramContainer = (GramContainer) super.clone();
+	    } catch(CloneNotSupportedException cnse) {
+	      	cnse.printStackTrace(System.err);
+	    }
+	    switch(this.type) {
+	    case SGRAM:
+	    	newGramContainer.sGram = (SGram) this.sGram.cloneGram();
+	    	break;
+	    case FGRAM:
+	    	newGramContainer.fGram = (FGram) this.fGram.cloneGram();
+	    	break;
+	    }
+	    return newGramContainer;
+	}
 
 	@Override
 	public int hashCode() {
@@ -154,21 +177,6 @@ public class GramContainer implements WritableComparable<GramContainer>, Gram {
 			return this.sGram.query(textData);
 		}
 		return false;
-	}
-
-	public GramContainer cloneGram() {
-		GramContainer gram = new GramContainer();
-		if(this.type != null) {
-			switch (this.type) {
-			case FGRAM:
-				gram = new GramContainer(this.fGram);
-				break;
-			case SGRAM:
-				gram = new GramContainer(this.sGram);
-				break;
-			}
-		}
-		return gram;
 	}
 
 	@Override

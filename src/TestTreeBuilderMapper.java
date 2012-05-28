@@ -11,11 +11,11 @@ import org.apache.hadoop.mapred.JobConf;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.LabeledExample;
 import fr.insarennes.fafdti.builder.ParseException;
-import fr.insarennes.fafdti.hadoop.MapperTreeBuilder;
 import fr.insarennes.fafdti.hadoop.SplitExampleMultipleOutputFormat;
-import fr.insarennes.fafdti.hadoop.Step4Map;
-import fr.insarennes.fafdti.hadoop.Step4Red;
-import fr.insarennes.fafdti.hadoop.WholeTextInputFormat;
+import fr.insarennes.fafdti.hadoop.fast.MapperTreeBuilder;
+import fr.insarennes.fafdti.hadoop.fast.WholeTextInputFormat;
+import fr.insarennes.fafdti.hadoop.furious.Step3Map;
+import fr.insarennes.fafdti.hadoop.furious.Step3Red;
 
 public class TestTreeBuilderMapper {
 	public static void main(String[] args) throws ParseException, IOException {

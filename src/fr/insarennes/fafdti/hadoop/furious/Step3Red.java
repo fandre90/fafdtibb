@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.furious;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,15 +23,16 @@ import fr.insarennes.fafdti.builder.stopcriterion.ExampleMin;
 import fr.insarennes.fafdti.builder.stopcriterion.GainMin;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
+import fr.insarennes.fafdti.hadoop.veryfurious.Step11Map;
 
 @SuppressWarnings("deprecation")
-public class Step4Red extends MapReduceBase implements
+public class Step3Red extends MapReduceBase implements
 	Reducer<Text, LabeledExample, Text, LabeledExample> {
 	Logger log;
 
 	@Override
 	public void configure(JobConf jobConf) {
-		log = Logger.getLogger(Step1Map.class);
+		log = Logger.getLogger(Step11Map.class);
 	}
 
 	@Override

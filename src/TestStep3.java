@@ -16,8 +16,8 @@ import fr.insarennes.fafdti.builder.EntropyCriterion;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.hadoop.ContinuousAttrLabelPair;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
-import fr.insarennes.fafdti.hadoop.Step3Map;
-import fr.insarennes.fafdti.hadoop.Step3Red;
+import fr.insarennes.fafdti.hadoop.furious.Step2Map;
+import fr.insarennes.fafdti.hadoop.furious.Step2Red;
 
 
 public class TestStep3 {
@@ -43,9 +43,9 @@ public class TestStep3 {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(QuestionScoreLeftDistribution.class);
 
-		job.setMapperClass(Step3Map.class);
-		job.setCombinerClass(Step3Red.class);
-		job.setReducerClass(Step3Red.class);
+		job.setMapperClass(Step2Map.class);
+		job.setCombinerClass(Step2Red.class);
+		job.setReducerClass(Step2Red.class);
 
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);

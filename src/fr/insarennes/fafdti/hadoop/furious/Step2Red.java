@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.furious;
 
 import java.io.IOException;
 
@@ -6,8 +6,10 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
+import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
+import fr.insarennes.fafdti.hadoop.ReducerBase;
 
-public class Step3Red extends
+public class Step2Red extends
 		ReducerBase<Text, QuestionScoreLeftDistribution, Text, QuestionScoreLeftDistribution> {
 
 	protected void reduce(Text text,

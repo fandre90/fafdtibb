@@ -13,7 +13,7 @@ import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.namesinfo.AttrSpec;
 import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 
-public class Step2Map extends MapperBase<Object, Text, IntWritable, ContinuousAttrLabelPair> {
+public class OldStep2Map extends MapperBase<Object, Text, IntWritable, ContinuousAttrLabelPair> {
 	Question attrValue = new Question();
 	ScoredDistributionVector entAndStats;
 

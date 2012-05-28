@@ -18,7 +18,7 @@ import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 
-public class Step2Red
+public class OldStep2Red
 		extends
 		ReducerBase<IntWritable, ContinuousAttrLabelPair, Question, ScoreLeftDistribution> {
 

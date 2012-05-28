@@ -1,14 +1,10 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.fast;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
@@ -16,13 +12,11 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.util.LineReader;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.FastNodeBuilderFactory;
-import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFast;
 import fr.insarennes.fafdti.builder.scheduler.DumbScheduler;
 import fr.insarennes.fafdti.builder.scheduler.IScheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.DepthMax;
@@ -31,11 +25,8 @@ import fr.insarennes.fafdti.builder.stopcriterion.GainMin;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.builder.treebuilder.DumbTreeBuilderFactory;
-import fr.insarennes.fafdti.builder.treebuilder.ITreeBuilderFactory;
 import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.EntropyCriterion;
-import fr.insarennes.fafdti.builder.Question;
-import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.tree.DecisionNodeSetter;
 import fr.insarennes.fafdti.tree.DecisionTreeHolder;

@@ -236,7 +236,11 @@ public class Value implements Writable, Comparable<Value> {
 		return type;
 	}
 	
-	public Gram getGram(){
-		return gramValue.getGram();
+	public FGram getFGram() {
+		return gramValue.getfGram();
+	}
+	
+	public SGram getSGram() {
+		return gramValue.getsGram();
 	}
 }

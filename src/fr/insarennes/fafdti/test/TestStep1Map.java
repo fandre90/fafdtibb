@@ -24,7 +24,7 @@ import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
-import fr.insarennes.fafdti.hadoop.Step1Map;
+import fr.insarennes.fafdti.hadoop.veryfurious.Step11Map;
 import static fr.insarennes.fafdti.test.UtilsTest.*;
 
 public class TestStep1Map {
@@ -38,7 +38,7 @@ public class TestStep1Map {
 		MapDriver<Object, Text, Question, IntWritable> mapDriver = 
 				new MapDriver<Object, Text, Question, IntWritable>();
 		mapDriver.withConfiguration(conf);
-		mapDriver.setMapper(new Step1Map());
+		mapDriver.setMapper(new Step11Map());
 		mapDriver.withInput(0, new Text("aaa bbb ccc ddd, classA."));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, new SGram("aaa",
 				"bbb", 2)), new IntWritable(0));
@@ -62,7 +62,7 @@ public class TestStep1Map {
 		MapDriver<Object, Text, Question, IntWritable> mapDriver = 
 				new MapDriver<Object, Text, Question, IntWritable>();
 		mapDriver.withConfiguration(conf);
-		mapDriver.setMapper(new Step1Map());
+		mapDriver.setMapper(new Step11Map());
 		mapDriver.withInput(0, new Text("aaa bbb ccc ddd, classA."));
 		Question q1 = new Question(0, AttrType.TEXT, 
 				new FGram(new String[]{"aaa", "bbb"}));
@@ -83,7 +83,7 @@ public class TestStep1Map {
 		MapDriver<Object, Text, Question, IntWritable> mapDriver = 
 				new MapDriver<Object, Text, Question, IntWritable>();
 		mapDriver.withConfiguration(conf);
-		mapDriver.setMapper(new Step1Map());
+		mapDriver.setMapper(new Step11Map());
 		mapDriver.withInput(0, new Text("aaa bbb ccc ddd, classA."));
 		mapDriver.withOutput(new Question(0, AttrType.TEXT, 
 				new FGram(new String[]{"aaa"})), new IntWritable(0));

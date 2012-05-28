@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.furious;
 
 import java.io.IOException;
 
@@ -14,8 +14,10 @@ import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
+import fr.insarennes.fafdti.hadoop.MapperBase;
+import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 
-public class Step3Map extends
+public class Step2Map extends
 		MapperBase<Object, Text, Text, QuestionScoreLeftDistribution> {
 
 	protected void map(Object key, Text dataLine, Context context)

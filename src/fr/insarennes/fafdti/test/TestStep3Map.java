@@ -20,7 +20,7 @@ import org.junit.Test;
 import fr.insarennes.fafdti.builder.ParseException;
 import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
-import fr.insarennes.fafdti.hadoop.Step3Map;
+import fr.insarennes.fafdti.hadoop.furious.Step2Map;
 import static fr.insarennes.fafdti.test.TestQuestionScoreLeftDistribution.*;
 import static fr.insarennes.fafdti.test.UtilsTest.*;
 
@@ -33,7 +33,7 @@ public class TestStep3Map {
         URL url2 = this.getClass().getResource("res/test2SGram.names");
         Configuration conf = generateConfiguration(url2.getPath());
         mapDriver.withConfiguration(conf);
-        mapDriver.setMapper(new Step3Map());
+        mapDriver.setMapper(new Step2Map());
 		URL url = this.getClass().getResource("res/petitester-question_list.txt");
         FileReader fileReader = new FileReader(url.getPath());
         BufferedReader bufferedReader = new BufferedReader(fileReader);

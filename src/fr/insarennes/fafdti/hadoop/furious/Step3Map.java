@@ -8,7 +8,7 @@
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.furious;
 
 import java.io.IOException;
 
@@ -72,7 +72,7 @@ import fr.insarennes.fafdti.builder.Question;
  }
  */
 
-public class Step4Map extends MapReduceBase implements
+public class Step3Map extends MapReduceBase implements
 		Mapper<Object, Text, Text, LabeledExample> {
 
 	protected Question question;

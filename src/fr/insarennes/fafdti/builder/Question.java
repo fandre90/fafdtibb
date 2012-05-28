@@ -355,7 +355,7 @@ public class Question extends HadoopConfStockable implements
 	    } catch(CloneNotSupportedException cnse) {
 	      	cnse.printStackTrace(System.err);
 	    }
-	    question.gramValue = this.gramValue.cloneGram();
+	    question.gramValue = (GramContainer) this.gramValue.clone();
 	    question.doubleValue = new DoubleWritable(this.doubleValue.get());
 	    question.textValue = new Text(this.textValue);
 	    return question;

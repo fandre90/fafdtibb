@@ -13,8 +13,8 @@ import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
-import fr.insarennes.fafdti.hadoop.Step0Map;
-import fr.insarennes.fafdti.hadoop.Step0Red;
+import fr.insarennes.fafdti.hadoop.furious.Step0Map;
+import fr.insarennes.fafdti.hadoop.furious.Step0Red;
 
 
 

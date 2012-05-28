@@ -20,7 +20,7 @@ import fr.insarennes.fafdti.builder.TooManyRelaunchException;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
 import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilderFactory;
-import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFurious;
+import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderVeryFurious;
 import fr.insarennes.fafdti.builder.scheduler.IScheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StopCriterionUtils;
@@ -155,9 +155,14 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				stats.setTotalEx(parentDistribution.getTotal());
 			}
 			qLeftDistribution = nodeBuilder.buildNode();
+			if(qLeftDistribution == null) {
+				leafMaker();
+				return;
+			}
 			// compute right distribution from left one
 			rightDistribution = parentDistribution
 					.computeRightDistribution(qLeftDistribution
+							
 							.getScoreLeftDistribution().getDistribution());
 			rightDistribution.rate(criterion);
 			if (this.mustStop()) {

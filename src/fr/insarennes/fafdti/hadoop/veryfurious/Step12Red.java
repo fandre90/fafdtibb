@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.veryfurious;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,15 +19,18 @@ import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.namesinfo.AttrType;
+import fr.insarennes.fafdti.builder.nodebuilder.BestQuestionSelector;
 import fr.insarennes.fafdti.builder.nodebuilder.ThresholdComputer;
+import fr.insarennes.fafdti.hadoop.ReducerBase;
+import fr.insarennes.fafdti.hadoop.ValueDistributionMapAggregator;
+import fr.insarennes.fafdti.hadoop.WritableValueSDVSortedMap;
 
-public class NewStep2Red
+public class Step12Red
 		extends
 		ReducerBase<IntWritable, WritableValueSDVSortedMap, Question, ScoreLeftDistribution> {
 
 	private ScoredDistributionVector parentDistribution;
-	private Question bestEmittedQuestion;
-	private ScoreLeftDistribution bestSLDist;
+	private BestQuestionSelector bestSelect;
 
 	@Override
 	protected void setup(Context context) throws IOException,
@@ -64,10 +67,7 @@ public class NewStep2Red
 	private void writeIfBestQuestion(Context context, Question q,
 			ScoreLeftDistribution sLDist) throws IOException,
 			InterruptedException {
-		if (bestEmittedQuestion == null
-				|| sLDist.getScore() < bestSLDist.getScore()) {
-			bestEmittedQuestion = (Question) q.clone();
-			bestSLDist = (ScoreLeftDistribution) sLDist.clone();
+		if(bestSelect.addCandidate(q, sLDist)) {
 			context.write(q, sLDist);
 		}
 	}

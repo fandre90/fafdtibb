@@ -1,12 +1,15 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.furious;
 
 import java.io.IOException;
 
 import org.apache.hadoop.io.IntWritable;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.hadoop.ReducerBase;
+import fr.insarennes.fafdti.hadoop.ValueDistributionMapAggregator;
+import fr.insarennes.fafdti.hadoop.WritableValueSDVSortedMap;
 
-public class NewStep2Combiner
+public class Step1Combiner
 		extends
 		ReducerBase<IntWritable, WritableValueSDVSortedMap, IntWritable, WritableValueSDVSortedMap> {
 

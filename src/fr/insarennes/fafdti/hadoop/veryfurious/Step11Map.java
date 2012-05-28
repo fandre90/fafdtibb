@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.veryfurious;
 
 import java.io.IOException;
 import java.util.Set;
@@ -23,8 +23,9 @@ import fr.insarennes.fafdti.builder.namesinfo.AttrSpec;
 import fr.insarennes.fafdti.builder.namesinfo.AttrType;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.namesinfo.TextAttrSpec;
+import fr.insarennes.fafdti.hadoop.MapperBase;
 
-public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
+public class Step11Map extends MapperBase<Object, Text, Question, IntWritable> {
 
 	public final String VALIDATION_REGEX = "(.+,)+(.+)\\.";
 	protected Pattern validationPattern;
@@ -35,7 +36,7 @@ public class Step1Map extends MapperBase<Object, Text, Question, IntWritable> {
 			InterruptedException {
 		super.setup(context);
 		validationPattern = Pattern.compile(VALIDATION_REGEX);
-		log = Logger.getLogger(Step1Map.class);
+		log = Logger.getLogger(Step11Map.class);
 	}
 
 	protected void map(Object key, Text dataLine, Context context)

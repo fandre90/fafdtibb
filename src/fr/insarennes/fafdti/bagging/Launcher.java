@@ -26,10 +26,10 @@ import fr.insarennes.fafdti.builder.Criterion;
 import fr.insarennes.fafdti.builder.ParseException;
 import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
-import fr.insarennes.fafdti.builder.nodebuilder.FatNodeBuilderFactory;
+import fr.insarennes.fafdti.builder.nodebuilder.FuriousNodeBuilderFactory;
 import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilder;
 import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFast;
-import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderFurious;
+import fr.insarennes.fafdti.builder.nodebuilder.NodeBuilderVeryFurious;
 import fr.insarennes.fafdti.builder.scheduler.Scheduler;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.builder.treebuilder.LimitModeTreeBuilderFactory;
@@ -116,7 +116,7 @@ public class Launcher implements Observer {
 			roots.add(i, new DecisionTreeHolder());
 			LimitModeTreeBuilderFactory tbm = new LimitModeTreeBuilderFactory(
 					limitmode);
-			FatNodeBuilderFactory nodeBuilderFactory = new FatNodeBuilderFactory(
+			FuriousNodeBuilderFactory nodeBuilderFactory = new FuriousNodeBuilderFactory(
 					criterion, dotNamesInfo);
 			Runnable tb = tbm.makeTreeBuilder(this.dotNamesInfo, outputDir,
 					criterion, roots.get(i).getNodeSetter(), stoppingList,

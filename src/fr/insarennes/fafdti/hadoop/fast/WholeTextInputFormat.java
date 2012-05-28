@@ -1,4 +1,4 @@
-package fr.insarennes.fafdti.hadoop;
+package fr.insarennes.fafdti.hadoop.fast;
 import java.io.IOException;
 
 import org.apache.hadoop.fs.FileSystem;

@@ -99,21 +99,42 @@ public class FAFUtilsMode {
 		log.log(Level.INFO, wdot.toString());
 		System.exit(FAFExitCode.EXIT_ERROR);
 	}
-	public static void makePng(CommandLine cmdline){
-		log.log(Level.INFO, "Starting makepng");
+	public static void dotMaker(String in, String out, int treeIndex){
+		ImportXML importer = new ImportXML(in);
+		try {
+			importer.launch();
+		} catch (FAFException e1) {
+			log.log(Level.ERROR, "Xml import failed");
+			return;
+		}
+		log.log(Level.INFO, "Xml import done");
+		BaggingTrees bt = importer.getResult();
+		//test du paramètre de la valeur rentrée par l'utilisateur
+		if(treeIndex<0 || treeIndex>=bt.getSize()){
+			log.error("Parameter <"+INDEX+"> must be an integer between 0 and the number of trees in bagging - 1");
+			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
+		}
 		//on fait le dot
-		makeDot(cmdline);
-		
+		GraphicExporter graph = new GraphicExporter(bt.getTree(treeIndex), out);
+		graph.launch();
+	}
+	public static void makePng(CommandLine cmdline){
+		log.log(Level.INFO, "Starting makepng");	
+		String in = cmdline.getOptionValue(IN);
+		String index = cmdline.getOptionValue(INDEX, DEFAULT_INDEX);
+		int intindex = Integer.parseInt(index);
 		String out = cmdline.getOptionValue(OUT);
 		String outdot, outpng = "";
 		if(out==null){
-			String in = cmdline.getOptionValue(IN);
 			outpng = in.substring(0, in.lastIndexOf('.'))+".png";
 			outdot = in.substring(0, in.lastIndexOf('.'))+".dot";
 		}else{
 			outpng = out;
 			outdot = out.substring(0, out.lastIndexOf('.'))+".dot";
 		}
+		dotMaker(in, outdot, intindex);
+		log.debug("outdot="+outdot);
+		log.debug("outpng="+outpng);
 		//on fait le png à partir du dot
 		if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
 			try {
@@ -145,29 +166,14 @@ public class FAFUtilsMode {
 	public static void makeDot(CommandLine cmdline){
 		log.log(Level.INFO, "Starting makedot");
 		String inxml = cmdline.getOptionValue(IN);
-		ImportXML importer = new ImportXML(inxml);
-		try {
-			importer.launch();
-		} catch (FAFException e1) {
-			log.log(Level.ERROR, "Xml import failed");
-			return;
-		}
-		log.log(Level.INFO, "Xml import done");
-		BaggingTrees bt = importer.getResult();
-		
 		String out = cmdline.getOptionValue(OUT);
 		if(out==null)
 			out = inxml.substring(0, inxml.lastIndexOf('.'))+".dot";
 		String index = cmdline.getOptionValue(INDEX, DEFAULT_INDEX);
 		int intindex = Integer.parseInt(index);
-		//test du paramètre de la valeur rentrée par l'utilisateur
-		if(intindex<0 || intindex>=bt.getSize()){
-			log.error("Parameter <"+INDEX+"> must be an integer between 0 and the number of trees in bagging - 1");
-			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
-		}
-		//on fait le dot
-		GraphicExporter graph = new GraphicExporter(bt.getTree(intindex), out);
-		graph.launch();
+		log.debug("in="+inxml);
+		log.debug("dot="+out);
+		dotMaker(inxml, out, intindex);
 		log.log(Level.INFO, "makedot done");
 	}
 	public static void main(String[] args) {

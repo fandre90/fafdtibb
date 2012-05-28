@@ -303,6 +303,6 @@ public class Launcher implements Observer {
 		XmlExporter xml = new XmlExporter(result, comment,
 				this.dotNamesInfo);
 		xml.exportToFile(outXml);
-		log.info("Tree resulting exports in " + outXml + ".xml");
+		log.info("Tree resulting exports in " + outXml);
 	}
 }

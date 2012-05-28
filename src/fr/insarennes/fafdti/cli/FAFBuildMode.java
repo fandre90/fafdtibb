@@ -16,9 +16,11 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import fr.insarennes.fafdti.FSUtils;
 import fr.insarennes.fafdti.bagging.Launcher;
 import fr.insarennes.fafdti.builder.*;
 import fr.insarennes.fafdti.builder.scheduler.Scheduler;
@@ -53,6 +55,7 @@ public class FAFBuildMode {
 	public static final String PERCENTBAGGING = "percent";
 	public static final String THREADS = "threads";
 	public static final String LIMITMODE = "limitmode";
+	public static final String FORCE = "force";
 
 	public static Options opts;
 
@@ -100,6 +103,7 @@ public class FAFBuildMode {
 				"Set pool size of scheduler (optional)");
 		Option o12 = new Option(LIMITMODE.substring(0, 1), LIMITMODE, true,
 				"Set threshold to pass construction algorithm from furious to fast (optional, default="+DEFAULT_LIMITMODE+")");
+		Option o13 = new Option(FORCE.substring(0,1), FORCE, false, "Remove working directory if it exists before starting");
 		o1.setRequired(true);
 		o2.setRequired(true);
 		opts.addOption(o1);
@@ -114,6 +118,7 @@ public class FAFBuildMode {
 		opts.addOption(o10);
 		opts.addOption(o11);
 		opts.addOption(o12);
+		opts.addOption(o13);
 	}
 
 	public static void displayHelp() {
@@ -245,6 +250,18 @@ public class FAFBuildMode {
 		comment.put(XmlConst.GAINMIN, gainmin);
 		comment.put(XmlConst.BAGGING, bagging);
 		comment.put(XmlConst.THREADS, String.valueOf(Scheduler.INSTANCE.getPoolSize()));
+		//remove workingdir?
+		if(cmdline.hasOption(FORCE)){
+			FSUtils fsu;
+			try {
+				fsu = new FSUtils();
+				fsu.deleteDir(new Path(workingdir));
+			} catch (IOException e) {
+				log.error(e.getMessage());
+				System.exit(FAFExitCode.EXIT_UNOCCURED_EXCEPTION);
+			}
+		}
+		
 		// on lance le launcher
 		try {
 			new Launcher(names, data, workingdir, out,

@@ -22,12 +22,14 @@ public class LinkedDecisionTreeQuestion extends DecisionTreeQuestion {
 	}
 
 	private void tryDelDir(){
-		if(nbPendingDone==2)
+		System.out.println("try del dir, nbPendingDone="+nbPendingDone);
+		if(nbPendingDone==2){
 			(new Thread() {
 				public void run() {
 					nodeBuilder.cleanUp();
 				}
 			}).start();
+		}
 	}
 
 	

@@ -33,6 +33,7 @@ import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.StatBuilder;
+import fr.insarennes.fafdti.builder.TooManyRelaunchException;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
@@ -79,7 +80,7 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 	public NodeBuilderFurious(Criterion criterion, DotNamesInfo namesInfo,
 			Path inputDataPath, ScoredDistributionVector parentDistribution,
 			String id, Path workingDir) throws IOException,
-			InterruptedException, ClassNotFoundException {
+			InterruptedException, ClassNotFoundException, TooManyRelaunchException {
 		super(namesInfo, criterion, id);
 		this.inputDataPath = inputDataPath;
 		this.workingDir = workingDir;
@@ -97,23 +98,25 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 	}
 
 	private ScoredDistributionVector computeInitialDistribution()
-			throws IOException, InterruptedException, ClassNotFoundException {
+			throws IOException, InterruptedException, ClassNotFoundException, TooManyRelaunchException {
 		Job job0 = setupJob0();
 		log.info(this.getClass().getName() + " " + id + " : Running "
 				+ job0.getJobName());
+		int iRelaunch = 0;
 		job0.waitForCompletion(false);
 		while (!job0.isSuccessful()) {
+			iRelaunch++;
+			if(iRelaunch>=RELAUNCH_JOB_LIMIT)
+				throw new TooManyRelaunchException(job0.getJobName());
 			log.warn(this.getClass().getName() + " " + id + " : Re starting "
 					+ job0.getJobName());
-			deleteDir(job0outDir);
+			fsUtils.deleteDir(new Path(workingDir,job0outDir));
 			job0 = setupJob0();
 			job0.waitForCompletion(false);
 		}
 		// Get initial distribution
 		parentDistribution = readParentDistribution();
 		return parentDistribution;
-		// FIXME : Move stats in TreeBuilder
-		// stats.setTotalEx(parentDistribution.getTotal());
 	}
 
 	private Job setupJob0() throws IOException {
@@ -154,11 +157,15 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 		Job job1 = setupJob1(parentDistribution);
 		log.info(this.getClass().getName() + " " + id + " : Running "
 				+ job1.getJobName());
+		int iRelaunch = 0;
 		job1.waitForCompletion(false);
 		while (!job1.isSuccessful()) {
+			iRelaunch++;
+			if(iRelaunch>=RELAUNCH_JOB_LIMIT)
+				throw new TooManyRelaunchException(job1.getJobName());
 			log.warn(this.getClass().getName() + " " + id + " : Re starting "
 					+ job1.getJobName());
-			deleteDir(job1outDir);
+			fsUtils.deleteDir(new Path(workingDir,job1outDir));
 			job1 = setupJob1(parentDistribution);
 			job1.waitForCompletion(false);
 		}
@@ -167,11 +174,15 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 		Job job2 = setupJob2(parentDistribution);
 		log.info(this.getClass().getName() + " " + id + " : Running "
 				+ job2.getJobName());
+		iRelaunch = 0;
 		job2.waitForCompletion(false);
 		while (!job2.isSuccessful()) {
+			iRelaunch++;
+			if(iRelaunch>=RELAUNCH_JOB_LIMIT)
+				throw new TooManyRelaunchException(job2.getJobName());
 			log.warn(this.getClass().getName() + " " + id + " : Re starting "
 					+ job2.getJobName());
-			deleteDir(job2outDir);
+			fsUtils.deleteDir(new Path(workingDir,job2outDir));
 			job2 = setupJob2(parentDistribution);
 			job2.waitForCompletion(false);
 		}
@@ -252,7 +263,7 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 	// ****************Reading results utils methods********//
 
 	private QuestionScoreLeftDistribution selectBestQuestion()
-			throws IOException, InterruptedException, ClassNotFoundException {
+			throws IOException, InterruptedException, ClassNotFoundException, TooManyRelaunchException {
 		int totalFilesSize = 0;
 		Path job1OutPart = fsUtils.getPartNonEmptyPath(new Path(workingDir,
 				job1outDir));
@@ -276,15 +287,19 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 	}
 
 	private QuestionScoreLeftDistribution mapReduceSelectBestQuestion()
-			throws IOException, InterruptedException, ClassNotFoundException {
+			throws IOException, InterruptedException, ClassNotFoundException, TooManyRelaunchException {
 		Job job3 = setupJob3();
 		log.info(this.getClass().getName() + " " + id + " : Running "
 				+ job3.getJobName());
+		int iRelaunch = 0;
 		job3.waitForCompletion(false);
 		while (!job3.isSuccessful()) {
+			iRelaunch++;
+			if(iRelaunch>=RELAUNCH_JOB_LIMIT)
+				throw new TooManyRelaunchException(job3.getJobName());
 			log.warn(this.getClass().getName() + " " + id + " : Re starting "
 					+ job3.getJobName());
-			deleteDir(job3outDir);
+			fsUtils.deleteDir(new Path(workingDir,job3outDir));
 			job3 = setupJob3();
 			job3.waitForCompletion(false);
 		}
@@ -370,16 +385,22 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 	}
 
 	@Override
-	public Pair<Path, Path> getSplitPath() throws IOException {
+	public Pair<Path, Path> getSplitPath() throws IOException, TooManyRelaunchException {
 		// JOB4
 		// Old API
 		JobConf job4Conf = setupJob4(qLeftDistribution.getQuestion());
-		log.info("Thread " + id + " : launching step4...");
+		log.info(this.getClass().getName() + " " + id + " : Running "
+				+ job4Conf.getJobName());
+		int iRelaunch = 0;
 		RunningJob rj4 = JobClient.runJob(job4Conf);
 		// ****//
 		while (!rj4.isSuccessful()) {
-			log.info("Thread " + id + " : RE-launching step4...");
-			deleteDir(job4outDir);
+			iRelaunch++;
+			if(iRelaunch>=RELAUNCH_JOB_LIMIT)
+				throw new TooManyRelaunchException(job4Conf.getJobName());
+			log.warn(this.getClass().getName() + " " + id + " : Re starting "
+					+ job4Conf.getJobName());
+			fsUtils.deleteDir(new Path(workingDir,job4outDir));
 			job4Conf = setupJob4(qLeftDistribution.getQuestion());
 			rj4 = JobClient.runJob(job4Conf);
 		}
@@ -410,22 +431,13 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 
 	@Override
 	public void cleanUp() {
-		/*
-		 * deleteDir(job0outDir); deleteDir(job1outDir); deleteDir(job2outDir);
-		 * deleteDir(job3outDir); deleteDir(job4outDir);
-		 */
-	}
-
-	protected void deleteDir(String dir) {
-		FileSystem fs = null;
-		try {
-			fs = FileSystem.get(new Configuration());
-			fs.delete(new Path(workingDir, dir), true);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
+		System.out.println("____________CLEANUPPPPPP");
+		fsUtils.deleteDir(workingDir);
+//		deleteDir(job0outDir); 
+//		deleteDir(job1outDir); 
+//		deleteDir(job2outDir);
+//		deleteDir(job3outDir); 
+//		deleteDir(job4outDir); 
 	}
 
 }

@@ -57,4 +57,15 @@ public class FSUtils {
 		FSDataInputStream in = fileSystem.open(path);
 		return in;
 	}
+
+	
+	public void deleteDir(Path dir) {
+		try {
+			fileSystem.delete(dir, true);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
 }

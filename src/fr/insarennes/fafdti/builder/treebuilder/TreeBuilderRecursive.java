@@ -16,6 +16,7 @@ import fr.insarennes.fafdti.builder.Question;
 import fr.insarennes.fafdti.builder.ScoreLeftDistribution;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.StatBuilder;
+import fr.insarennes.fafdti.builder.TooManyRelaunchException;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilder;
 import fr.insarennes.fafdti.builder.nodebuilder.INodeBuilderFactory;
@@ -34,6 +35,7 @@ import fr.insarennes.fafdti.tree.LeafLabels.InvalidProbabilityComputationExcepti
 import fr.insarennes.fafdti.tree.LinkedDecisionTreeQuestion;
 
 public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
+	public final int RELAUNCH_NODE_BUILDER_LIMIT = 5;
 	protected static Logger log = Logger.getLogger(TreeBuilderRecursive.class);
 	protected Path inputDataPath;
 	protected String[][] inputData;
@@ -52,6 +54,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	protected BuildMode buildMode;
 	protected ITreeBuilderFactory tbMaker;
 	protected IScheduler scheduler;
+	protected int iRelaunch;
 
 	// factorizer constructor
 	private TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
@@ -68,6 +71,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		this.nodeBuilderFactory = nodeBuilderFactory;
 		this.tbMaker = tbMaker;
 		this.scheduler = scheduler;
+		this.iRelaunch = 0;
 	}
 
 	// root constructor
@@ -144,9 +148,6 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	public void run() {
 		initNodeBuilder();
 		try {
-			/*String id = parentInfos.getBaggingId() + "-"
-					+ Integer.toString(stats.getNextId());
-			Path wd = new Path(this.workingDir, id);*/
 			// Get parent distribution from newly built node builder
 			// if it was not passed to the constructor
 			if (parentDistribution == null) {
@@ -163,18 +164,20 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				leafMaker();
 			} else
 				nodeMaker();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (TooManyRelaunchException e){
+			log.error("Too many job relaunch exception from : "+e.getMessage());
+			System.exit(FAFExitCode.EXIT_ERROR);
 		} catch (FAFException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (Exception e){
+			this.iRelaunch++;
+			if(this.iRelaunch >= RELAUNCH_NODE_BUILDER_LIMIT){
+				log.error("Too many nodeBuilder relaunching of : "+nodeBuilder.getId());
+				System.exit(FAFExitCode.EXIT_ERROR);
+			}
+			nodeBuilder.cleanUp();
+			this.run();
 		}
 
 	}
@@ -190,14 +193,6 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		Question question = qLeftDistribution.getQuestion();
 		LinkedDecisionTreeQuestion dtq = new LinkedDecisionTreeQuestion(
 				question, nodeBuilder);
-		try {
-			nodeSetter.set(dtq);
-		} catch (CannotOverwriteTreeException e) {
-			log.log(Level.ERROR,
-					"TreeBuilder tries to overwrite a DecisionTree through NodeSetter with Question node");
-			log.log(Level.ERROR, e.getMessage());
-		}
-
 		try {
 			Pair<Path, Path> datapaths = nodeBuilder.getSplitPath();
 			Runnable treeBuilderLeft;
@@ -233,6 +228,13 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		} catch (FAFException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		try {
+			nodeSetter.set(dtq);
+		} catch (CannotOverwriteTreeException e) {
+			log.log(Level.ERROR,
+					"TreeBuilder tries to overwrite a DecisionTree through NodeSetter with Question node");
+			log.log(Level.ERROR, e.getMessage());
 		}
 	}
 

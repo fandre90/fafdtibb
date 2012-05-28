@@ -431,13 +431,7 @@ public class NodeBuilderFurious extends NodeBuilder implements INodeBuilder {
 
 	@Override
 	public void cleanUp() {
-		System.out.println("____________CLEANUPPPPPP");
 		fsUtils.deleteDir(workingDir);
-//		deleteDir(job0outDir); 
-//		deleteDir(job1outDir); 
-//		deleteDir(job2outDir);
-//		deleteDir(job3outDir); 
-//		deleteDir(job4outDir); 
 	}
 
 }

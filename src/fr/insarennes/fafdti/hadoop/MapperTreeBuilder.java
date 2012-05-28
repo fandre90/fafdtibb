@@ -115,7 +115,7 @@ public class MapperTreeBuilder extends MapReduceBase implements
 	}
 
 	private String[] parseExample(String example) {
-		example = example.substring(0, example.length() - 1);
+		example = example.substring(0, example.lastIndexOf('.'));
 		String[] tokens = example.split(",");
 		for (int i = 0; i < tokens.length; ++i) {
 			tokens[i] = tokens[i].trim();

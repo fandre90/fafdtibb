@@ -227,8 +227,7 @@ public class FAFBuildMode {
 		if (crit.equals(ENTROPY))
 			criterion = new EntropyCriterion();
 		else if (crit.equals(GINI)){
-			log.error("Criterion <" + crit + "> not implemented yet !");
-			System.exit(FAFExitCode.EXIT_BAD_ARGUMENT);
+			criterion = new GiniCriterion();
 		}
 		else {
 			log.error("Criterion <" + crit + "> not recognized");

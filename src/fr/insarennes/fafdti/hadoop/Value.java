@@ -82,6 +82,7 @@ public class Value implements Writable, Comparable<Value> {
 					+ typeChar);
 		}	
 	}
+	
 	public static char typeToChar(AttrType type) {
 		char typeChar = 'C';
 		switch (type) {
@@ -144,6 +145,39 @@ public class Value implements Writable, Comparable<Value> {
 			return this.gramValue.compareTo(other.gramValue);
 		}
 		return 0;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Value other = (Value) obj;
+		if (type != other.type)
+			return false;
+		if (this.type == AttrType.DISCRETE) {
+			if (textValue == null) {
+				if (other.textValue != null)
+					return false;
+			} else if (!textValue.equals(other.textValue))
+				return false;
+		} else if(this.type == AttrType.CONTINUOUS){
+			if (doubleValue == null) {
+				if (other.doubleValue != null)
+					return false;
+			} else if (!doubleValue.equals(other.doubleValue))
+				return false;
+		} else if (this.type == AttrType.TEXT) {
+			if (gramValue == null) {
+				if (other.gramValue != null)
+					return false;
+			} else if (!gramValue.equals(other.gramValue))
+				return false;
+		}
+		return true;
 	}
 
 	public double getDoubleValue() {

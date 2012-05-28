@@ -37,7 +37,7 @@ public class FSUtils {
 		}
 		return null;
 	}
-	
+
 	public String readNonEmptyPartFirstLine(Path inputDir) throws IOException {
 		FSDataInputStream in = getPartNonEmpty(inputDir);
 		if (in == null)
@@ -47,7 +47,7 @@ public class FSUtils {
 		lr.readLine(line);
 		return line.toString();
 	}
-	
+
 	public FSDataInputStream getPartNonEmpty(Path inputDir) throws IOException {
 		Path path = getPartNonEmptyPath(inputDir);
 		if (path == null) {
@@ -57,5 +57,4 @@ public class FSUtils {
 		FSDataInputStream in = fileSystem.open(path);
 		return in;
 	}
-
 }

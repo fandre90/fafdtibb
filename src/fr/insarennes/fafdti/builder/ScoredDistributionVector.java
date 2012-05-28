@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.VIntWritable;
+import org.apache.hadoop.io.VersionedWritable;
 import org.apache.hadoop.io.Writable;
 
 import fr.insarennes.fafdti.FAFException;
@@ -23,7 +26,7 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 	/** entropie */
 	private double score;
 	/** vecteur statistique */
-	private int[] distributionVector;
+	private VIntWritable[] distributionVector;
 	private int total;
 	private boolean hasMoreThanOneNonEmptyLabel = false;
 	/** sétarateur utilisé dans toString et fromString */
@@ -42,7 +45,7 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 	 */
 	public ScoredDistributionVector(int size) {
 		score = 0;
-		distributionVector = new int[size];
+		initVector(size);
 		hasMoreThanOneNonEmptyLabel = false;
 	}
 
@@ -54,7 +57,7 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 	 */
 	public ScoredDistributionVector(String s) {
 		String splited[] = s.split(SEPARATEUR);
-		distributionVector = new int[splited.length - 1];
+		initVector(splited.length - 1);
 		try {
 			fromString(s);
 		} catch (Exception e) {
@@ -63,6 +66,12 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		}
 	}
 
+	private void initVector(int size) {
+		distributionVector = new VIntWritable[size];
+		for(int i=0; i<distributionVector.length; ++i) {
+			distributionVector[i] = new VIntWritable();
+		}
+	}
 	/**
 	 * +1 dans le vecteur stats a l'indice i, l'entropie n'est pas mise a jour.
 	 * 
@@ -70,9 +79,9 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 	 *            l'indice du vecteur a modifier
 	 */
 	public void incrStat(int i) {
-		distributionVector[i]++;
+		distributionVector[i].set(distributionVector[i].get() + 1);
 		total++;
-		hasMoreThanOneNonEmptyLabel = (total != distributionVector[i]);
+		hasMoreThanOneNonEmptyLabel = (total != distributionVector[i].get());
 	}
 
 	/**
@@ -98,11 +107,15 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 	}
 
 	public int[] getDistributionVector() {
-		return this.distributionVector;
+		int[] dV = new int[distributionVector.length];
+		for(int i=0; i<distributionVector.length; ++i) {
+			dV[i] = distributionVector[i].get();
+		}
+		return dV;
 	}
 
 	public void rate(Criterion criterion) {
-		this.score = criterion.compute(distributionVector);
+		this.score = criterion.compute(getDistributionVector());
 	}
 
 	public void add(ScoredDistributionVector otherSDV) throws FAFException {
@@ -110,7 +123,8 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 			throw new FAFException("Distribution vectors must have the same length");
 		}
 		for(int i=0; i<this.distributionVector.length; i++) {
-			this.distributionVector[i] += otherSDV.distributionVector[i];
+			this.distributionVector[i].set(this.distributionVector[i].get()
+					+ otherSDV.distributionVector[i].get());
 		}
 		this.total += otherSDV.total;
 	}
@@ -120,7 +134,7 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		this.total = 0;
 		this.score = 0;
 		for(int i=0; i<distributionVector.length; ++i) {
-			distributionVector[i] = 0;
+			distributionVector[i].set(0);
 		}
 	}
 	public ScoredDistributionVector computeRightDistribution(
@@ -129,9 +143,9 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		ScoredDistributionVector rightDist = new ScoredDistributionVector(
 				vectLen);
 		for (int i = 0; i < vectLen; i++) {
-			int n = this.distributionVector[i]
-					- leftDistribution.distributionVector[i];
-			rightDist.distributionVector[i] = n;
+			int n = this.distributionVector[i].get()
+					- leftDistribution.distributionVector[i].get();
+			rightDist.distributionVector[i].set(n);
 			rightDist.total += n;
 			rightDist.hasMoreThanOneNonEmptyLabel = (rightDist.total != n)
 					&& (n != 0);
@@ -145,15 +159,15 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		int size = in.readInt();
 		//System.out.println("Read: " + score + "," + size);
 		if (size != distributionVector.length) {
-			distributionVector = new int[size];
+			initVector(size);
 		}
 		total = 0;
 		hasMoreThanOneNonEmptyLabel = false;
 		for (int i = 0; i < size; i++) {
-			distributionVector[i] = in.readInt();
-			total += distributionVector[i];
-			hasMoreThanOneNonEmptyLabel = (total != distributionVector[i])
-					&& (distributionVector[i] != 0);
+			distributionVector[i].readFields(in);
+			total += distributionVector[i].get();
+			hasMoreThanOneNonEmptyLabel = (total != distributionVector[i].get())
+					&& (distributionVector[i].get() != 0);
 		}
 	}
 
@@ -163,7 +177,7 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		out.writeInt(distributionVector.length);
 		//System.out.println("Write: " + score + "," + distributionVector.length);
 		for (int i = 0; i < distributionVector.length; i++) {
-			out.writeInt(distributionVector[i]);
+			distributionVector[i].write(out);
 		}
 	}
 
@@ -175,7 +189,12 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		} catch (CloneNotSupportedException cnse) {
 			cnse.printStackTrace();
 		}
-		scoredDistVect.distributionVector = this.distributionVector.clone();
+		scoredDistVect.distributionVector = 
+				new VIntWritable[distributionVector.length];
+		for(int i = 0; i<distributionVector.length; ++i) {
+			scoredDistVect.distributionVector[i] = 
+					new VIntWritable(this.distributionVector[i].get());
+		}
 		return scoredDistVect;
 	}
 
@@ -202,13 +221,13 @@ public class ScoredDistributionVector extends HadoopConfStockable implements
 		score = Float.parseFloat(splited[0]);
 		int size = splited.length - OFFSET;
 		if (size != distributionVector.length) {
-			distributionVector = new int[size];
+			initVector(size);
 		}
 		total = 0;
 		hasMoreThanOneNonEmptyLabel = false;
 		for (int i = OFFSET; i < splited.length; i++) {
 			int n = Integer.parseInt(splited[i]);
-			distributionVector[i - OFFSET] = n;
+			distributionVector[i - OFFSET].set(n);
 			total += n;
 			hasMoreThanOneNonEmptyLabel = (total != n) && (n != 0);
 		}

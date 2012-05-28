@@ -147,7 +147,7 @@ public class FAFBuildMode {
 		// si pas de sortie précisée, même nom que le .data par défaut
 		String out = cmdline.getOptionValue(OUT);
 		if(out==null)
-			out = names.substring(0, names.lastIndexOf('.'))+".xml";
+			out = data.substring(0, data.lastIndexOf('.'))+".xml";
 		log.log(Level.INFO, "Parsing done");
 		log.log(Level.INFO, "names = " + names);
 		log.log(Level.INFO, "data = " + data);

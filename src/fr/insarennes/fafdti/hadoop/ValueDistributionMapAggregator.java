@@ -1,8 +1,13 @@
 package fr.insarennes.fafdti.hadoop;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.hadoop.hbase.util.Hash;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;
@@ -10,7 +15,8 @@ import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 public class ValueDistributionMapAggregator {
 
 	private WritableValueSDVSortedMap aggregatedMap;
-
+	private int i;
+	
 	public ValueDistributionMapAggregator() {
 		this.aggregatedMap = new WritableValueSDVSortedMap();
 	}
@@ -34,9 +40,19 @@ public class ValueDistributionMapAggregator {
 	public void aggregateAll(
 			Iterable<WritableValueSDVSortedMap> mapSet)
 			throws FAFException {
+		i = 0;
 		for (WritableValueSDVSortedMap map : mapSet) {
 			aggregate(map);
+			i++;
 		}
+	}
+
+	public int getSize() {
+		return this.aggregatedMap.size();
+	}
+	
+	public int getNumberOfAggregatedMaps() {
+		return i;
 	}
 
 	public WritableValueSDVSortedMap getAggregatedMap() {

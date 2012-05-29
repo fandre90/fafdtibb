@@ -15,6 +15,7 @@ import org.apache.commons.lang.NullArgumentException;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.namesinfo.AttrSpec;
@@ -30,6 +31,7 @@ import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.GramType;
 import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
+import fr.insarennes.fafdti.hadoop.fast.MapperTreeBuilder;
 import fr.insarennes.fafdti.visitors.QuestionExample;
 import fr.insarennes.fafdti.Pair;
 
@@ -40,6 +42,7 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 	private Question bestQuestion;
 	private ScoreLeftDistribution bestSLDist;
 	private Map<Question, ScoredDistributionVector> questionDistribution;
+	private static Logger log = Logger.getLogger(MapperTreeBuilder.class);
 
 	/*
 	 * Make it thread safe private String[][] database; private
@@ -70,7 +73,7 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 	@Override
 	public QuestionScoreLeftDistribution buildNode() throws IOException,
 			InterruptedException, ClassNotFoundException, FAFException {
-		System.out.println("Database size: " + database.length);
+		log.debug("Database size: " + database.length);
 		// Set database and parent distribution
 		if (parentDistribution == null) {
 			throw new NullArgumentException("parentDistribution cannot be null");
@@ -89,7 +92,7 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 			generateDiscreteTextQuestions(example);
 		}
 		computeQuestionDistribution();
-		System.out.println("Question: " + bestQuestion);
+		log.debug("Question: " + bestQuestion);
 		return new QuestionScoreLeftDistribution(bestQuestion, bestSLDist);
 	}
 
@@ -196,7 +199,7 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 
 	@Override
 	public Pair<String[][], String[][]> getSplitData() throws FAFException {
-		System.out.println("Split: " + bestQuestion);
+		//System.out.println("Split: " + bestQuestion);
 		ArrayList<String[]> leftDatabaseList = new ArrayList<String[]>();
 		ArrayList<String[]> rightDatabaseList = new ArrayList<String[]>();
 		for (String[] example : database) {
@@ -209,8 +212,8 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 		}
 		String[][] leftDatabase = stringArrayArrayListToArrayArray(leftDatabaseList);
 		String[][] rightDatabase = stringArrayArrayListToArrayArray(rightDatabaseList);
-		System.out.println("Database : " + database.length + " Left: "
-				+ leftDatabase.length + " Right: " + rightDatabase.length);
+		//System.out.println("Database : " + database.length + " Left: "
+		//		+ leftDatabase.length + " Right: " + rightDatabase.length);
 		return new Pair<String[][], String[][]>(leftDatabase, rightDatabase);
 	}
 

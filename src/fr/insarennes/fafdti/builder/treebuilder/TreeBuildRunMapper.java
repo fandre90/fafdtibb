@@ -100,7 +100,15 @@ public class TreeBuildRunMapper implements Runnable {
 			stats.decrementPending();
 		} catch (FAFException e) {
 			log.error(e.getMessage());
-		}catch (Exception e) {
+		} catch (Exception e) {
+			System.out.println("Something fucked up !");
+			try {
+				Thread.sleep(300000);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			System.exit(127);
 			this.iRelaunch++;
 			if(this.iRelaunch >= RELAUNCH_JOB_LIMIT){
 				log.error("Too many "+this.getClass().getName()+" relaunching (launched by "+parentInfos.getId()+")");

@@ -12,8 +12,10 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
+import fr.insarennes.fafdti.bagging.BaggingInterrogator;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.nodebuilder.FastNodeBuilderFactory;
@@ -35,11 +37,12 @@ import fr.insarennes.fafdti.visitors.XmlExporter;
 public class MapperTreeBuilder extends MapReduceBase implements
 		Mapper<Object, Text, NullWritable, Text> {
 
-	DotNamesInfo namesInfo;
-	List<StoppingCriterion> stopCriteria;
-	ParentInfos parentInfos;
-	Criterion criterion;
-
+	private DotNamesInfo namesInfo;
+	private List<StoppingCriterion> stopCriteria;
+	private ParentInfos parentInfos;
+	private Criterion criterion;
+	private static Logger log = Logger.getLogger(MapperTreeBuilder.class);
+	
 	@Override
 	public void configure(JobConf jobConf) {
 		try {
@@ -65,7 +68,7 @@ public class MapperTreeBuilder extends MapReduceBase implements
 	public void map(Object key, Text value,
 			OutputCollector<NullWritable, Text> output, Reporter reporter)
 			throws IOException {
-		System.out.println("Mapper started");
+		log.info("Full tree builder mapper started");
 		StatBuilder stats = new StatBuilder(1);
 		DecisionTreeHolder treeHolder = new DecisionTreeHolder();
 		Criterion criterion = new EntropyCriterion();
@@ -86,9 +89,8 @@ public class MapperTreeBuilder extends MapReduceBase implements
 					new HashMap<String, String>(), namesInfo);
 			String xmlTree = xmlExporter.exportToString();
 			output.collect(NullWritable.get(), new Text(xmlTree));
-			System.out.println("XML Export done.");
+			log.info("Full tree builder mapper : XML export done");
 		} catch (FAFException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

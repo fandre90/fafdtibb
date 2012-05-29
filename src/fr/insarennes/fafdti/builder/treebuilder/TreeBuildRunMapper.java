@@ -4,7 +4,13 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
@@ -93,6 +99,7 @@ public class TreeBuildRunMapper implements Runnable {
 	public void run() {
 		JobConf jobConf;
 		try {
+			concatenateAllFiles();
 			jobConf = setupMapperJob();
 			JobClient.runJob(jobConf);
 			DecisionTree dt = readTree();
@@ -101,20 +108,13 @@ public class TreeBuildRunMapper implements Runnable {
 		} catch (FAFException e) {
 			log.error(e.getMessage());
 		} catch (Exception e) {
-			System.out.println("Something fucked up !");
-			try {
-				Thread.sleep(300000);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			System.exit(127);
+			
 			this.iRelaunch++;
 			if(this.iRelaunch >= RELAUNCH_JOB_LIMIT){
 				log.error("Too many "+this.getClass().getName()+" relaunching (launched by "+parentInfos.getId()+")");
 				System.exit(FAFExitCode.EXIT_ERROR);
 			}
-			log.error("Relaunching caused by : "+e.getMessage());
+			log.error("Relaunching", e);
 			fsUtils.deleteDir(new Path(this.workingDir));
 			this.run();
 		} 
@@ -140,6 +140,27 @@ public class TreeBuildRunMapper implements Runnable {
 		org.apache.hadoop.mapred.FileOutputFormat.setOutputPath(jobConf,
 				outputPath);
 		return jobConf;
+	}
+	
+	private void concatenateAllFiles() throws IOException {
+		FileSystem fileSystem = FileSystem.get(new Configuration());
+		FileStatus[] files = fileSystem.listStatus(new Path(inputData));
+		FSDataOutputStream out = fileSystem.create(new Path(inputData, "part-full"));
+		for (int i = 0; i < files.length; i++) {
+			Path tmp = files[i].getPath();
+			System.out.println("Concat " + tmp);
+			if (tmp.getName().startsWith("part") && fsUtils.getSize(tmp) > 0) {
+					FSDataInputStream in = fileSystem.open(tmp);
+					FileStatus stat = fileSystem.getFileStatus(tmp);
+					byte[] contents = new byte[(int) stat.getLen()];
+					IOUtils.readFully(in, contents, 0, contents.length);
+					out.write(contents);
+					IOUtils.closeStream(in);
+					fileSystem.delete(tmp, false);
+			}
+		}
+		out.flush();
+		out.close();
 	}
 
 	private DecisionTree readTree() throws IOException, FAFException {

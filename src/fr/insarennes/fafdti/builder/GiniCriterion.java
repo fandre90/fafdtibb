@@ -11,9 +11,13 @@ public class GiniCriterion extends Criterion {
 	public double compute(int[] distributionVector) {
 		double criterionValue = 0;
 		//calcul de la somme des ni²
+		double nbExamples = 0;
+		for (int i = 0; i < distributionVector.length; i++)
+			nbExamples += distributionVector[i];
+		// calcul de la somme des ni²
 		double N = 0;
 		for (int i = 0; i < distributionVector.length; i++)
-			N += Math.pow(distributionVector[i],2);
+			N += Math.pow(distributionVector[i]/nbExamples, 2);
 		criterionValue = 1 - N;
 		return criterionValue;
 	}

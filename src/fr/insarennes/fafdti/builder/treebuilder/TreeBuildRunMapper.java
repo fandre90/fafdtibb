@@ -99,8 +99,6 @@ public class TreeBuildRunMapper implements Runnable {
 	public void run() {
 		JobConf jobConf;
 		try {
-			log.info("************** 5 seconds to proceed !");
-			Thread.sleep(5000);
 			concatenateAllFiles();
 			jobConf = setupMapperJob();
 			JobClient.runJob(jobConf);

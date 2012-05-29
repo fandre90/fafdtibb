@@ -24,7 +24,17 @@ public class FSUtils {
 	}
 
 	public long getSize(Path path) throws IOException {
-		return fileSystem.getFileStatus(path).getLen();
+		FileStatus fileStatus = fileSystem.getFileStatus(path);
+		if(!fileStatus.isDir()) {
+			return fileStatus.getLen();
+		} else {
+			int sizeSum = 0;
+			FileStatus[] fileStatusList = fileSystem.listStatus(path);
+			for(FileStatus curFStatus: fileStatusList) {
+				sizeSum += getSize(curFStatus.getPath());
+			}
+			return sizeSum;
+		}
 	}
 	
 	public Path getPartNonEmptyPath(Path inputDir) throws IOException {

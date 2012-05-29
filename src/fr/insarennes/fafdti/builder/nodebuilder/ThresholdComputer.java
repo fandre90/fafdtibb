@@ -85,16 +85,6 @@ public class ThresholdComputer {
 			ScoredDistributionVector rightDist = parentDistribution
 					.computeRightDistribution(curDistVect);
 			rightDist.rate(criterion);
-			// TEST REMOVE THIS WHEN TESTS ARE FINISHED
-			for(Integer i: rightDist.getDistributionVector()) {
-				if(i < 0) {
-					System.out.println(i+"");
-					System.out.println("Something went wrong.");
-					System.out.println("Parent: " + parentDistribution.toString());
-					System.out.println("Left: " + curDistVect);
-					System.exit(127);
-				}
-			}
 			double curScore = ScoreLeftDistribution.computeCombinedEntropy(
 					curDistVect, rightDist);
 			if (bestScoreLeftDist == null

@@ -102,7 +102,7 @@ public class FAFBuildMode {
 		Option o11 = new Option(THREADS.substring(0, 1), THREADS, true,
 				"Set pool size of scheduler (optional)");
 		Option o12 = new Option(LIMITMODE.substring(0, 1), LIMITMODE, true,
-				"Set threshold to pass construction algorithm from furious to fast (optional, default="+DEFAULT_LIMITMODE+")");
+				"Set threshold (in Mo) to pass construction algorithm from furious to fast (optional, default="+DEFAULT_LIMITMODE+")");
 		Option o13 = new Option(FORCE.substring(0,1), FORCE, false, "Remove working directory if it exists before starting");
 		o1.setRequired(true);
 		o2.setRequired(true);
@@ -188,7 +188,7 @@ public class FAFBuildMode {
 		double doublegainmin = Double.parseDouble(gainmin);
 		double doublepercent = Double.parseDouble(percent);
 		double doublelimitmode = Double.parseDouble(limitmode);
-		doublelimitmode*=1000000;
+		doublelimitmode*=1024*1024;	//Mo to octet
 		// verification des bornes des différents paramètres rentrés par
 		// l'utilisateur
 		if (intbagging < 1) {

@@ -55,7 +55,7 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 					nodeSetter, stopping, stats, nodeBuilderFactory, inputData,
 					parentInfos, parentDistribution, tbMaker, scheduler);
 		} else {
-			log.info("Switching to fast mode");
+			log.info("Switching to fast mode (Input file size: " + currentSize + " bytes )");
 			treeBuilder = new TreeBuildRunMapper(featureSpec, workingDir, 
 					criterion, nodeSetter, stopping, stats, inputData, parentInfos);
 		}

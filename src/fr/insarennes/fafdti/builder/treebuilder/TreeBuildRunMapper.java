@@ -42,7 +42,8 @@ public class TreeBuildRunMapper implements Runnable {
 	private Path outputPath;
 	private FSUtils fsUtils;
 	private int iRelaunch;
-	
+	private String id;
+
 	private TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
@@ -68,7 +69,7 @@ public class TreeBuildRunMapper implements Runnable {
 		ParentInfos parentInfos = new ParentInfos(0, "launcher", baggingId
 				+ "-fast");
 		this.parentInfos = parentInfos;
-		String id = parentInfos.getBaggingId() + "-"
+		id = parentInfos.getBaggingId() + "-"
 				+ Integer.toString(stats.getNextId());
 		this.outputPath = new Path(this.workingDir, id);
 	}
@@ -83,7 +84,7 @@ public class TreeBuildRunMapper implements Runnable {
 			throw new NullArgumentException("parentInfos muts not be null");
 		}
 		this.parentInfos = parentInfos;
-		String id = parentInfos.getBaggingId() + "-"
+		id = parentInfos.getBaggingId() + "-"
 				+ Integer.toString(stats.getNextId());
 		this.outputPath = new Path(this.workingDir, id);
 	}
@@ -119,8 +120,6 @@ public class TreeBuildRunMapper implements Runnable {
 		for (StoppingCriterion stop : stopping) {
 			stop.toConf(jobConf);
 		}
-		String id = parentInfos.getBaggingId() + "-"
-				+ Integer.toString(stats.getNextId());
 		jobConf.setJobName("Full Sub-tree builder for node " + id);
 		jobConf.setOutputKeyClass(NullWritable.class);
 		jobConf.setOutputValueClass(Text.class);

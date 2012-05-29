@@ -173,8 +173,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			log.error("Too many job relaunch exception from : "+e.getMessage());
 			System.exit(FAFExitCode.EXIT_ERROR);
 		} catch (FAFException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e.getMessage());
 		} catch (Exception e){
 			this.iRelaunch++;
 			if(this.iRelaunch >= RELAUNCH_NODE_BUILDER_LIMIT){
@@ -182,6 +181,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				System.exit(FAFExitCode.EXIT_ERROR);
 			}
 			nodeBuilder.cleanUp();
+			log.error("Relaunching caused by : "+e.getMessage());
 			this.run();
 		}
 

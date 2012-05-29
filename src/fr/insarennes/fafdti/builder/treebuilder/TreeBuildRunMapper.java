@@ -12,6 +12,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextOutputFormat;
+import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.FSUtils;
@@ -21,6 +22,7 @@ import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
+import fr.insarennes.fafdti.cli.FAFExitCode;
 import fr.insarennes.fafdti.hadoop.SplitExampleMultipleOutputFormat;
 import fr.insarennes.fafdti.hadoop.fast.MapperTreeBuilder;
 import fr.insarennes.fafdti.hadoop.fast.WholeTextInputFormat;
@@ -30,6 +32,8 @@ import fr.insarennes.fafdti.tree.ImportXML;
 
 public class TreeBuildRunMapper implements Runnable {
 
+	public final int RELAUNCH_JOB_LIMIT = 5;
+	protected static Logger log = Logger.getLogger(TreeBuildRunMapper.class);
 	private DotNamesInfo namesInfo;
 	private String workingDir;
 	private Criterion criterion;
@@ -40,6 +44,7 @@ public class TreeBuildRunMapper implements Runnable {
 	private ParentInfos parentInfos;
 	private Path outputPath;
 	private FSUtils fsUtils;
+	private int iRelaunch;
 	
 	private TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
@@ -53,6 +58,7 @@ public class TreeBuildRunMapper implements Runnable {
 		this.stats = stats;
 		this.inputData = inputData;
 		this.fsUtils = new FSUtils();
+		this.iRelaunch = 0;
 
 	}
 
@@ -94,13 +100,17 @@ public class TreeBuildRunMapper implements Runnable {
 			DecisionTree dt = readTree();
 			nodeSetter.set(dt);
 			stats.decrementPending();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (FAFException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			log.error(e.getMessage());
+		}catch (Exception e) {
+			this.iRelaunch++;
+			if(this.iRelaunch >= RELAUNCH_JOB_LIMIT){
+				log.error("Too many "+this.getClass().getName()+" relaunching (launched by "+parentInfos.getId()+")");
+				System.exit(FAFExitCode.EXIT_ERROR);
+			}
+			log.error("Relaunching caused by : "+e.getMessage());
+			this.run();
+		} 
 	}
 
 	private JobConf setupMapperJob() throws IOException {

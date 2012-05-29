@@ -76,7 +76,7 @@ public class Launcher implements Observer {
 			String outputDir, // working dir
 			String xmlOutput, List<StoppingCriterion> stoppingList,
 			Criterion criterion, int nbBagging, double baggingPercent,
-			Map<String, String> comment, double limitmode)
+			Map<String, String> comment, long limitmode)
 			throws ParseException, IOException {
 		// attributes initialization
 		this.roots = new ArrayList<DecisionTreeHolder>(nbBagging);

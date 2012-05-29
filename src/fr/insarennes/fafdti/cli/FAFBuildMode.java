@@ -188,7 +188,7 @@ public class FAFBuildMode {
 		double doublegainmin = Double.parseDouble(gainmin);
 		double doublepercent = Double.parseDouble(percent);
 		double doublelimitmode = Double.parseDouble(limitmode);
-		doublelimitmode*=1024*1024;	//Mo to octet
+		long limitBytes = (long) doublelimitmode * 1024 * 1024;
 		// verification des bornes des différents paramètres rentrés par
 		// l'utilisateur
 		if (intbagging < 1) {
@@ -265,7 +265,7 @@ public class FAFBuildMode {
 		// on lance le launcher
 		try {
 			new Launcher(names, data, workingdir, out,
-					stopping, criterion, intbagging, doublepercent, comment, doublelimitmode);
+					stopping, criterion, intbagging, doublepercent, comment, limitBytes);
 		} catch (fr.insarennes.fafdti.builder.ParseException e) {
 			log.error("File " + names + "malformed.");
 			log.error(e.getMessage());

@@ -28,7 +28,7 @@ public class FSUtils {
 		if(!fileStatus.isDir()) {
 			return fileStatus.getLen();
 		} else {
-			int sizeSum = 0;
+			long sizeSum = 0;
 			FileStatus[] fileStatusList = fileSystem.listStatus(path);
 			for(FileStatus curFStatus: fileStatusList) {
 				sizeSum += getSize(curFStatus.getPath());

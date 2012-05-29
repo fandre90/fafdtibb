@@ -21,11 +21,11 @@ import fr.insarennes.fafdti.tree.DecisionNodeSetter;
 
 public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 
-	private double sizeLimit;
+	private long sizeLimit;
 	private static Logger log = Logger.getLogger(LimitModeTreeBuilderFactory.class);
 	private FSUtils fsUtils;
 	
-	public LimitModeTreeBuilderFactory(double sizeLimit) throws IOException {
+	public LimitModeTreeBuilderFactory(long sizeLimit) throws IOException {
 		this.sizeLimit = sizeLimit;
 		this.fsUtils = new FSUtils();
 	}
@@ -48,7 +48,7 @@ public class LimitModeTreeBuilderFactory implements ITreeBuilderFactory {
 			DecisionNodeSetter nodeSetter, List<StoppingCriterion> stopping,
 			StatBuilder stats, INodeBuilderFactory nodeBuilderFactory, String inputData,
 			ParentInfos parentInfos, ScoredDistributionVector parentDistribution, ITreeBuilderFactory tbMaker, IScheduler scheduler) throws IOException {
-		double currentSize = fsUtils.getSize(new Path(inputData));
+		long currentSize = fsUtils.getSize(new Path(inputData));
 		Runnable treeBuilder = null;
 		if (currentSize > sizeLimit) {
 			treeBuilder = new TreeBuilderRecursive(featureSpec, workingDir, criterion,

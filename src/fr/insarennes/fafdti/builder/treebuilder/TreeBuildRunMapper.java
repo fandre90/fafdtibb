@@ -1,11 +1,9 @@
 package fr.insarennes.fafdti.builder.treebuilder;
 
-import java.awt.Stroke;
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.NullArgumentException;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -23,7 +21,6 @@ import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
 import fr.insarennes.fafdti.builder.stopcriterion.StoppingCriterion;
 import fr.insarennes.fafdti.cli.FAFExitCode;
-import fr.insarennes.fafdti.hadoop.SplitExampleMultipleOutputFormat;
 import fr.insarennes.fafdti.hadoop.fast.MapperTreeBuilder;
 import fr.insarennes.fafdti.hadoop.fast.WholeTextInputFormat;
 import fr.insarennes.fafdti.tree.DecisionNodeSetter;
@@ -121,6 +118,9 @@ public class TreeBuildRunMapper implements Runnable {
 		for (StoppingCriterion stop : stopping) {
 			stop.toConf(jobConf);
 		}
+		String id = parentInfos.getBaggingId() + "-"
+				+ Integer.toString(stats.getNextId());
+		jobConf.setJobName("Full Sub-tree builder for node " + id);
 		jobConf.setOutputKeyClass(NullWritable.class);
 		jobConf.setOutputValueClass(Text.class);
 		jobConf.setMapperClass(MapperTreeBuilder.class);

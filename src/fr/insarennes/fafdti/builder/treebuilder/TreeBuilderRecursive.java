@@ -1,7 +1,12 @@
 package fr.insarennes.fafdti.builder.treebuilder;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -60,8 +65,8 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	private TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			INodeBuilderFactory nodeBuilderFactory, ITreeBuilderFactory tbMaker,
-			IScheduler scheduler) {
+			INodeBuilderFactory nodeBuilderFactory,
+			ITreeBuilderFactory tbMaker, IScheduler scheduler) {
 		this.featureSpec = featureSpec;
 		this.workingDir = new Path(workingDir);
 		this.criterion = criterion;
@@ -78,8 +83,9 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 	public TreeBuilderRecursive(DotNamesInfo featureSpec, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			INodeBuilderFactory nodeBuilderFactory, String baggingId, String inputDataPath,
-			ITreeBuilderFactory tbMaker, IScheduler scheduler) {
+			INodeBuilderFactory nodeBuilderFactory, String baggingId,
+			String inputDataPath, ITreeBuilderFactory tbMaker,
+			IScheduler scheduler) {
 		this(featureSpec, workingDir, criterion, nodeSetter, stopping, stats,
 				nodeBuilderFactory, tbMaker, scheduler);
 		this.parentInfos = new ParentInfos(0, "launcher", baggingId);
@@ -116,6 +122,12 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		this.parentInfos = parentInfos;
 		this.parentDistribution = parentDistribution;
 		this.buildMode = BuildMode.MODEFAST;
+			if (parentDistribution != null 
+					&& inputData.length != parentDistribution.getTotal()) {
+				log.error("Incoherent parent distribution and input data. " 
+						+ "(parent distribution total = " + parentDistribution.getTotal()
+						+ " / input data size = " + inputData.length);
+			}
 	}
 
 	private void initNodeBuilder() {
@@ -124,11 +136,11 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 		Path wd = new Path(this.workingDir, id);
 		try {
 			if (buildMode == BuildMode.MODEFAT) {
-				this.nodeBuilder = nodeBuilderFactory.
-					makeNodeBuilder(inputDataPath, parentDistribution, id, wd);
+				this.nodeBuilder = nodeBuilderFactory.makeNodeBuilder(
+						inputDataPath, parentDistribution, id, wd);
 			} else {
-					this.nodeBuilder = nodeBuilderFactory.
-						makeNodeBuilder(inputData, parentDistribution, id);
+				this.nodeBuilder = nodeBuilderFactory.makeNodeBuilder(
+						inputData, parentDistribution, id);
 			}
 		} catch (FAFException e) {
 			// TODO Auto-generated catch block
@@ -155,7 +167,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				stats.setTotalEx(parentDistribution.getTotal());
 			}
 			qLeftDistribution = nodeBuilder.buildNode();
-			if(qLeftDistribution == null) {
+			if (qLeftDistribution == null) {
 				leafMaker();
 				return;
 			}
@@ -168,61 +180,93 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				leafMaker();
 			} else
 				nodeMaker();
-		} catch (TooManyRelaunchException e){
-			log.error("Too many job relaunch exception from : "+e.getMessage());
+		} catch (TooManyRelaunchException e) {
+			log.error("Too many job relaunch exception from : "
+					+ e.getMessage());
 			System.exit(FAFExitCode.EXIT_ERROR);
 		} catch (FAFException e) {
 			log.error(e.getMessage());
-		} catch (Exception e){
+		} catch (Exception e) {
 			this.iRelaunch++;
-			if(this.iRelaunch >= RELAUNCH_NODE_BUILDER_LIMIT){
-				log.error("Too many nodeBuilder relaunching of : "+nodeBuilder.getId());
+			if (this.iRelaunch >= RELAUNCH_NODE_BUILDER_LIMIT) {
+				log.error("Too many nodeBuilder relaunching of : "
+						+ nodeBuilder.getId());
 				System.exit(FAFExitCode.EXIT_ERROR);
 			}
 			nodeBuilder.cleanUp();
-			log.error("Relaunching job",e);
+			log.error("Relaunching job", e);
 			this.run();
 		}
 
 	}
 
+	static String join(Collection<?> s, String delimiter) {
+		StringBuilder builder = new StringBuilder();
+		Iterator iter = s.iterator();
+		while (iter.hasNext()) {
+			builder.append(iter.next());
+			if (!iter.hasNext()) {
+				break;
+			}
+			builder.append(delimiter);
+		}
+		return builder.toString();
+	}
+
 	// *******************Construction methods************//
 
 	private void nodeMaker() {
-		log.log(Level.INFO, "Making a question node...");
+
 		// +2(2 sons)-1(current node) = 1
 		// on le fait avant d'appeler set(dtq) sur le nodeSetter
 		stats.incrementPending();
 		// construction du noeud
 		Question question = qLeftDistribution.getQuestion();
+		log.log(Level.INFO, "Making a question node " + question);
 		LinkedDecisionTreeQuestion dtq = new LinkedDecisionTreeQuestion(
 				question, nodeBuilder);
 		try {
 			Pair<Path, Path> datapaths = nodeBuilder.getSplitPath();
 			Runnable treeBuilderLeft;
 			Runnable treeBuilderRight;
-			ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1, nodeBuilder.getId(),
-					 parentInfos.getBaggingId());
-			ScoredDistributionVector leftDistribution = qLeftDistribution.getScoreLeftDistribution().getDistribution();
+			ParentInfos pInfos = new ParentInfos(parentInfos.getDepth() + 1,
+					nodeBuilder.getId(), parentInfos.getBaggingId());
+			ScoredDistributionVector leftDistribution = qLeftDistribution
+					.getScoreLeftDistribution().getDistribution();
 			if (datapaths == null) {
 				Pair<String[][], String[][]> datas = nodeBuilder.getSplitData();
-				treeBuilderLeft = tbMaker
-						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.yesSetter(), stopping, stats, nodeBuilderFactory,
-								datas.getFirst(), pInfos, leftDistribution, tbMaker, scheduler);
-				treeBuilderRight = tbMaker
-						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.noSetter(), stopping, stats, nodeBuilderFactory,
-								datas.getSecond(), pInfos, rightDistribution, tbMaker, scheduler);
+				ScoredDistributionVector leftDist = 
+						qLeftDistribution.getScoreLeftDistribution().
+							getDistribution();
+				if(datas.getFirst().length != leftDist.getTotal()) {
+					log.error("Incoherent left distribution and left split data. " 
+							+ "(left distribution total = " + leftDist.getTotal()
+							+ " / left split data size = " + datas.getFirst().length);
+				}
+				if(datas.getSecond().length != rightDistribution.getTotal()) {
+					log.error("Incoherent rigth distribution and right split data. " 
+							+ "(right distribution total = " + leftDist.getTotal()
+							+ " / right split data size = " + datas.getSecond().length);
+				}
+				treeBuilderLeft = tbMaker.makeTreeBuilder(featureSpec,
+						workingDir.toString(), criterion, dtq.yesSetter(),
+						stopping, stats, nodeBuilderFactory, datas.getFirst(),
+						pInfos, leftDistribution, tbMaker, scheduler);
+				treeBuilderRight = tbMaker.makeTreeBuilder(featureSpec,
+						workingDir.toString(), criterion, dtq.noSetter(),
+						stopping, stats, nodeBuilderFactory, datas.getSecond(),
+						pInfos, rightDistribution, tbMaker, scheduler);
 			} else {
-				treeBuilderLeft = tbMaker
-						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.yesSetter(), stopping, stats, nodeBuilderFactory,
-								datapaths.getFirst().toString(), pInfos, leftDistribution, tbMaker, scheduler);
-				treeBuilderRight = tbMaker
-						.makeTreeBuilder(featureSpec, workingDir.toString(), criterion,
-								dtq.noSetter(), stopping, stats, nodeBuilderFactory,
-								datapaths.getSecond().toString(), pInfos, rightDistribution, tbMaker, scheduler);
+				treeBuilderLeft = tbMaker.makeTreeBuilder(featureSpec,
+						workingDir.toString(), criterion, dtq.yesSetter(),
+						stopping, stats, nodeBuilderFactory, datapaths
+								.getFirst().toString(), pInfos,
+						leftDistribution, tbMaker, scheduler);
+				treeBuilderRight = tbMaker.makeTreeBuilder(featureSpec,
+						workingDir.toString(), criterion, dtq.noSetter(),
+						stopping, stats, nodeBuilderFactory, datapaths
+								.getSecond().toString(), pInfos,
+						rightDistribution, tbMaker, scheduler);
 			}
 			scheduler.execute(treeBuilderLeft);
 			scheduler.execute(treeBuilderRight);

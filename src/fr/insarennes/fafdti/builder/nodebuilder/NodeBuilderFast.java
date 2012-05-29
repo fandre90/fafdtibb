@@ -1,11 +1,8 @@
 package fr.insarennes.fafdti.builder.nodebuilder;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -13,8 +10,6 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
@@ -32,7 +27,6 @@ import fr.insarennes.fafdti.builder.gram.GramType;
 import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.hadoop.QuestionScoreLeftDistribution;
 import fr.insarennes.fafdti.hadoop.fast.MapperTreeBuilder;
-import fr.insarennes.fafdti.visitors.QuestionExample;
 import fr.insarennes.fafdti.Pair;
 
 public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
@@ -58,7 +52,7 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 		super(namesInfo, criterion, id);
 		this.database = database;
 		this.questionDistribution = new HashMap<Question, ScoredDistributionVector>();
-		if(parentDistribution == null) {
+		if (parentDistribution == null) {
 			parentDistribution = new ScoredDistributionVector(
 					namesInfo.numOfLabel());
 			for (String[] example : database) {
@@ -92,7 +86,7 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 		}
 		computeQuestionDistribution();
 		log.debug("Question: " + bestQuestion);
-		if(bestQuestion != null) {
+		if (bestQuestion != null) {
 			return new QuestionScoreLeftDistribution(bestQuestion, bestSLDist);
 		}
 		return null;
@@ -131,11 +125,13 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 		}
 	}
 
-	private void generateContinuousQuestion(int attrIdx)
-			throws FAFException {
+	private void generateContinuousQuestion(int attrIdx) throws FAFException {
 		SortedMap<Double, ScoredDistributionVector> valueDistMap = new TreeMap<Double, ScoredDistributionVector>();
 		for (String[] example : database) {
-			double curValue = Double.parseDouble(example[attrIdx]);
+			//double curValue =Double.parseDouble(example[attrIdx]);
+			double curValue = ThresholdComputer.normalizeValue(
+					Double.parseDouble(example[attrIdx]),
+					ThresholdComputer.EPSILON);
 			ScoredDistributionVector curDist = null;
 			if (valueDistMap.containsKey(curValue)) {
 				curDist = valueDistMap.get(curValue);
@@ -186,7 +182,6 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 	}
 
 	private void bestQuestionCandidate(Question q, ScoreLeftDistribution sLDist) {
-		// System.out.println("Candidate: " + q + " " + sLDist.getScore());
 		if (bestQuestion == null || sLDist.getScore() < bestSLDist.getScore()) {
 			bestSLDist = sLDist;
 			bestQuestion = q;
@@ -201,21 +196,21 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 
 	@Override
 	public Pair<String[][], String[][]> getSplitData() throws FAFException {
-		//System.out.println("Split: " + bestQuestion);
+		// System.out.println("Split: " + bestQuestion);
 		ArrayList<String[]> leftDatabaseList = new ArrayList<String[]>();
 		ArrayList<String[]> rightDatabaseList = new ArrayList<String[]>();
 		for (String[] example : database) {
 			if (bestQuestion.ask(example)) {
 				leftDatabaseList.add(example);
 			} else {
-				//System.out.println(Arrays.toString(example));
+				// System.out.println(Arrays.toString(example));
 				rightDatabaseList.add(example);
 			}
 		}
 		String[][] leftDatabase = stringArrayArrayListToArrayArray(leftDatabaseList);
 		String[][] rightDatabase = stringArrayArrayListToArrayArray(rightDatabaseList);
-		//System.out.println("Database : " + database.length + " Left: "
-		//		+ leftDatabase.length + " Right: " + rightDatabase.length);
+		// System.out.println("Database : " + database.length + " Left: "
+		// + leftDatabase.length + " Right: " + rightDatabase.length);
 		return new Pair<String[][], String[][]>(leftDatabase, rightDatabase);
 	}
 

@@ -105,6 +105,15 @@ public class ThresholdComputer {
 	}
 	
 	public static double normalizeValue(double value, double threshold) {
+		// JAVA, YOU ARE A BITCH !
+		// The following code is not a joke, it is really
+		// necessary, be cause believe it or not, in Java dd1.equals(dd2) is
+		// false if they are defined this way
+		// double d1 = -0.00
+		// double d2 = 0.00
+		// Double dd2 = d2
+		// Double dd1 = d1
+		value += 0; // Adding 0 forces normalization
 		double a = 1.0 / threshold;
 		return Math.floor(value * a) / a;
 	}

@@ -106,6 +106,7 @@ public class TreeBuildRunMapper implements Runnable {
 				System.exit(FAFExitCode.EXIT_ERROR);
 			}
 			log.error("Relaunching caused by : "+e.getMessage());
+			fsUtils.deleteDir(new Path(this.workingDir));
 			this.run();
 		} 
 	}

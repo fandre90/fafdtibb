@@ -144,23 +144,26 @@ public class TreeBuildRunMapper implements Runnable {
 	
 	private void concatenateAllFiles() throws IOException {
 		FileSystem fileSystem = FileSystem.get(new Configuration());
-		FileStatus[] files = fileSystem.listStatus(new Path(inputData));
-		FSDataOutputStream out = fileSystem.create(new Path(inputData, "part-full"));
-		for (int i = 0; i < files.length; i++) {
-			Path tmp = files[i].getPath();
-			System.out.println("Concat " + tmp);
-			if (tmp.getName().startsWith("part") && fsUtils.getSize(tmp) > 0) {
-					FSDataInputStream in = fileSystem.open(tmp);
-					FileStatus stat = fileSystem.getFileStatus(tmp);
-					byte[] contents = new byte[(int) stat.getLen()];
-					IOUtils.readFully(in, contents, 0, contents.length);
-					out.write(contents);
-					IOUtils.closeStream(in);
-					fileSystem.delete(tmp, false);
+		FileStatus fsStatus = fileSystem.getFileStatus(new Path(inputData));
+		if(fsStatus.isDir()) {
+			FileStatus[] files = fileSystem.listStatus(new Path(inputData));
+			FSDataOutputStream out = fileSystem.create(new Path(inputData, "part-full"));
+			for (int i = 0; i < files.length; i++) {
+				Path tmp = files[i].getPath();
+				System.out.println("Concat " + tmp);
+				if (tmp.getName().startsWith("part") && fsUtils.getSize(tmp) > 0) {
+						FSDataInputStream in = fileSystem.open(tmp);
+						FileStatus stat = fileSystem.getFileStatus(tmp);
+						byte[] contents = new byte[(int) stat.getLen()];
+						IOUtils.readFully(in, contents, 0, contents.length);
+						out.write(contents);
+						IOUtils.closeStream(in);
+						fileSystem.delete(tmp, false);
+				}
 			}
+			out.flush();
+			out.close();
 		}
-		out.flush();
-		out.close();
 	}
 
 	private DecisionTree readTree() throws IOException, FAFException {

@@ -78,7 +78,6 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 		if (parentDistribution == null) {
 			throw new NullArgumentException("parentDistribution cannot be null");
 		}
-		QuestionScoreLeftDistribution bestQSLDist = null;
 		// Iterate over all continuous attributes
 		for (int i = 0; i < namesInfo.numOfAttr(); ++i) {
 			AttrType attrType = namesInfo.getAttrSpec(i).getType();
@@ -93,7 +92,10 @@ public class NodeBuilderFast extends NodeBuilder implements INodeBuilder {
 		}
 		computeQuestionDistribution();
 		log.debug("Question: " + bestQuestion);
-		return new QuestionScoreLeftDistribution(bestQuestion, bestSLDist);
+		if(bestQuestion != null) {
+			return new QuestionScoreLeftDistribution(bestQuestion, bestSLDist);
+		}
+		return null;
 	}
 
 	private void generateDiscreteTextQuestions(String[] example)

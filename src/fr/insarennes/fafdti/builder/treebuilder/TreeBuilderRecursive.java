@@ -162,7 +162,6 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 			// compute right distribution from left one
 			rightDistribution = parentDistribution
 					.computeRightDistribution(qLeftDistribution
-							
 							.getScoreLeftDistribution().getDistribution());
 			rightDistribution.rate(criterion);
 			if (this.mustStop()) {
@@ -181,7 +180,7 @@ public class TreeBuilderRecursive implements Runnable, StopCriterionUtils {
 				System.exit(FAFExitCode.EXIT_ERROR);
 			}
 			nodeBuilder.cleanUp();
-			log.error("Relaunching caused by : "+e.getMessage());
+			log.error("Relaunching job",e);
 			this.run();
 		}
 

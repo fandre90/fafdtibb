@@ -1,13 +1,6 @@
 package fr.insarennes.fafdti.hadoop;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
-import org.apache.hadoop.hbase.util.Hash;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.log4j.Logger;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.builder.ScoredDistributionVector;

@@ -59,6 +59,7 @@ public class QueryStater {
 		int numLine = 0;
 		while((line=buffer.readLine()) != null){
 			numLine++;
+			log.info("line "+numLine);
 			//check pattern
 			Matcher lineMatcher = validationPattern.matcher(line);
 			if(!lineMatcher.matches()) {

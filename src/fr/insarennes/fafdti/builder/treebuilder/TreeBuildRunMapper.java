@@ -22,6 +22,7 @@ import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.FSUtils;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
 import fr.insarennes.fafdti.builder.Criterion;
+import fr.insarennes.fafdti.builder.ScoredDistributionVector;
 import fr.insarennes.fafdti.builder.StatBuilder;
 import fr.insarennes.fafdti.builder.namesinfo.DotNamesInfo;
 import fr.insarennes.fafdti.builder.stopcriterion.ParentInfos;
@@ -49,6 +50,7 @@ public class TreeBuildRunMapper implements Runnable {
 	private FSUtils fsUtils;
 	private int iRelaunch;
 	private String id;
+	private ScoredDistributionVector parentDistribution;
 
 	private TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
@@ -83,13 +85,18 @@ public class TreeBuildRunMapper implements Runnable {
 	public TreeBuildRunMapper(DotNamesInfo namesInfo, String workingDir,
 			Criterion criterion, DecisionNodeSetter nodeSetter,
 			List<StoppingCriterion> stopping, StatBuilder stats,
-			String inputData, ParentInfos parentInfos) throws IOException {
+			String inputData, ParentInfos parentInfos, 
+			ScoredDistributionVector parentDistribution) throws IOException {
 		this(namesInfo, workingDir, criterion, nodeSetter, stopping, stats,
 				inputData);
 		if(parentInfos == null) {
-			throw new NullArgumentException("parentInfos muts not be null");
+			throw new NullArgumentException("parentInfos must not be null");
 		}
 		this.parentInfos = parentInfos;
+		if(parentDistribution == null) {
+			throw new NullArgumentException("parentDistribution must not be null");
+		}
+		this.parentDistribution = parentDistribution;
 		id = parentInfos.getBaggingId() + "-"
 				+ Integer.toString(stats.getNextId());
 		this.outputPath = new Path(this.workingDir, id);
@@ -104,6 +111,8 @@ public class TreeBuildRunMapper implements Runnable {
 			JobClient.runJob(jobConf);
 			DecisionTree dt = readTree();
 			nodeSetter.set(dt);
+			if(parentDistribution != null)
+				stats.addExClassified(parentDistribution.getTotal());
 			stats.decrementPending();
 		} catch (FAFException e) {
 			log.error(e.getMessage());

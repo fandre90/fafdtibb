@@ -174,6 +174,7 @@ public class Launcher implements Observer {
 				log.error("Error occured while counting number of lines of "
 						+ inputData);
 			}
+			log.info("File contains "+total+" examples");
 			// number of lines by tree
 			int nbLines = (int) (baggingPercent * total);
 			// random lines for each bagging data files and associated writers

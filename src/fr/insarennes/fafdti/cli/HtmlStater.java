@@ -84,7 +84,7 @@ public class HtmlStater {
 		Map<String, Integer> foundByLabel = stater.getFoundByLabel();
 		double totalPrecision, totalRecall, nbLabels;
 		totalPrecision=totalRecall=nbLabels=0;
-		final int NB = 3;
+		final int NB = 5;
 		print.write(
 				"<h3 align=center> errors statistics :</h3><br>" +
 				"<TABLE BORDER=\"1\">" +
@@ -119,9 +119,9 @@ public class HtmlStater {
 					"<TD> " + String.valueOf(found) + "</TD>" +
 					"<TD> " + String.valueOf(correct) + "</TD>" +
 					"<TD> " + String.valueOf(error) + "</TD>" +
-					"<TD> " + String.valueOf(precision*100.0).substring(0,NB)+"%" + "</TD>" +
-					"<TD> " + String.valueOf(recall*100.0).substring(0,NB)+"%" + "</TD>" +
-					"<TD> " + String.valueOf(100.0*((double)error / (double)search)).substring(0,NB)+"%" + "</TD>" +
+					"<TD> " + String.valueOf(precision*100.0)+"%" + "</TD>" +
+					"<TD> " + String.valueOf(recall*100.0)+"%" + "</TD>" +
+					"<TD> " + String.valueOf(100.0*((double)error / (double)search))+"%" + "</TD>" +
 					"</TR>");
 		}
 		int totalError = stater.getTotalError();
@@ -135,9 +135,9 @@ public class HtmlStater {
 				"<TD>" + String.valueOf(totalFound) + "</TD>" +
 				"<TD>" + String.valueOf(totalCorrect) + "</TD>" +
 				"<TD>" + String.valueOf(totalError) + "</TD>" +
-				"<TD>" + String.valueOf(100.0*(totalPrecision / nbLabels)).substring(0,NB)+"%" + "</TD>" +
-				"<TD>" + String.valueOf(100.0*(totalRecall / nbLabels)).substring(0,NB)+"%" + "</TD>" +
-				"<TD>" + String.valueOf(100.0*((double)totalError / (double)totalSearch)).substring(0,NB)+"%" + "</TD>");
+				"<TD>" + String.valueOf(100.0*(totalPrecision / nbLabels))+"%" + "</TD>" +
+				"<TD>" + String.valueOf(100.0*(totalRecall / nbLabels))+"%" + "</TD>" +
+				"<TD>" + String.valueOf(100.0*((double)totalError / (double)totalSearch))+"%" + "</TD>");
 		print.write("</TABLE>" +
 					"</html>");
 		print.flush();

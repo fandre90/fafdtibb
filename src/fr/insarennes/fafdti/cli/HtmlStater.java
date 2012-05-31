@@ -84,7 +84,7 @@ public class HtmlStater {
 		Map<String, Integer> foundByLabel = stater.getFoundByLabel();
 		double totalPrecision, totalRecall, nbLabels;
 		totalPrecision=totalRecall=nbLabels=0;
-		final int NB = 4;
+		final int NB = 3;
 		print.write(
 				"<h3 align=center> errors statistics :</h3><br>" +
 				"<TABLE BORDER=\"1\">" +

@@ -106,7 +106,7 @@ public class TreeBuildRunMapper implements Runnable {
 	public void run() {
 		JobConf jobConf;
 		try {
-			concatenateAllFiles();
+			//concatenateAllFiles();
 			jobConf = setupMapperJob();
 			JobClient.runJob(jobConf);
 			DecisionTree dt = readTree();

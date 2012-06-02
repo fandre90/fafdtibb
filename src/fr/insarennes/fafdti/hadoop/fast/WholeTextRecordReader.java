@@ -1,4 +1,5 @@
 package fr.insarennes.fafdti.hadoop.fast;
+
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -10,17 +11,20 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.lib.CombineFileSplit;
 
 public class WholeTextRecordReader implements RecordReader<NullWritable, Text> {
 
-	private FileSplit fileSplit;
+	private CombineFileSplit combineFileSplit;
 	private Configuration conf;
 	private boolean processed = false;
-
-	public WholeTextRecordReader(FileSplit fileSplit, Configuration conf)
-			throws IOException {
-		this.fileSplit = fileSplit;
+	private FileSystem fileSystem;
+	
+	public WholeTextRecordReader(CombineFileSplit combineFileSplit,
+			Configuration conf) throws IOException {
+		this.combineFileSplit = combineFileSplit;
 		this.conf = conf;
+		this.fileSystem = FileSystem.get(conf);
 	}
 
 	@Override
@@ -41,7 +45,7 @@ public class WholeTextRecordReader implements RecordReader<NullWritable, Text> {
 
 	@Override
 	public long getPos() throws IOException {
-		return processed ? fileSplit.getLength() : 0;
+		return processed ? combineFileSplit.getLength() : 0;
 	}
 
 	@Override
@@ -52,17 +56,21 @@ public class WholeTextRecordReader implements RecordReader<NullWritable, Text> {
 	@Override
 	public boolean next(NullWritable key, Text value) throws IOException {
 		if (!processed) {
-			byte[] contents = new byte[(int) fileSplit.getLength()];
-			Path file = fileSplit.getPath();
-			FileSystem fs = file.getFileSystem(conf);
-			FSDataInputStream in = null;
-			try {
-				in = fs.open(file);
-				IOUtils.readFully(in, contents, 0, contents.length);
-				value.set(contents, 0, contents.length);
-			} finally {
-				IOUtils.closeStream(in);
+			byte[] contents = new byte[(int) combineFileSplit.getLength()];
+			int off = 0;
+			for (Path file : combineFileSplit.getPaths()) {
+				FileSystem fs = file.getFileSystem(conf);
+				FSDataInputStream in = null;
+				try {
+					int len = (int) fileSystem.getFileStatus(file).getLen();
+					in = fs.open(file);
+					IOUtils.readFully(in, contents, off, len);
+					off += len;
+				} finally {
+					IOUtils.closeStream(in);
+				}
 			}
+			value.set(contents, 0, contents.length);
 			processed = true;
 			return true;
 		}

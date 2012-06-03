@@ -106,7 +106,7 @@ public class FAFQueryMode {
 			}
 			trees = importer.getResult();
 			//Launch stater
-			QueryStater stater = new QueryStater(trees);
+			QueryStater stater = new QueryStater(trees,System.in);
 			try {
 				log.info("Query process starting...");
 				stater.launch();

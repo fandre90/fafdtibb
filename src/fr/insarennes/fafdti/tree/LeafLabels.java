@@ -19,6 +19,7 @@ public class LeafLabels {
 	private Map<String,Double> labels;
 	
 	public LeafLabels(Map<String,Double> lbls) throws InvalidProbabilityComputationException{
+		//TODO ca serait pas mieux de faire une copie?
 		labels = lbls;
 		if (!isValid()) throw new InvalidProbabilityComputationException();
 	}

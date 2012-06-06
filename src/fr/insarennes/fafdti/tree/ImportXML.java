@@ -1,25 +1,19 @@
 package fr.insarennes.fafdti.tree;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import fr.insarennes.fafdti.FAFException;
 import fr.insarennes.fafdti.bagging.BaggingTrees;
@@ -28,199 +22,158 @@ import fr.insarennes.fafdti.builder.gram.FGram;
 import fr.insarennes.fafdti.builder.gram.GramType;
 import fr.insarennes.fafdti.builder.gram.SGram;
 import fr.insarennes.fafdti.builder.namesinfo.AttrType;
-import fr.insarennes.fafdti.visitors.GraphicExporter;
 import fr.insarennes.fafdti.visitors.XmlConst;
-import fr.insarennes.fafdti.visitors.XmlExporter;
 /** Classe permettant à partir d'un arbre dans un fichier xml de générer sa
  * représentation interne sous forme de {@link DecisionTree} ainsi que de récupérer
  * les paramètres qui ont servi à sa construction
  */
-public class ImportXML {
-
-	private Logger log;
-	private Document doc;
-	private List<DecisionTree> listTree;
+public class ImportXML extends DefaultHandler{
+	
+	//private static Logger log = Logger.getLogger(ImportXML.class);
 	private Map<String, String> buildopts;
+	private BaggingTrees trees;
+	private String filename;
+	private Stack<DecisionTree> treeStack;
+	private Stack<Boolean> answerStack;
+	private Map<String,Double> labels;
+	private int nbCl;
 	
 	public ImportXML(String filename){
-		log = Logger.getLogger(ImportXML.class);
-		listTree = new ArrayList<DecisionTree>();
+		this.filename = filename;
 		buildopts = new HashMap<String, String>();
-		Path inputPath = new Path(filename);
-		try{
-			// création d'une fabrique de documents
-			DocumentBuilderFactory fabrique = DocumentBuilderFactory.newInstance();
-			
-			// création d'un constructeur de documents
-			DocumentBuilder constructeur = fabrique.newDocumentBuilder();
-			
-			// lecture du contenu d'un fichier XML avec DOM
-			Configuration conf = new Configuration();
-			FileSystem fileSystem;
-			fileSystem = FileSystem.get(conf);
-			FSDataInputStream in = fileSystem.open(inputPath);
-			doc = constructeur.parse(in);
-		} catch(Exception e){
-			log.error(e.getMessage());
-		}
+		treeStack = new Stack<DecisionTree>();
+		answerStack = new Stack<Boolean>();
+		labels = new HashMap<String,Double>();
+		nbCl = 0;
 	}
 	
 	public void launch() throws FAFException{
-		log.log(Level.INFO, "Import from xml starting...");
-		//Recuperation de la racine trees
-		Element root = doc.getDocumentElement();
-		// On recupere ses fils : tree
-		NodeList liste = root.getChildNodes();
-		
-		//node0 = buildopts
-		Node opts = liste.item(0);
-		NamedNodeMap map = opts.getAttributes();
-		for(int i=0 ; i<map.getLength() ; i++){
-			Node item = map.item(i);
-			buildopts.put(item.getNodeName(), item.getNodeValue());
+		try{
+			SAXParserFactory fabrique = SAXParserFactory.newInstance();
+			SAXParser parseur = fabrique.newSAXParser();
+	
+			File fichier = new File(filename);
+			DefaultHandler gestionnaire = this;
+			parseur.parse(fichier, gestionnaire);
+		}catch (IOException e) {
+			throw new FAFException("IOException");
+		} catch (SAXException e) {
+			throw new FAFException("SAXException");
+		} catch (ParserConfigurationException e) {
+			throw new FAFException("ParserConfigurationException");
 		}
-		
-		//others nodes = tree
-	    for (int i = 1; i < liste.getLength(); i++) {
-	        Node noeud = liste.item(i);
-	        DecisionTree tree = buildOneTree(noeud);
-	        listTree.add(tree);
-	        log.log(Level.INFO, "...");
-	      }
-		log.log(Level.INFO, "Import from xml finished sucessfully!");
 	}
 	
-	private DecisionTree buildOneTree(Node tree) throws FAFException{
-		DecisionTree res = null;
-		
-		NodeList nl = tree.getChildNodes();
-		if(nl.getLength()!=1)	
-			throw new XmlMalformedException();
-		
-		Node n = nl.item(0);
-		String name = n.getNodeName();
-		//cas noeud
-		if(name.equals(XmlConst.QUESTION)){
-			//Construction du noeud avec la question
-			NamedNodeMap map = n.getAttributes();
-			String feat = map.getNamedItem(XmlConst.FEATURE).getNodeValue();
-			String feat_name = map.getNamedItem(XmlConst.FEATURE_NAME).getNodeValue();
-			AttrType type = AttrType.getFromString(map.getNamedItem(XmlConst.TYPE).getNodeValue());
-			
-			if(type==AttrType.DISCRETE){
-				String test = map.getNamedItem(XmlConst.TEST).getNodeValue();
-				res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat),type,test, feat_name));
-			}
-			else if (type==AttrType.TEXT){
-				GramType gramtype = GramType.getFromString(map.getNamedItem(XmlConst.GRAM).getNodeValue());
-				if(gramtype==GramType.SGRAM){
-					String fw = map.getNamedItem(XmlConst.FIRSTWORD).getNodeValue();
-					String lw = map.getNamedItem(XmlConst.LASTWORD).getNodeValue();
-					String maxdist = map.getNamedItem(XmlConst.MAXDIST).getNodeValue();
-					SGram sgram = new SGram(fw, lw, Integer.parseInt(maxdist));
-					res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat), type, sgram, feat_name));
+	@Override
+	public void startElement(String uri, String localName, String qName,
+			Attributes attributes) throws SAXException {
+		try{
+			if(qName.equals(XmlConst.TREES)){
+				
+			}else if(qName.equals(XmlConst.BUILDOPTS)){
+				for (int i = 0; i < attributes.getLength(); i++)
+					buildopts.put(attributes.getQName(i), attributes.getValue(i));
+			}else if(qName.equals(XmlConst.QUESTION)){
+				DecisionTree res = null;
+				String feat = attributes.getValue(XmlConst.FEATURE);
+				String feat_name = attributes.getValue(XmlConst.FEATURE_NAME);
+				AttrType type = AttrType.getFromString(attributes.getValue(XmlConst.TYPE));
+				
+				if(type==AttrType.DISCRETE){
+					String test = attributes.getValue(XmlConst.TEST);
+					res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat),type,test, feat_name));
 				}
-				else if(gramtype==GramType.FGRAM){
-					String words = map.getNamedItem(XmlConst.WORDS).getNodeValue();
-					String[] ws = words.split(XmlConst.DELIMITER);
-					FGram fgram = new FGram(ws);
-					res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat), type, fgram, feat_name));
+				else if (type==AttrType.TEXT){
+					GramType gramtype = GramType.getFromString(attributes.getValue(XmlConst.GRAM));
+					if(gramtype==GramType.SGRAM){
+						String fw = attributes.getValue(XmlConst.FIRSTWORD);
+						String lw = attributes.getValue(XmlConst.LASTWORD);
+						String maxdist = attributes.getValue(XmlConst.MAXDIST);
+						SGram sgram = new SGram(fw, lw, Integer.parseInt(maxdist));
+						res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat), type, sgram, feat_name));
+					}
+					else if(gramtype==GramType.FGRAM){
+						String words = attributes.getValue(XmlConst.WORDS);
+						String[] ws = words.split(XmlConst.DELIMITER);
+						FGram fgram = new FGram(ws);
+						res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat), type, fgram, feat_name));
+					}
+				}else if (type==AttrType.CONTINUOUS){
+					String test = attributes.getValue(XmlConst.TEST);
+					res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat),type,new Double(test), feat_name));
+				}else{
+					throw new SAXException();
 				}
-			}
-			else{	//CONTINUOUS
-				String test = map.getNamedItem(XmlConst.TEST).getNodeValue();
-				res = new DecisionTreeQuestion(new QuestionLabeled(Integer.parseInt(feat),type,new Double(test), feat_name));
-			}
-			//appel récursif fils gauche et droit
-			NodeList sons = n.getChildNodes();
-			if(sons.getLength()!=2)
-				throw new XmlMalformedException("The node is not binary");
-			
-			Node son1 = sons.item(0);
-			Node son2 = sons.item(1);
-			DecisionTree yes = null;
-			DecisionTree no = null;
-			if(son1.getAttributes().getNamedItem(XmlConst.ANSWER).getNodeValue().equals(XmlConst.YESANSWER) && 
-				son2.getAttributes().getNamedItem(XmlConst.ANSWER).getNodeValue().equals(XmlConst.NOANSWER)){
-				yes = buildOneTree(son1);
-				no = buildOneTree(son2);
-			}
-			else if(son2.getAttributes().getNamedItem(XmlConst.ANSWER).getNodeValue().equals(XmlConst.YESANSWER) && 
-					son1.getAttributes().getNamedItem(XmlConst.ANSWER).getNodeValue().equals(XmlConst.NOANSWER)){
-					yes = buildOneTree(son2);
-					no = buildOneTree(son1);
+				
+				treeStack.push(res);
+			}else if(qName.equals(XmlConst.TREE)){
+				String answer = attributes.getValue(XmlConst.ANSWER);
+				if(answer != null){
+					answerStack.push(answer.equals(XmlConst.YESANSWER));
 				}
-			else
-				throw new XmlMalformedException("The node doesn't have a 'yes' and a 'no' son");
-			//On attache les fils au noeud courant
-			((DecisionTreeQuestion)res).yesSetter().set(yes);
-			((DecisionTreeQuestion)res).noSetter().set(no);
+			}else if(qName.equals(XmlConst.DISTRIB)){
+				labels.clear();
+				nbCl = Integer.parseInt(attributes.getValue(XmlConst.NBCLASSFD));
+			}else if(qName.equals(XmlConst.RESULT)){
+				labels.put(attributes.getValue(XmlConst.CLASS),
+						Double.parseDouble(attributes.getValue(XmlConst.PERCENT)));
+			}
+		}catch (FAFException e) {
+			throw new SAXException();
 		}
-		//cas feuille
-		else if(name.equals(XmlConst.DISTRIB)){
-			Map<String,Double> hm = new HashMap<String,Double>();
-			NodeList dist = n.getChildNodes();
-			for(int i=0 ; i<dist.getLength() ; i++){
-				Node result = dist.item(i);
-				NamedNodeMap map = result.getAttributes();
-				hm.put(map.getNamedItem(XmlConst.CLASS).getNodeValue(), Double.valueOf(map.getNamedItem(XmlConst.PERCENT).getNodeValue()));
+	}
+	
+	@Override
+	public void endElement(String uri, String localName, String qName)
+			throws SAXException {
+		try{
+			if(qName.equals(XmlConst.QUESTION)){
+				DecisionTree dt = treeStack.pop();
+				if(!answerStack.empty()){
+					if(answerStack.pop()){
+						((DecisionTreeQuestion)treeStack.peek()).yesSetter().set(dt);
+					}else{
+						((DecisionTreeQuestion)treeStack.peek()).noSetter().set(dt);
+					}
+				}else{
+					trees.setTree(dt);
+				}
+			}else if(qName.equals(XmlConst.DISTRIB)){
+				DecisionTree dt = new DecisionTreeLeaf(new LeafLabels(new HashMap<String, Double>(labels)), nbCl);
+				if(!answerStack.empty()){
+					if(answerStack.pop()){
+						((DecisionTreeQuestion)treeStack.peek()).yesSetter().set(dt);
+					}else{
+						((DecisionTreeQuestion)treeStack.peek()).noSetter().set(dt);
+					}
+				}else{
+					trees.setTree(dt);
+				}
 			}
-			String nbCl = n.getAttributes().getNamedItem(XmlConst.NBCLASSFD).getNodeValue();
-			res = new DecisionTreeLeaf(new LeafLabels(hm), Integer.parseInt(nbCl));
+		}catch (FAFException e) {
+			throw new SAXException();
 		}
-		else
-			throw new XmlMalformedException();
-		
-		return res;
+	}
+	
+	@Override
+	public void startDocument() throws SAXException {
+		buildopts.clear();
+		treeStack.clear();
+		answerStack.clear();
+		trees = new BaggingTrees();
+	}
+	
+	@Override
+	public void endDocument() throws SAXException {
+		if(!treeStack.empty()) throw new SAXException("treeStack not empty!");
+		if(!answerStack.empty()) throw new SAXException("answerStack not empty!");
 	}
 	
 	public BaggingTrees getResult(){
-		return new BaggingTrees(listTree);
+		return trees;
 	}
 	
 	public Map<String,String> getBuildingParameters(){
 		return buildopts;
 	}
-	
-	public class XmlMalformedException extends FAFException{
-		public XmlMalformedException() {
-			super();
-		}
-		public XmlMalformedException(String string) {
-			super(string);
-		}
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 6393835555398240583L;
-		
-	}
-	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws FAFException{
-			ImportXML xml = new ImportXML("monxml");
-			xml.launch();
-//			XmlExporter exp = new XmlExporter(xml.getResult(), "testimport", "commentaire");
-//			exp.launch();
-			
-//			GraphicExporter graph = new GraphicExporter(xml.getResult(), "testimport");
-//			graph.launch();
-//			if ((System.getProperty("os.name")).toLowerCase().contains("linux")){
-//				try {
-//					Runtime.getRuntime().exec("dot -Tpng -otestimport.png testimport.dot");
-//					Runtime.getRuntime().exec("display testimport.png");
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//					System.out.println("png export needs ImageMagick library installed");
-//				}
-//			}
-//			else{
-//				System.out.println("png export only available under Linux !");
-//			}
-	}
-
 }
